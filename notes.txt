@@ -1,0 +1,59 @@
+https://github.com/project-sternbergia/lkm_m5/tree/main
+
+
+
+http://en.lkmotor.cn/Product.aspx
+
+
+
+
+http://en.lkmotor.cn/upload/20230706100134f.pdf
+
+https://www.aliexpress.us/item/3256805950420462.html
+
+
+3450 * 3.7 = 12.7w/hr
+
+198
+
+
+https://github.com/open-dynamic-robot-initiative/blmc_drivers?tab=readme-ov-file
+
+https://open-dynamic-robot-initiative.github.io/robot_interfaces/doc/real_time.html
+
+
+
+2.5 N-m
+25.49 kg-cm
+
+
+MIT Mini Cheetah
+
+Units: mm
+Frame width (side to side): 194
+Frame length (front motor plate to back motor plate): 304
+Frame thickness (top to bottom): 94
+
+Hip width (actuator center ot actuator center): 236.5
+Hip length (actuator center to actuator center): 392
+
+Hip center motor to upper leg (actuator center to actuator center): est. 82
+
+Foot width (ball to ball): 256
+
+Upper leg length: 212.4
+Lower leg length: 205
+392/
+
+
+
+
+
+
+
+
+
+
+
+
+
