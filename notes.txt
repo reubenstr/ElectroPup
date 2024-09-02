@@ -1,16 +1,64 @@
-https://github.com/project-sternbergia/lkm_m5/tree/main
 
 
 
-http://en.lkmotor.cn/Product.aspx
+###############################################################################
+CAN sheild: https://www.waveshare.com/2-ch-can-hat.htm
+
+Installation and setup for RPI:
+
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
+tar zxvf bcm2835-1.60.tar.gz 
+cd bcm2835-1.60/
+sudo ./configure
+sudo make
+sudo make check
+sudo make install
+# For More: http://www.airspayce.com/mikem/bcm2835/
+
+wget https://files.waveshare.com/upload/8/8c/WiringPi-master.zip
+sudo apt-get install unzip
+unzip WiringPi-master.zip
+cd WiringPi-master/
+sudo ./build 
+
+sudo apt-get update
+sudo apt-get install python3-pip
+sudo apt-get install python3-pil
+sudo apt-get install python3-numpy
+sudo apt-get install python3-RPi.GPIO
+sudo apt-get install python3-spidev 
+sudo apt-get install python3-python-can
+sudo apt-get install can-utils
+
+Append these statements to /boot/firmware/config.txt:
+dtparam=spi=on
+dtoverlay=mcp2515-can1,oscillator=16000000,interrupt=25
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=23
+dtoverlay=spi-bcm2835-overlay
+
+Set up CAN:
+sudo ip link set can0 up type can bitrate 1000000
+sudo ip link set can1 up type can bitrate 1000000
+sudo ifconfig can0 txqueuelen 65536
+sudo ifconfig can1 txqueuelen 65536
+
+Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt
+
+See the CAN controllers:
+ifconfig
+
+Loopback test, connect H to H, L to L:
+1st terminal:
+	candump can0
+2nd terminal:
+	cansend can1 000#11.22.33.44
+	cansend can1 141#8800000000000000
+	cansend can1 141#8000000000000000
 
 
 
 
-http://en.lkmotor.cn/upload/20230706100134f.pdf
-
-https://www.aliexpress.us/item/3256805950420462.html
-
+###############################################################################
 
 3450 * 3.7 = 12.7w/hr
 
