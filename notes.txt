@@ -1,7 +1,7 @@
 
 
-
-
+###############################################################################
+https://www.18650batterystore.com/collections/18650-batteries/products/sanyo-ncr18650ga
 
 
 sudo apt install python3-rich
@@ -100,11 +100,19 @@ Lower leg length: 205
 392/
 
 
+body length to foot width === 392/256 = 1.53
 
+body length to total leg length === 392/417.4 = 0.94
+------------------
 
+ElectroPup
 
+347/249 = 1.39
+347/280 = 1.24
 
+------------------
 
+golden ratio (approximately 1.618
 
 
 

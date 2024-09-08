@@ -1,4 +1,4 @@
-23778040323727907
+23779770050047188
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -52479,13 +52479,6 @@ connector Wuerth WR-WTB vertical
 10
 10
 Connectors
-AMASS_XT60PW-M
-
-
-0
-4
-4
-Connectors
 Conn_03x03
 
 
@@ -52501,6 +52494,13 @@ Conn_03x04
 12
 Connectors
 SAMTEC_HLE-120-02-F-DV-BE-A
+
+
+0
+40
+40
+Connectors
+Samtec_HLE-120-02-XXX-DV-BE-XX-XX
 
 
 0
@@ -57722,40 +57722,12 @@ General
 2
 2
 General
-2x_18650_battery_holder
-
-
-0
-4
-4
-General
-3x_18650_battery_holder
-
-
-0
-6
-6
-General
-4x_18650_battery_holder
-
-
-0
-8
-8
-General
 BNO055 Module
 
 
 0
 10
 10
-General
-HY2120
-
-
-0
-5
-5
 General
 Precision_pot
 
@@ -57785,26 +57757,12 @@ Raspberry Pi - Hat Template - Full Size
 44
 44
 General
-SCW12B-05_MWU
-
-SCW12B-05 
-0
-9
-9
-General
 SHHD003A0A41Z
 
 
 0
 6
 6
-General
-Samtec_HLE-120-02-XXX-DV-BE-XX-XX
-
-
-0
-40
-40
 General
 usb-PCB
 
@@ -64777,27 +64735,6 @@ Yellow 5381 Series LED
 0
 2
 2
-MCU_Modules
-YAAJ_BlackPill_1
-BlackPill module with pin headers and sockets. No SWD breakout
-module BlackPill Black Pill header socket
-0
-34
-34
-MCU_Modules
-YAAJ_BlackPill_2
-BlackPill module with pin headers / sockets. No SWD breakout
-module BlackPill Black Pill header
-0
-34
-34
-MCU_Modules
-YAAJ_WeAct_BlackPill_2
-Through hole headers for BluePill module. No SWD breakout. Fancy silkscreen.
-module BlluePill Blue Pill header SWD breakout
-0
-40
-40
 Module
 A20_OLINUXINO_LIME2
 A20 Olinuxino LIME2, 1.2GHz, 512-1024MB RAM, Micro-SD, NAND or eMMC, 1000Mbit Ethernet
@@ -96774,3 +96711,73 @@ Varistor VF
 0
 2
 2
+displays
+TFT LCD - 2.4 - 240x320
+
+
+0
+19
+14
+power-and-batteries
+2x_18650_battery_holder
+
+
+0
+4
+4
+power-and-batteries
+3x_18650_battery_holder
+
+
+0
+6
+6
+power-and-batteries
+4x_18650_battery_holder
+
+
+0
+8
+8
+power-and-batteries
+18650 6S Battery Pack - Footprint Only
+
+
+0
+0
+0
+power-and-batteries
+AMASS_XT30PW-M_1x02_P2.50mm_Horizontal
+Connector XT30 Horizontal PCB Male, https://www.tme.eu/en/Document/ce4077e36b79046da520ca73227e15de/XT30PW%20SPEC.pdf
+RC Connector XT30
+0
+4
+2
+power-and-batteries
+AMASS_XT30U-M_1x02_P5.0mm_Vertical
+Connector XT30 Vertical Cable Male, https://www.tme.eu/en/Document/3cbfa5cfa544d79584972dd5234a409e/XT30U%20SPEC.pdf
+RC Connector XT30
+0
+2
+2
+power-and-batteries
+HY2120
+
+
+0
+5
+5
+power-and-batteries
+SCW12B-05_MWU
+
+SCW12B-05 
+0
+9
+9
+switches-and-buttons
+CRE22F4DBBNE
+
+
+0
+3
+3
