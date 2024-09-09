@@ -510,7 +510,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "power_distribution.step",
       "svg": "",
       "vrml": ""
     },

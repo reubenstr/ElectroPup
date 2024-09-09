@@ -2502,7 +2502,7 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 247.65) (xy 43.18 251.46)
+			(xy 58.42 231.14) (xy 58.42 234.95)
 		)
 		(stroke
 			(width 0)
@@ -3782,7 +3782,7 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 240.03) (xy 43.18 242.57)
+			(xy 58.42 223.52) (xy 58.42 226.06)
 		)
 		(stroke
 			(width 0)
@@ -3832,7 +3832,7 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 229.87) (xy 43.18 232.41)
+			(xy 58.42 213.36) (xy 58.42 215.9)
 		)
 		(stroke
 			(width 0)
@@ -4937,7 +4937,7 @@
 	)
 	(symbol
 		(lib_id "General:18650 6s Battery Pack - Footprint Only")
-		(at 109.22 238.76 0)
+		(at 124.46 222.25 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4945,7 +4945,7 @@
 		(dnp no)
 		(uuid "263c1e8a-57ff-4779-9a63-6e810e73f6c0")
 		(property "Reference" "BATT1"
-			(at 106.934 250.698 0)
+			(at 122.174 234.188 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4954,7 +4954,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 109.22 238.76 0)
+			(at 124.46 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4963,7 +4963,7 @@
 			)
 		)
 		(property "Footprint" "General:18650 6S Battery Pack - Footprint Only"
-			(at 109.22 238.76 0)
+			(at 124.46 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4972,7 +4972,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 109.22 238.76 0)
+			(at 124.46 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4981,7 +4981,7 @@
 			)
 		)
 		(property "Description" "DIY with BMS"
-			(at 109.22 238.76 0)
+			(at 124.46 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5819,7 +5819,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
-		(at 43.18 245.11 0)
+		(at 58.42 228.6 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5828,7 +5828,7 @@
 		(fields_autoplaced yes)
 		(uuid "6d616de9-f56a-4456-953b-03d845e941c0")
 		(property "Reference" "R1"
-			(at 45.72 245.1099 0)
+			(at 60.96 228.5999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5837,7 +5837,7 @@
 			)
 		)
 		(property "Value" "R_Small_US"
-			(at 45.72 246.3799 0)
+			(at 60.96 229.8699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5847,7 +5847,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
-			(at 43.18 245.11 0)
+			(at 58.42 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5856,7 +5856,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 43.18 245.11 0)
+			(at 58.42 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5865,7 +5865,7 @@
 			)
 		)
 		(property "Description" "Resistor, small US symbol"
-			(at 43.18 245.11 0)
+			(at 58.42 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5972,7 +5972,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 43.18 251.46 0)
+		(at 58.42 234.95 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5981,7 +5981,7 @@
 		(fields_autoplaced yes)
 		(uuid "834e04b0-c1d6-4716-a511-3dfa7aff523c")
 		(property "Reference" "#PWR014"
-			(at 43.18 257.81 0)
+			(at 58.42 241.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5990,7 +5990,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 43.18 256.54 0)
+			(at 58.42 240.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5998,7 +5998,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 43.18 251.46 0)
+			(at 58.42 234.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6007,7 +6007,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 43.18 251.46 0)
+			(at 58.42 234.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6016,7 +6016,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 43.18 251.46 0)
+			(at 58.42 234.95 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6180,7 +6180,7 @@
 	)
 	(symbol
 		(lib_id "General:Raspberry Pi - Footprint_Only")
-		(at 74.93 238.76 0)
+		(at 90.17 222.25 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6189,7 +6189,7 @@
 		(fields_autoplaced yes)
 		(uuid "9833ee2f-3407-4ecb-858b-01798ca3c295")
 		(property "Reference" "SBC1"
-			(at 85.09 244.4749 0)
+			(at 100.33 227.9649 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6198,7 +6198,7 @@
 			)
 		)
 		(property "Value" "~"
-			(at 85.09 246.38 0)
+			(at 100.33 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6207,7 +6207,7 @@
 			)
 		)
 		(property "Footprint" "General:RASPBERRY_PI_4B - Footprint Only"
-			(at 74.93 238.76 0)
+			(at 90.17 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6216,7 +6216,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 74.93 238.76 0)
+			(at 90.17 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6225,7 +6225,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 74.93 238.76 0)
+			(at 90.17 222.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6445,7 +6445,7 @@
 	)
 	(symbol
 		(lib_id "power:+BATT")
-		(at 43.18 229.87 0)
+		(at 58.42 213.36 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6454,7 +6454,7 @@
 		(fields_autoplaced yes)
 		(uuid "adf5321a-c06f-4ea7-a048-44eae096594f")
 		(property "Reference" "#PWR05"
-			(at 43.18 233.68 0)
+			(at 58.42 217.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6463,7 +6463,7 @@
 			)
 		)
 		(property "Value" "+BATT"
-			(at 43.18 224.79 0)
+			(at 58.42 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6471,7 +6471,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 43.18 229.87 0)
+			(at 58.42 213.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6480,7 +6480,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 43.18 229.87 0)
+			(at 58.42 213.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6489,7 +6489,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+BATT\""
-			(at 43.18 229.87 0)
+			(at 58.42 213.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7091,7 +7091,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 43.18 236.22 90)
+		(at 58.42 219.71 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7100,7 +7100,7 @@
 		(fields_autoplaced yes)
 		(uuid "e5754701-594c-467d-b3e6-1c0ef4b74501")
 		(property "Reference" "D1"
-			(at 46.99 236.5374 90)
+			(at 62.23 220.0274 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7109,7 +7109,7 @@
 			)
 		)
 		(property "Value" "LED"
-			(at 46.99 239.0774 90)
+			(at 62.23 222.5674 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7118,7 +7118,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_1206_3216Metric"
-			(at 43.18 236.22 0)
+			(at 58.42 219.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7127,7 +7127,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 43.18 236.22 0)
+			(at 58.42 219.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7136,7 +7136,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 43.18 236.22 0)
+			(at 58.42 219.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
