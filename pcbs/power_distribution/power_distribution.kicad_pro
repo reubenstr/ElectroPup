@@ -184,7 +184,13 @@
         1.25,
         1.5,
         2.0,
-        3.0
+        3.0,
+        4.0,
+        4.5,
+        5.0,
+        6.0,
+        7.0,
+        8.0
       ],
       "tuning_pattern_settings": {
         "diff_pair_defaults": {
@@ -507,7 +513,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "gerbers/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "power_distribution.step",
