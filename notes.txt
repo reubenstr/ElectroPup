@@ -28,6 +28,11 @@ python3 -m mujoco.viewer --mjcf=./electropup.xml
 python3 -m mujoco.viewer --mjcf=./scene.xml 
 
 
+
+###############################################################################
+https://hardwaretester.com/gamepad
+
+
 ###############################################################################
 https://www.18650batterystore.com/collections/18650-batteries/products/sanyo-ncr18650ga
 

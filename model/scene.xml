@@ -1,5 +1,5 @@
 <mujoco model="ElectroPup Scene">
-  <include file="ElectroPup.xml"/>
+  <include file="electro-pup.xml"/>
 
   <statistic center="0 0 0.3" extent="1.2"/>
 

@@ -1,0 +1,17 @@
+# Link and origin parameters of linked-leg
+# See project documentation for kinematic diagram
+A: 
+  x: -20
+  y: -21
+D:  
+  x: 0
+  y: 0
+L2: 30
+L3: 31
+L4: 26
+L5: 31
+L6: 29
+L7: 105
+L8: 100
+L9: 23
+L10: 117

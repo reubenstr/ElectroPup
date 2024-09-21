@@ -1,0 +1,28 @@
+# Motion parameters and motion input limits
+# Derived by trial and error for stability and physical limit breach prevention
+
+lateral_fraction: 0.0
+step_velocity: 0.001
+swing_period: 0.200
+clearance_height: 0.045
+penetration_depth: 0.003
+
+orn_x_min: -0.393
+orn_x_max: 0.393
+orn_y_min: -0.393
+orn_y_max: 0.393
+orn_z_min: -0.393
+orn_z_max: 0.393
+
+pos_x_min: -0.100
+pos_x_max: 0.100
+pos_y_min: -0.100
+pos_y_max: 0.100
+pos_z_min: -0.125 
+pos_z_max: 0.070
+
+yaw_rate_min: -0.785
+yaw_rate_max:  0.785
+
+step_length_min: -0.100
+step_length_max: 0.100

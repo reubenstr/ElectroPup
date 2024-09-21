@@ -1,0 +1,30 @@
+# Frame parameters for Zuko v2.2
+# Units in meters.
+
+# x distance from hip pivot x-axis to perpendicular upper leg pivot y-axis
+shoulder_length: 0.03175
+
+# upper leg length from upper pivot point to lower pivot point
+upper_leg_length: 0.100
+
+# lower leg length from upper pivot point to foot ground contact point
+lower_leg_length: 0.11225
+
+# x distance between front and back upper legs pivot points 
+hip_x: 0.238
+
+# y distance between left and right upper legs pivot points 
+hip_y: 0.091 #0.1545 
+
+# x distance between front and back feet centers at ground touch 
+foot_x: 0.238
+
+# y distance between left and right feet centers at ground touch 
+# foot_y: 0.169 
+foot_y: 0.1545 # adjustment to have feet directly below hips (hips orientate to zero degrees when standing)
+
+# how high center of body is off the ground
+height: 0.195
+
+# foot under upper leg servo offset (due to upper leg servos being shifted back in the CAD)
+com_offset: 0.0105
