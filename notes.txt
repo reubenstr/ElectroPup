@@ -1,4 +1,32 @@
 
+Hardware
+
+Motor bolt MAX depths:
+Front frame : M2.5 x 8.5mm, recommended max: 8mm
+Front motor wheel : M3 x 6mm, recommended max: 5.5mm
+Front motor wheel pin: M3 x 3mm, recommended max 2.5mm
+
+Per leg:
+    Hip:
+        motor front: 6x M2.5x12mm
+        motor wheel: 2x M3x14mm
+        motor wheel: 1x M3x25mm
+    Upper Leg:    
+        motor back: 6x M3x18mm
+        motor wheel: 1x M3x12mm
+        motor wheel: 2x M3x20mm
+        motor wheel pin: 3x M3 x 
+    Lower Leg:    
+        motor front: 6x M2.5x14mm
+        motor wheel: 3x M3x12mm
+
+###############################################################################
+pip install mujoco
+python -m mujoco.viewer
+
+python3 -m mujoco.viewer --mjcf=./electropup.xml 
+python3 -m mujoco.viewer --mjcf=./scene.xml 
+
 
 ###############################################################################
 https://www.18650batterystore.com/collections/18650-batteries/products/sanyo-ncr18650ga
