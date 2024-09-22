@@ -7,6 +7,7 @@ swing_period: 0.200
 clearance_height: 0.045
 penetration_depth: 0.003
 
+# Units in degrees
 orn_x_min: -0.393
 orn_x_max: 0.393
 orn_y_min: -0.393
@@ -14,12 +15,14 @@ orn_y_max: 0.393
 orn_z_min: -0.393
 orn_z_max: 0.393
 
+# Inits in meters
 pos_x_min: -0.100
 pos_x_max: 0.100
 pos_y_min: -0.100
 pos_y_max: 0.100
-pos_z_min: -0.125 
-pos_z_max: 0.070
+
+pos_z_min: 0.000 
+pos_z_max: 0.280
 
 yaw_rate_min: -0.785
 yaw_rate_max:  0.785

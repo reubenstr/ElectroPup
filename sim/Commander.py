@@ -69,12 +69,12 @@ class Commander():
         self.T_bf = self.bezier_gait.GenerateTrajectory(
             step_length, lateral_fraction, yaw_rate, step_velocity, self.kinematics.WorldToFoot, clearance_height, penetration_depth, contacts)
 
-        print(self.T_bf)
+        # print(self.T_bf)
 
-        self.joint_angles = self.kinematics.inverse_kinematics(orn, pos, self.T_bf)              
-       
-        #joint_angles_linked_leg = self.kinematics.get_joint_angles_linked_legs(joint_angles)          
+        # print(f"[POS] {pos}")
 
+        self.joint_angles = self.kinematics.inverse_kinematics(orn, pos, self.T_bf)    
+      
         # TODO: apply angles to motors
 
     def get_joint_angles(self):
@@ -103,8 +103,8 @@ if __name__ == '__main__':
             joint_angles = [math.degrees(radian) for radian in joint_angles]
             joint_angles = [f"{num:.2f}" for num in joint_angles]
 
-            print(f"{joint_angles[:3]}")
-
+            print(f"[JA] {joint_angles[0:3]}")
+       
             sleep(tick_rate_seconds)
 
     finally:

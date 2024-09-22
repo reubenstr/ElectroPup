@@ -7,26 +7,26 @@
 
   <default>
     <geom type="mesh"/>
-    <joint range="-45 45" armature="0.01090125" damping="0.0239" frictionloss="0.1334"/>
+    <joint range="-180 180" armature="0.01090125" damping="0.0239" frictionloss="0.1334"/>
    
     <default class="abductor">
-      <joint range="-45 45"/>
+      <joint range="-180 180"/>
     </default>
    
     <default class="hip_front">
-      <joint range="-45 45"/>
+      <joint range="-180 180"/>
     </default>
   
     <default class="hip_rear">
-      <joint range="-45 45"/>
+      <joint range="-180 180"/>
     </default>
    
     <default class="knee">
-      <joint range="-45 45" axis="0 0 1"/>
+      <joint range="-180 180" axis="0 0 1"/>
     </default>
    
     <default class="multi_mode_controlled_actuator">
-      <general biastype="affine" gainprm="40 0 0 0 0 0 0 0 0 0" biasprm="0 -40 -0.65 0 0 0 0 0 0 0" ctrlrange="-1.570796 1.570796"/>
+      <general biastype="affine" gainprm="40 0 0 0 0 0 0 0 0 0" biasprm="0 -40 -0.65 0 0 0 0 0 0 0" ctrlrange="-3.1415 3.1415"/>
       <!-- <general biastype="affine" gainprm="35 0 0 0 0 0 0 0 0 0" biasprm="0 -35 -0.65 0 0 0 0 0 0 0" ctrlrange="-2 2"/> -->
     </default>
    
@@ -62,7 +62,7 @@
       <freejoint/>
       <camera name="track" pos="0.846 -1.465 0.916" xyaxes="0.866 0.500 0.000 -0.171 0.296 0.940" mode="trackcom"/>
       <inertial pos="0 0 0" quat="0.000990813 0.68703 0.000216603 0.726628" mass="4.48878" diaginertia="0.071033 0.0619567 0.0192519"/>     
-      <geom pos="0 0 .5" rgba="0 0 1 1" mesh="body"/>
+      <geom pos="0 0 0" rgba="0 0 1 1" mesh="body"/>
     
 
       <body name="front_left" pos="0.075 0.0075 0.5" quat="1 0 0 0">
@@ -93,12 +93,12 @@
         
         <body name="front_right_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_front" name="front_right_hip" axis="1 0 0"/>
+          <joint class="hip_front" name="front_right_hip" axis="-1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="front_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="front_right_knee"  axis="1 0 0"/>
+            <joint class="knee" name="front_right_knee"  axis="-1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -137,12 +137,12 @@
         
         <body name="rear_right_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_right" axis="1 0 0"/>
+          <joint class="hip_rear" name="hip_rear_right" axis="-1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="rear_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_right"  axis="1 0 0"/>
+            <joint class="knee" name="knee_rear_right"  axis="-1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -220,12 +220,12 @@
   <keyframe>
   
     <key name="standing"  
-      qpos="0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+      qpos="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
       ctrl="
       0 -1.5708 0 
-      0 1.5708 0 
       0 -1.5708 0 
-      0 1.5708 0
+      0 -1.5708 0 
+      0 -1.5708 0
       "/>
   </keyframe>
 </mujoco>
