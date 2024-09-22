@@ -80,7 +80,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
 
     ja = [math.degrees(radian) for radian in joint_angles]
     ja = [f"{num:.2f}" for num in ja]
-    print(f"[JA] {ja[0:3]}")
+    print(f"[JA] {ja[:]}")
 
     for i in range(12):
         data.ctrl[i] = joint_angles[i]

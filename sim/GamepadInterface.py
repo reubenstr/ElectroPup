@@ -89,12 +89,12 @@ class GamepadInterface:
 
         
         # TEMP FOR INITIAL MODEL SETUP
-        self.motion_inputs.orn[0] = 0
-        self.motion_inputs.orn[1] = 0
-        self.motion_inputs.orn[2] = 0
+        #self.motion_inputs.orn[0] = 0
+        #self.motion_inputs.orn[1] = 0
+        #self.motion_inputs.orn[2] = 0
         
-        self.motion_inputs.pos[0] = 0
-        self.motion_inputs.pos[1] = 0
+        #self.motion_inputs.pos[0] = 0
+        #self.motion_inputs.pos[1] = 0
         #self.motion_inputs.pos[2] = 0
         
         return copy.deepcopy(self.motion_inputs)

@@ -72,12 +72,12 @@
         
         <body name="front_left_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_front" name="front_left_hip" axis="1 0 0"/>
+          <joint class="hip_front" name="front_left_hip" axis="-1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="front_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="front_left_knee"  axis="1 0 0"/>
+            <joint class="knee" name="front_left_knee"  axis="-1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -116,12 +116,12 @@
         
         <body name="rear_left_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_left" axis="1 0 0"/>
+          <joint class="hip_rear" name="hip_rear_left" axis="-1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="rear_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_left"  axis="1 0 0"/>
+            <joint class="knee" name="knee_rear_left"  axis="-1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>

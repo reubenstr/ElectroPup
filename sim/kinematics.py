@@ -1,13 +1,20 @@
 
 '''
     Contains kinematic model to generate joint angles from orientation, position, feet location.
+    
+    Original source from: 
+        https://moribots.github.io/project/spot-mini-mini
+
+    Equations from:
+        Inverse Kinematic Analysis Of A Quadruped Robot
+        Muhammed Arif Sen, Veli Bakircioglu, Mete Kalyoncu
+        https://www.researchgate.net/publication/320307716_Inverse_Kinematic_Analysis_Of_A_Quadruped_Robot/link/59dcf3f30f7e9b11b62349bb/download?_tp=eyJjb250ZXh0Ijp7ImZpcnN0UGFnZSI6InB1YmxpY2F0aW9uIiwicGFnZSI6InB1YmxpY2F0aW9uIn19
 '''
 
 import math
 import numpy as np
 from matrix_transforms import RpToTrans, TransToRp, TransInv, RPY, TransformVector
 from collections import OrderedDict
-
 
 class Kinematics:
     def __init__(self, frame_parameters):
@@ -91,16 +98,16 @@ class Kinematics:
         Calculates the leg's Domain and caps it in case of a breach
 
         :param x,y,z: hip-to-foot distances in each dimension
-        :return: Leg Domain D
+        :return: Leg domain
         """
-        domain = (y**2 + (-z)**2 + (-x)**2 - self.shoulder_length**2 - self.upper_leg_length**2 - self.lower_leg_length**2) / (2 * self.lower_leg_length * self.upper_leg_length)
+        domain = (y**2 + z**2 + x**2 - self.shoulder_length**2 - self.upper_leg_length**2 - self.lower_leg_length**2) / (2 * self.lower_leg_length * self.upper_leg_length)
 
-        #if domain > 1 or domain < -1:           
-        #    print(f"[IK] domain breach! {domain}")           
+        if domain > 1 or domain < -1:           
+            print(f"[IK] domain breach! {domain}")           
         
         return np.clip(domain, -1.0, 1.0)
 
-    def _solve_joint_angles(self, xyz_coord, legType):
+    def _solve_joint_angles(self, xyz_coord, leg_key):
         """
         Leg Inverse Kinematics Solver
 
@@ -114,19 +121,22 @@ class Kinematics:
         domain = self._get_domain(x, y, z)
 
         # Compensate for physical joint orientation
-        if legType == "FR" or legType == "BR":
+        if leg_key == "FR" or leg_key == "BR":
+            lower_leg_sign = 1
             shoulder_direction_offset = -1
-        elif legType == "FL" or legType == "BL":
+        elif leg_key == "FL" or leg_key == "BL":
+            lower_leg_sign = -1
             shoulder_direction_offset = 1
 
-        lower_leg_angle = np.arctan2(-np.sqrt(1 - domain**2), domain)
+        lower_leg_angle = -np.arctan2(lower_leg_sign * np.sqrt(1 - domain**2), domain)
 
-        sqrt_component = y**2 + (-z)**2 - self.shoulder_length**2
+        sqrt_component = y**2 + z**2 - self.shoulder_length**2
 
         if sqrt_component < 0.0:
+            print(f"[IK] sqrt_component < 0")
             sqrt_component = 0.0
         
-        #print(domain)
+        
 
         shoulder_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component), shoulder_direction_offset * self.shoulder_length)
 
@@ -134,10 +144,17 @@ class Kinematics:
    
 
         # TEMP CONVERSION TEST
-        lower_leg_angle = lower_leg_angle + math.radians(180)
+        #lower_leg_angle = lower_leg_angle + math.radians(180)
+       
 
 
-        joint_angles = np.array([-shoulder_angle, -upper_leg_angle, -lower_leg_angle])
+        if leg_key == "FR" or leg_key == "BR":
+            upper_leg_angle = upper_leg_angle - math.radians(90)
+        elif leg_key == "FL" or leg_key == "BL":
+            upper_leg_angle = upper_leg_angle + math.radians(90)
+
+
+        joint_angles = np.array([shoulder_angle, upper_leg_angle, lower_leg_angle])
 
         return joint_angles
 
@@ -162,8 +179,8 @@ class Kinematics:
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
   
-        #print(f"[orn] {orn[0:3]}")
-        #print(f"[pos] {pos[0:3]}")
+        print(f"[orn] {orn[0:3]}")
+        print(f"[pos] {pos[0:3]}")
 
         #T_bf['FL'][2][3] = 0.140
 
@@ -173,8 +190,8 @@ class Kinematics:
 
         
         np.set_printoptions(formatter={'all': lambda x: "{:5.5g}".format(x)}) 
-        print(f"[T_bf] \n{T_bf['FL']}")
-        print(f"[hip_to_foot] => {hip_to_foot_vectors['FL']}")
+        #print(f"[T_bf] \n{T_bf['FL']}")
+        #print(f"[hip_to_foot] => {hip_to_foot_vectors['FL']}")
 
         for i, (key, p_hf) in enumerate(hip_to_foot_vectors.items()):
             # Step 3, compute joint angles from T_hf for each leg
