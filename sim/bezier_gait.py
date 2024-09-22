@@ -513,10 +513,15 @@ class BezierGait():
             _, p_bf = TransToRp(Tbf_in)
             
             if Tstance > 0.0:
-                step_coord = self.GetFootStep(L, LateralFraction, YawRate,
-                                              clearance_height,
-                                              penetration_depth, Tstance, p_bf,
-                                              i, key)
+                step_coord = self.GetFootStep(L, 
+                                                LateralFraction, 
+                                                YawRate,
+                                                clearance_height,
+                                                penetration_depth, 
+                                                Tstance,
+                                                p_bf,
+                                                i,
+                                                key)
             else:
                 step_coord = np.array([0.0, 0.0, 0.0])
             

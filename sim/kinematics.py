@@ -9,10 +9,7 @@ from collections import OrderedDict
 
 
 class Kinematics:
-    def __init__(self, frame_parameters, linked_leg_parameters):
-
-        self.linked_leg_parameters = linked_leg_parameters
-
+    def __init__(self, frame_parameters):
 
         self.com_offset = frame_parameters['com_offset']
 
@@ -38,46 +35,23 @@ class Kinematics:
         # Body Height
         self.height = frame_parameters['height']
 
-        
-
-        # Dictionary to store Hip and Foot Transforms
-
-        # Transform of Hip relative to world frame
-        # With Body Centroid also in world frame
+        # Rotation from world frame to body frame      
         Rwb = np.eye(3)
-        self.WorldToHip = OrderedDict()
 
-        self.ph_FL = np.array([self.hip_x / 2.0, self.hip_y / 2.0, 0])
-        self.WorldToHip["FL"] = RpToTrans(Rwb, self.ph_FL)
+        # Transform of Hip relative to world frame with body Centroid also in world frame     
+        self.WorldToHip = OrderedDict()       
+        self.WorldToHip["FL"] = RpToTrans(Rwb, np.array([self.hip_x / 2.0, self.hip_y / 2.0, 0]))     
+        self.WorldToHip["FR"] = RpToTrans(Rwb, np.array([self.hip_x / 2.0, -self.hip_y / 2.0, 0]))     
+        self.WorldToHip["BL"] = RpToTrans(Rwb, np.array([-self.hip_x / 2.0, self.hip_y / 2.0, 0]))     
+        self.WorldToHip["BR"] = RpToTrans(Rwb, np.array([-self.hip_x / 2.0, -self.hip_y / 2.0, 0]))
 
-        self.ph_FR = np.array([self.hip_x / 2.0, -self.hip_y / 2.0, 0])
-        self.WorldToHip["FR"] = RpToTrans(Rwb, self.ph_FR)
-
-        self.ph_BL = np.array([-self.hip_x / 2.0, self.hip_y / 2.0, 0])
-        self.WorldToHip["BL"] = RpToTrans(Rwb, self.ph_BL)
-
-        self.ph_BR = np.array([-self.hip_x / 2.0, -self.hip_y / 2.0, 0])
-        self.WorldToHip["BR"] = RpToTrans(Rwb, self.ph_BR)
-
-        # Transform of Foot relative to world frame
-        # With Body Centroid also in world frame
+        # Transform of Foot relative to world frame with body Centroid also in world frame
         self.WorldToFoot = OrderedDict()
+        self.WorldToFoot["FL"] = RpToTrans(Rwb, np.array([self.foot_x / 2.0, self.foot_y / 2.0, -self.height]))
+        self.WorldToFoot["FR"] = RpToTrans(Rwb, np.array([self.foot_x / 2.0, -self.foot_y / 2.0, -self.height]))
+        self.WorldToFoot["BL"] = RpToTrans(Rwb, np.array([-self.foot_x / 2.0, self.foot_y / 2.0, -self.height]))
+        self.WorldToFoot["BR"] = RpToTrans(Rwb, np.array([-self.foot_x / 2.0, -self.foot_y / 2.0, -self.height]))
 
-        self.pf_FL = np.array(
-            [self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["FL"] = RpToTrans(Rwb, self.pf_FL)
-
-        self.pf_FR = np.array(
-            [self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["FR"] = RpToTrans(Rwb, self.pf_FR)
-
-        self.pf_BL = np.array(
-            [-self.foot_x / 2.0, self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["BL"] = RpToTrans(Rwb, self.pf_BL)
-
-        self.pf_BR = np.array(
-            [-self.foot_x / 2.0, -self.foot_y / 2.0, -self.height])
-        self.WorldToFoot["BR"] = RpToTrans(Rwb, self.pf_BR)
 
     def _hip_to_foot(self, orn, pos, T_bf):
         """
@@ -89,7 +63,7 @@ class Kinematics:
         :param orn: A 3x1 np.array([]) of Roll, Pitch, Yaw angles
         :param pos: A 3x1 np.array([]) of X, Y, Z coordinates
         :param T_bf: Dictionary of desired body-to-foot Transforms.
-        :return: Hip To Foot Vector for each of Spot's Legs.
+        :return: Hip To Foot Vector for each leg.
         """
 
         # only get rotation component
@@ -176,23 +150,22 @@ class Kinematics:
             self.lower_leg_length * np.sin(lower_leg_angle),
             self.upper_leg_length + self.lower_leg_length * np.cos(lower_leg_angle))
    
-        joint_angles = np.array(
-            [-shoulder_angle, upper_leg_angle, lower_leg_angle])
+        joint_angles = np.array([-shoulder_angle, upper_leg_angle, lower_leg_angle])
 
         return joint_angles
 
     def inverse_kinematics(self, orn, pos, T_bf):
         """
         Uses HipToFoot() to convert a desired position
-        and orientation wrt Spot's home position into a
-        Hip To Foot Vector, which is fed into the LegIK solver.
+        and orientation into a Hip To Foot Vector, 
+        which is fed into the LegIK solver.
 
         Finally, the resultant joint angles are returned
         from the LegIK solver for each leg.
 
-        :param orn: A 3x1 np.array([]) with Spot's Roll, Pitch, Yaw angles
-        :param pos: A 3x1 np.array([]) with Spot's X, Y, Z coordinates
-        :param T_bf: Dictionary of desired body-to-foot Transforms.
+        :param orn: A 3x1 np.array([]) with roll, pitch, yaw angles
+        :param pos: A 3x1 np.array([]) with X, Y, Z coordinates
+        :param T_bf: Dictionary of desired body-to-foot transforms.
         :return: Joint angles for each joint.
         """
 
@@ -202,7 +175,7 @@ class Kinematics:
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
 
-        # Steps 1 and 2 of pipeline here110
+        # Steps 1 and 2 of pipeline
         HipToFoot = self._hip_to_foot(orn, pos, T_bf)
 
         for i, (key, p_hf) in enumerate(HipToFoot.items()):
@@ -210,85 +183,3 @@ class Kinematics:
             joint_angles[i, :] = self._solve_joint_angles(p_hf, key)
 
         return joint_angles.flatten()
-
-    def get_joint_angles_linked_legs(self, joint_angles):
-        joint_angles_linked_leg = np.empty(12)
-
-        # Convert joint angles into joint angles for linked legs
-        for i in range(12):
-            if i % 3 == 0:  # Hip
-                joint_angles_linked_leg[i] = joint_angles[i]
-            if i % 3 == 1:  # Upper leg
-                joint_angles_linked_leg[i] = joint_angles[i]
-            if i % 3 == 2:  # Lower leg
-                # convert joint angles into linked leg kinematics orientation
-                upper_leg_angle = joint_angles[i - 1] - np.pi/2              
-                lower_leg_angle = np.pi - joint_angles[i]
-                
-                """
-                # Lower leg servo origin.
-                Ax = -21
-                Ay = -20
-
-                # Upper leg servo crank arm origin.
-                Dx = 0
-                Dy = 0
-
-                # Link lengths
-              
-                L2 = 23
-                L3 = 31
-                L4 = 24
-                L5 = 28
-                L6 = 29
-                L7 = 105
-                L8 = 100
-                L9 = 23
-                
-                """
-                Ax = self.linked_leg_parameters['A']['x'] 
-                Ay = self.linked_leg_parameters['A']['y']    
-                Dx = self.linked_leg_parameters['D']['x'] 
-                Dy = self.linked_leg_parameters['D']['y'] 
-                L2 = self.linked_leg_parameters['L2']
-                L3 = self.linked_leg_parameters['L3']       
-                L4 = self.linked_leg_parameters['L4']
-                L5 = self.linked_leg_parameters['L5']      
-                L6 = self.linked_leg_parameters['L6'] 
-                L7 = self.linked_leg_parameters['L7']   
-                L8 = self.linked_leg_parameters['L8']
-                L9 = self.linked_leg_parameters['L9']
-                
-                L1 = np.sqrt(np.square(Dx - Ax) + np.square(Dy - Ay))
-                theta1 = np.arcsin((Dy - Ay) / L1)
-                beta2 = lower_leg_angle
-                theta4 = upper_leg_angle
-                beta3 = np.pi - beta2
-                DF = np.sqrt(np.square(L8) + np.square(L9) -
-                             2 * L8 * L9 * np.cos(beta3))
-                beta5 = np.arccos(
-                    (np.square(DF) + np.square(L8) - np.square(L9)) / (2 * DF * L8))
-
-                # TODO: add this check in the main kinematics calculaions
-                # to set angle limits that reflect in the simulation.
-                beta6_vars = (np.square(L6) + np.square(DF) -
-                              np.square(L7)) / (2 * L6 * DF) 
-                beta6 = np.arccos(np.clip(beta6_vars, -1.0, 1.0))
-
-                theta5 = beta6 + beta5 + theta4
-                beta4 = np.arccos(
-                    (np.square(L4) + np.square(L6) - np.square(L5)) / (2 * L4 * L6))
-                theta3 = beta4 + theta5
-                beta9 = np.pi - theta3 + theta1
-                AC = np.sqrt(np.square(L1) + np.square(L4) -
-                             2 * L1 * L4 * np.cos(beta9))
-                beta7 = np.arccos(
-                    (np.square(L2) + np.square(AC) - np.square(L3)) / (2 * L2 * AC))
-                beta8 = np.arccos(
-                    (np.square(AC) + np.square(L1) - np.square(L4)) / (2 * AC * L1))
-                theta2 = theta1 + beta8 + beta7
-
-                # rotate final angle into a the servo calibration orientation
-                joint_angles_linked_leg[i] = theta2 - np.pi / 2
-                      
-        return joint_angles_linked_leg

@@ -6,43 +6,22 @@ import yaml
 import mujoco
 import mujoco.viewer
 import numpy as np
+import Gamepad
 
-
-import quad_commander
-
-
-from joystick_interpreter import JoystickInterpreter
-from motion_inputs import MotionInputs
-
-
-motion_parameters_filepath = "./parameters/motion_parameters.yaml"
-if os.path.exists(motion_parameters_filepath):
-    with open(motion_parameters_filepath, 'r') as stream:
-        motion_parameters = yaml.safe_load(stream)
-else:
-    print(f"[SYSTEM] parameter file not found! {motion_parameters_filepath}")
-    exit(1)
-
-joystick_interpreter = JoystickInterpreter(motion_parameters)
-motion_inputs = MotionInputs()
-
-   
+from Commander import Commander
+#from MotionInputs import MotionInputs
       
 
-system = quad_commander.System()
+commander = Commander()
 
 np.set_printoptions(suppress=True)
 
 model = mujoco.MjModel.from_xml_path('../model/scene.xml')
 data = mujoco.MjData(model)
 
-
-angle = 0
-
-ctrl= np.array(model.keyframe("standing").ctrl)
+ctrl = np.array(model.keyframe("standing").ctrl)
 
 with mujoco.viewer.launch_passive(model, data) as viewer:
-
 
   start = time.time()
   while viewer.is_running() and time.time() - start < 30:
@@ -55,6 +34,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     # Example modification of a viewer option: toggle contact points every two seconds.
     #with viewer.lock():
     #  viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = int(d.time % 2)
+
+
+    commander.tick()
+    joint_angles = commander.get_joint_angles()
 
  
     joint_names = [
@@ -70,25 +53,24 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     current_joint_positions = np.array([data.qpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, jn)] for jn in joint_names])
     print(current_joint_positions)
 
-    target_positions = [angle, angle, angle]
+    """   target_positions = [angle, angle, angle]
 
     for idx, joint_name in enumerate(joint_names):
         joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
-        data.ctrl[joint_id] = target_positions[idx]
+        data.ctrl[joint_id] = target_positions[idx] """
+
+    
 
     for i in range(12):
-        data.ctrl[i] = ctrl[i]
+        data.ctrl[i] = joint_angles[i]
 
-    motion_inputs = joystick_interpreter.get_motion_inputs(axes, buttons)
 
-    system.tick()
+
+    commander.tick()
 
 
     mujoco.mj_step(model, data)
-
-    angle += 0.001
-
-    # Pick up changes to the physics state, apply perturbations, update options from GUI.
+   
     viewer.sync()
 
     # Rudimentary time keeping, will drift relative to wall clock.
@@ -98,3 +80,6 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
       time.sleep(time_until_next_step)
 
 
+
+
+commander.shutdown()
