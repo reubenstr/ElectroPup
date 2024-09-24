@@ -1,31 +1,38 @@
 #!/usr/bin/env python3
 
+"""
+    Create a 3D wire plot of a quadruped body and legs.
+    Control the quadruped rotation and translation using a gamepad.
+    
+    Used to validate body frame, inverse kinematics, and pose input (gaits) prior to applying code to physicas simulations.
+"""
+
 import os
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d.axes3d as p3
+#import mpl_toolkits.mplot3d.axes3d as p3
 from math import pi
 from time import sleep
 
 # Local source.
-from StickFigure import StickFigure
+
+from model.body import Body
 from GamepadInterface import GamepadInterface
+from FrameParameters import FrameParameters
+
 
 motion_parameters_filepath = "./parameters/motion_parameters.yaml"
 frame_parameters_filepath = "./parameters/frame_parameters.yaml"       
     
+
+frame_parameters = FrameParameters(frame_parameters_filepath)
+
 if os.path.exists(motion_parameters_filepath):
     with open(motion_parameters_filepath, 'r') as stream:
         motion_parameters = yaml.safe_load(stream)
 else:
     print(f"[Commander] parameter file not found! {motion_parameters_filepath}")
-
-if os.path.exists(frame_parameters_filepath):
-    with open(frame_parameters_filepath, 'r') as stream:
-        frame_parameters = yaml.safe_load(stream)
-else:
-    print(f"[Commander] parameter file not found! {frame_parameters_filepath}")
 
 
 
@@ -52,26 +59,30 @@ ax.set_zlim([-0.2, 0.2])
 # Set the starting view of the plot
 ax.view_init(elev=-45,azim=45, roll=45)
 
-sf = StickFigure(x=0,y=0.14,z=0, theta=00*d2r)
+
+
+
+
+body = Body(frame_parameters=frame_parameters)
 
 # Define absolute position for the legs
-l = sf.body_length
-w = sf.body_width
-l1 = sf.hip_length
-l2 = sf.upper_leg_length
-l3 = sf.lower_leg_length
+l = body.body_length
+w = body.body_width
+l1 = body.hip_length
+l2 = body.upper_leg_length
+l3 = body.lower_leg_length
 desired_p4_points = np.array([ [-l/2,   0,  w/2 + l1],
                                [ l/2 ,  0,  w/2 + l1],
                                [ l/2 ,  0, -w/2 - l1],
                                [-l/2 ,  0, -w/2 - l1] ])
 
-sf.set_absolute_foot_coordinates(desired_p4_points)
+body.set_absolute_foot_coordinates(desired_p4_points)
 
 # Set a pitch angle
-sf.set_body_angles(theta=00*d2r)
+body.set_body_angles(theta=00*d2r)
 
 # Get leg coordinates
-coords = sf.get_leg_coordinates()
+coords = body.get_leg_coordinates()
 
 # Initialize empty list top hold line objects
 lines = []
@@ -114,10 +125,10 @@ while (True):
     motion_inputs.y_translation = motion_inputs.z_translation
     motion_inputs.z_translation = swap
 
-    sf.set_body_transform_inputs(x=motion_inputs.x_translation,y=motion_inputs.y_translation,z=motion_inputs.z_translation, phi=motion_inputs.roll, theta=motion_inputs.pitch, psi=motion_inputs.yaw)
+    body.set_body_transform_inputs(x=motion_inputs.x_translation,y=motion_inputs.y_translation,z=motion_inputs.z_translation, phi=motion_inputs.roll, theta=motion_inputs.pitch, psi=motion_inputs.yaw)
 
 
-    coords = sf.get_leg_coordinates()
+    coords = body.get_leg_coordinates()
 
     # Construct the body of 4 lines from the first point of each leg (the four corners of the body)
     for line_index in range(4):

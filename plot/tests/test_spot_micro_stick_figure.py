@@ -1,9 +1,9 @@
 '''Tests the spot micro stick figure and spot micro leg classes'''
 
 import unittest
-from ..StickFigure import Leg
-from ..utilities import kinematics as smk
-from ..utilities import transformations
+from ..body import Leg
+from ..kinematics import kinematics as kinematics
+from ..kinematics import transformations
 import numpy as np
 from math import cos, sin, pi
 
@@ -28,7 +28,7 @@ class TestSpotMicroLeg(unittest.TestCase):
 
         # Right front leg homogeneous transform. For test, create with 0 width and length, so
         # leg start position should be at origin aligned with global coordinate frame
-        ht_rf = smk.t_rightfront(body_ht,0,0)
+        ht_rf = kinematics.t_rightfront(body_ht,0,0)
 
         leg = Leg(q1,q2,q3,l1,l2,l3,ht_rf,leg12=True)
 
