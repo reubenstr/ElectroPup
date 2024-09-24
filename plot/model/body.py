@@ -49,13 +49,6 @@ class Body(object):
     def __init__(self, frame_parameters: FrameParameters):   
         '''Constructor'''
 
-        """ self.hip_length = 0.055
-        self.upper_leg_length = 0.1075
-        self.lower_leg_length = 0.130
-        self.body_width = 0.078
-        self.body_length = 0.186 """
-
-
         self.hip_length = frame_parameters.hip_length
         self.upper_leg_length = frame_parameters.upper_leg_length
         self.lower_leg_length = frame_parameters.lower_leg_length
@@ -85,7 +78,7 @@ class Body(object):
         self.lb_leg_angles   = [0,30*d2r,-60*d2r]
 
         # Create a dictionary to hold the legs object.
-        # First initialize to empty dict
+        # First initialize to empty dict with feet directly below joints.
         self.legs = {}
 
         self.legs['leg_rightback'] =     Leg(self.rb_leg_angles[0],self.rb_leg_angles[1],self.rb_leg_angles[2],
