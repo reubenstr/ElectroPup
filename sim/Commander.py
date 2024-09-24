@@ -3,11 +3,16 @@
 import os
 import yaml
 import math
+import copy
 from time import sleep
+import numpy as np
 
 from kinematics import Kinematics
 from bezier_gait import BezierGait
 from GamepadInterface import GamepadInterface
+
+import spok
+from kinematic_model import robotKinematics
 
 ###############################################################################
 # Commander
@@ -23,6 +28,9 @@ class Commander():
 
         self.gamepad_interface = GamepadInterface(self.motion_parameters)
         self.gamepad_interface.connect_gamepad()
+
+        self.sm = spok.SpotModel()
+        self.rk = robotKinematics()
 
         self.joint_angles = None
 
@@ -66,15 +74,113 @@ class Commander():
         # yaw correction TODO  
 
         # Get foot positions.       
-        self.T_bf = self.bezier_gait.GenerateTrajectory(
-            step_length, lateral_fraction, yaw_rate, step_velocity, self.kinematics.WorldToFoot, clearance_height, penetration_depth, contacts)
+        #self.T_bf = self.bezier_gait.GenerateTrajectory(
+        #    step_length, lateral_fraction, yaw_rate, step_velocity, self.kinematics.WorldToFoot, clearance_height, penetration_depth, contacts)
 
-        # print(self.T_bf)
+        np.set_printoptions(formatter=None)
 
-        # print(f"[POS] {pos}")
+        self.T_bf = copy.deepcopy(self.kinematics.WorldToFoot)
+        #orn = np.array([0, 0, 0])
+        #pos = np.array([0, 0, -0.00])
 
-        self.joint_angles = self.kinematics.inverse_kinematics(orn, pos, self.T_bf)    
-      
+        print(f"[ORN] {orn}")
+        print(f"[POS] {pos}")      
+
+        self.joint_angles = self.kinematics.inverse_kinematics(orn, pos, self.T_bf) 
+        #self.joint_angles = self.sm.IK(orn, pos, self.T_bf)
+
+        height = 0.140
+        foot_width = 0.2605
+        foot_length = 0.338
+        bodytoFeet0 = np.matrix([[ foot_length , -foot_width , -height],
+                                 [foot_length ,  foot_width , -height],
+                                 [-foot_length , -foot_width , -height],
+                                 [-foot_length ,  foot_width , -height]])
+        #self.joint_angles = self.rk.solve(orn, pos, bodytoFeet0)
+
+        ja = [math.degrees(radian) for radian in self.joint_angles]
+       
+        print(f"[JA][FL] {ja[0]:3.2f}, {ja[1]:3.2f}, {ja[2]:3.2f}")
+        print(f"[JA][FR] {ja[3]:3.2f}, {ja[4]:3.2f}, {ja[5]:3.2f}")  
+        print(f"[JA][BL] {ja[6]:3.2f}, {ja[7]:3.2f}, {ja[8]:3.2f}")  
+        print(f"[JA][BR] {ja[9]:3.2f}, {ja[10]:3.2f}, {ja[11]:3.2f}")    
+
+        """    # Manual stylized pose to verify model and joint angles correct correlation.
+        # FL
+        self.joint_angles[0] = math.radians(-10)
+        self.joint_angles[1] = math.radians(-45)
+        self.joint_angles[2] = math.radians(-90)
+        #FR
+        self.joint_angles[3] = math.radians(10)
+        self.joint_angles[4] = math.radians(45)
+        self.joint_angles[5] = math.radians(90)
+        #BL
+        self.joint_angles[6] = math.radians(10)
+        self.joint_angles[7] = math.radians(-45)
+        self.joint_angles[8] = math.radians(-90)
+        #BR
+        self.joint_angles[9] = math.radians(-10)
+        self.joint_angles[10] = math.radians(45)
+        self.joint_angles[11] = math.radians(90)  """
+
+
+        """ # SPOT VERSION 
+        # FL
+        self.joint_angles[0] = self.joint_angles[0]
+        self.joint_angles[1] = self.joint_angles[1]
+        self.joint_angles[2] = self.joint_angles[2] 
+        #FR
+        self.joint_angles[3] = -self.joint_angles[3]
+        self.joint_angles[4] = -self.joint_angles[4]  - math.radians(180)
+        self.joint_angles[5] = -self.joint_angles[5] + math.radians(0)
+        #BL
+        self.joint_angles[6] = self.joint_angles[6]
+        self.joint_angles[7] = self.joint_angles[7]  
+        self.joint_angles[8] = self.joint_angles[8] 
+        #BR
+        self.joint_angles[9] = -self.joint_angles[9]
+        self.joint_angles[10] = -self.joint_angles[10]  - math.radians(180)
+        self.joint_angles[11] = -self.joint_angles[11] + math.radians(0) """
+        
+
+        """ # MY VERSION """
+        # FL
+        self.joint_angles[0] = self.joint_angles[0]
+        self.joint_angles[1] = self.joint_angles[1]
+        self.joint_angles[2] = self.joint_angles[2] - math.radians(180)
+        #FR
+        self.joint_angles[3] = self.joint_angles[3]
+        self.joint_angles[4] = -self.joint_angles[4] 
+        self.joint_angles[5] = -self.joint_angles[5] - math.radians(180)
+        #BL
+        self.joint_angles[6] = self.joint_angles[6]
+        self.joint_angles[7] = self.joint_angles[7]  
+        self.joint_angles[8] = self.joint_angles[8] - math.radians(180)
+        #BR
+        self.joint_angles[9] = self.joint_angles[9]
+        self.joint_angles[10] = -self.joint_angles[10] 
+        self.joint_angles[11] = -self.joint_angles[11] - math.radians(180)  
+        
+
+        """ 
+        # UGLY VERSION
+        # FL
+        self.joint_angles[0] = self.joint_angles[0]
+        self.joint_angles[1] = self.joint_angles[1] - math.radians(90)
+        self.joint_angles[2] = self.joint_angles[2] 
+        #FR
+        self.joint_angles[3] = self.joint_angles[3]
+        self.joint_angles[4] = -self.joint_angles[4] + math.radians(90)
+        self.joint_angles[5] = -self.joint_angles[5]
+        #BL
+        self.joint_angles[6] = self.joint_angles[6]
+        self.joint_angles[7] = self.joint_angles[7]   - math.radians(90)
+        self.joint_angles[8] = self.joint_angles[8] 
+        #BR
+        self.joint_angles[9] = self.joint_angles[9]
+        self.joint_angles[10] = -self.joint_angles[10] + math.radians(90)
+        self.joint_angles[11] = -self.joint_angles[11]  """ 
+                  
         # TODO: apply angles to motors
 
     def get_joint_angles(self):

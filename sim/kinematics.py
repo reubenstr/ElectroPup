@@ -91,6 +91,14 @@ class Kinematics:
 
             hip_to_foot_vectors[key] = p_hf
 
+             # TEMP
+            """ if key == 'FL':
+                print(f"[T_bf]['FL'] =>\n{T_bf['FL']}")
+                print(f"[T_wb]['FL'] =>\n{T_wb}")
+                print(f"[T_wh]['FL'] =>\n{T_wh}")
+                print(f"[T_bh]['FL'] =>\n{T_bh}")
+                print(f"[p_hf]['FL'] =>\n{p_hf}") """
+
         return hip_to_foot_vectors
 
     def _get_domain(self, x, y, z):
@@ -122,38 +130,37 @@ class Kinematics:
 
         # Compensate for physical joint orientation
         if leg_key == "FR" or leg_key == "BR":
+            upper_leg_sign = -1
             lower_leg_sign = 1
             shoulder_direction_offset = -1
         elif leg_key == "FL" or leg_key == "BL":
+            upper_leg_sign = 1
             lower_leg_sign = -1
             shoulder_direction_offset = 1
 
-        lower_leg_angle = -np.arctan2(lower_leg_sign * np.sqrt(1 - domain**2), domain)
+        lower_leg_angle = np.arctan2(np.sqrt(1 - domain**2), domain)
+        #lower_leg_angle = -np.arctan2(lower_leg_sign * np.sqrt(1 - domain**2), domain)
 
         sqrt_component = y**2 + z**2 - self.shoulder_length**2
 
         if sqrt_component < 0.0:
-            print(f"[IK] sqrt_component < 0")
+            #print(f"[IK] sqrt_component < 0")
             sqrt_component = 0.0
         
         
+        shoulder_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component), -self.shoulder_length)
+        #shoulder_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component), shoulder_direction_offset * self.shoulder_length)
 
-        shoulder_angle = -np.arctan2(z, y) - np.arctan2(np.sqrt(sqrt_component), shoulder_direction_offset * self.shoulder_length)
-
-        upper_leg_angle = np.arctan2(-x, np.sqrt(sqrt_component)) - np.arctan2(self.lower_leg_length * np.sin(lower_leg_angle), self.upper_leg_length + self.lower_leg_length * np.cos(lower_leg_angle))
+        upper_leg_angle = np.arctan2(x, np.sqrt(sqrt_component)) - np.arctan2(self.lower_leg_length * np.sin(lower_leg_angle), self.upper_leg_length + self.lower_leg_length * np.cos(lower_leg_angle))
    
-
-        # TEMP CONVERSION TEST
-        #lower_leg_angle = lower_leg_angle + math.radians(180)
-       
-
-
-        if leg_key == "FR" or leg_key == "BR":
-            upper_leg_angle = upper_leg_angle - math.radians(90)
+        
+ 
+        """  if leg_key == "FR" or leg_key == "BR":
+            upper_leg_angle = upper_leg_angle * upper_leg_sign
+            lower_leg_angle = lower_leg_angle + math.radians(180)                       
         elif leg_key == "FL" or leg_key == "BL":
-            upper_leg_angle = upper_leg_angle + math.radians(90)
-
-
+            lower_leg_angle = lower_leg_angle - math.radians(180) """
+           
         joint_angles = np.array([shoulder_angle, upper_leg_angle, lower_leg_angle])
 
         return joint_angles
@@ -178,25 +185,20 @@ class Kinematics:
 
         # 4 legs, 3 joints per leg
         joint_angles = np.zeros((4, 3))
-  
-        print(f"[orn] {orn[0:3]}")
-        print(f"[pos] {pos[0:3]}")
-
-        #T_bf['FL'][2][3] = 0.140
-
+   
         # Steps 1 and 2 of pipeline
         hip_to_foot_vectors = self._hip_to_foot(orn, pos, T_bf)
-       
-
-        
-        np.set_printoptions(formatter={'all': lambda x: "{:5.5g}".format(x)}) 
-        #print(f"[T_bf] \n{T_bf['FL']}")
-        #print(f"[hip_to_foot] => {hip_to_foot_vectors['FL']}")
-
+           
         for i, (key, p_hf) in enumerate(hip_to_foot_vectors.items()):
             # Step 3, compute joint angles from T_hf for each leg
+                       
+            np.set_printoptions(formatter={'float': '{: 3.0f}'.format})
+            print(f"[p_hf][{key}] {p_hf*1000}")
+            
             joint_angles[i, :] = self._solve_joint_angles(p_hf, key)
 
-            
-
+        #print(self.shoulder_length)
+        #print(self.upper_leg_length)
+        #print(self.lower_leg_length)
+       
         return joint_angles.flatten()

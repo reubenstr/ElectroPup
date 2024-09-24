@@ -22,11 +22,11 @@
     </default>
    
     <default class="knee">
-      <joint range="-180 180" axis="0 0 1"/>
+      <joint range="-180 180"/>
     </default>
    
     <default class="multi_mode_controlled_actuator">
-      <general biastype="affine" gainprm="40 0 0 0 0 0 0 0 0 0" biasprm="0 -40 -0.65 0 0 0 0 0 0 0" ctrlrange="-3.1415 3.1415"/>
+      <general biastype="affine" gainprm="35 0 0 0 0 0 0 0 0 0" biasprm="0 -35 -0.65 0 0 0 0 0 0 0" ctrlrange="-10 10"/>
       <!-- <general biastype="affine" gainprm="35 0 0 0 0 0 0 0 0 0" biasprm="0 -35 -0.65 0 0 0 0 0 0 0" ctrlrange="-2 2"/> -->
     </default>
    
@@ -61,23 +61,24 @@
     <body name="chassis">
       <freejoint/>
       <camera name="track" pos="0.846 -1.465 0.916" xyaxes="0.866 0.500 0.000 -0.171 0.296 0.940" mode="trackcom"/>
-      <inertial pos="0 0 0" quat="0.000990813 0.68703 0.000216603 0.726628" mass="4.48878" diaginertia="0.071033 0.0619567 0.0192519"/>     
-      <geom pos="0 0 0" rgba="0 0 1 1" mesh="body"/>
+     
+      <inertial pos="0 0 0"  mass="4.48878" diaginertia="0.071033 0.0619567 0.0192519"/>     
+      <!--<geom pos="0 0 0.5" rgba="0 0 1 1" mesh="body"/>-->
+      <geom pos="0 0 0." rgba="0 0 1 1" mesh="body"/>
     
-
       <body name="front_left" pos="0.075 0.0075 0.5" quat="1 0 0 0">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="front_left_abduction" axis="0 1 0"/>
+        <joint class="abductor" name="front_left_abduction" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
         <body name="front_left_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_front" name="front_left_hip" axis="-1 0 0"/>
+          <joint class="hip_front" name="front_left_hip" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="front_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="front_left_knee"  axis="-1 0 0"/>
+            <joint class="knee" name="front_left_knee"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -88,17 +89,17 @@
 
       <body name="front_right" pos="-0.075 0.0075 0.5" quat="0 0 1 0">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="front_right_abduction" axis="0 1 0"/>
+        <joint class="abductor" name="front_right_abduction" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
         <body name="front_right_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_front" name="front_right_hip" axis="-1 0 0"/>
+          <joint class="hip_front" name="front_right_hip" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="front_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="front_right_knee"  axis="-1 0 0"/>
+            <joint class="knee" name="front_right_knee"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -111,17 +112,17 @@
 
       <body name="rear_left" pos="0.075 0.263 0.5" quat="0 1 0 0">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="abduction_rear_left" axis="0 1 0"/>
+        <joint class="abductor" name="abduction_rear_left" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
         <body name="rear_left_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_left" axis="-1 0 0"/>
+          <joint class="hip_rear" name="hip_rear_left" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="rear_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_left"  axis="-1 0 0"/>
+            <joint class="knee" name="knee_rear_left"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -132,17 +133,17 @@
 
       <body name="rear_right" pos="-0.075 0.263 0.5" quat="0 0 0 1">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="abduction_rear_right" axis="0 1 0"/>
+        <joint class="abductor" name="abduction_rear_right" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
         <body name="rear_right_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_right" axis="-1 0 0"/>
+          <joint class="hip_rear" name="hip_rear_right" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
           <body name="rear_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_right"  axis="-1 0 0"/>
+            <joint class="knee" name="knee_rear_right"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>

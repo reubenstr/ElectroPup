@@ -59,35 +59,30 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     for idx, joint_name in enumerate(joint_names):
         joint_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint_name)
         data.ctrl[joint_id] = target_positions[idx] """
+ 
+    j = np.zeros(12)
 
-    """ # Manual pose test
-    # FL
-    joint_angles[0] = math.radians(0)
-    joint_angles[1] = math.radians(-45)
-    joint_angles[2] = math.radians(-90)
-    #FR
-    joint_angles[3] = math.radians(0)
-    joint_angles[4] = math.radians(-45)
-    joint_angles[5] = math.radians(-90)
-    #BL
-    joint_angles[6] = math.radians(0)
-    joint_angles[7] = math.radians(-45)
-    joint_angles[8] = math.radians(-90)
-    #BR
-    joint_angles[9] = math.radians(0)
-    joint_angles[10] = math.radians(-45)
-    joint_angles[11] = math.radians(-90) """
+    """ j[0] = joint_angles[0]
+    j[1] = joint_angles[1]
+    j[2] = joint_angles[2]
+    j[3] = joint_angles[6]
+    j[4] = joint_angles[7]
+    j[5] = joint_angles[8]
+    j[6] = joint_angles[3]
+    j[7] = joint_angles[4]
+    j[8] = joint_angles[5]
+    j[9] = joint_angles[9]
+    j[10] = joint_angles[10]
+    j[11] = joint_angles[11] """
 
     ja = [math.degrees(radian) for radian in joint_angles]
     ja = [f"{num:.2f}" for num in ja]
     print(f"[JA] {ja[:]}")
 
-    for i in range(12):
+    for i in range(12):     
         data.ctrl[i] = joint_angles[i]
 
-
     commander.tick()
-
 
     mujoco.mj_step(model, data)
    
