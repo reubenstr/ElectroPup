@@ -14,6 +14,14 @@ class MotionState(Enum):
 class MotionInputs:
 
     motion_state = MotionState.POSE
+
+
+    roll = 0
+    pitch = 0
+    yaw = 0
+    x_translation = 0
+    y_translation = 0
+    z_translation = 0
     
     # X, Y, and Z coordinate     
     pos: np.ndarray = np.array([0.0, 0.0, 0.0])

@@ -65,20 +65,18 @@ class GamepadInterface:
         #axes[AxesMap.LEFT_Y.value] = -axes[AxesMap.LEFT_Y.value]
         #axes[AxesMap.RIGHT_Y.value] = -axes[AxesMap.RIGHT_Y.value]
 
-
         # pos: X, Y, Z coordinates
         # orn: Roll, Pitch, Yaw angles
         if self.motion_inputs.motion_state == MotionState.POSE:                      
-            self.motion_inputs.orn[0] = self.map(
+            self.motion_inputs.roll = self.map(
                 self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters['orn_x_min'], self.motion_parameters['orn_x_max'])
-            self.motion_inputs.orn[1] = self.map(
+            self.motion_inputs.pitch = self.map(
               - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters['orn_y_min'], self.motion_parameters['orn_y_max'])
-            self.motion_inputs.orn[2] = self.map(
+            self.motion_inputs.yaw = self.map(
                 self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters['orn_z_min'], self.motion_parameters['orn_z_max'])
-            self.motion_inputs.pos[2] = self.map(
+            self.motion_inputs.z_translation = self.map(
              - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters['pos_z_min'], self.motion_parameters['pos_z_max'])
-           
-           
+                      
         elif self.motion_inputs.motion_state == MotionState.MOTION:
             #self.motion_inputs.yaw_rate = self.map(
             #    axes[LEFT_X], -1, 1, self.motion_parameters['yaw_rate_min'], self.motion_parameters['yaw_rate_max'])
@@ -86,28 +84,11 @@ class GamepadInterface:
               - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters['step_length_min'], self.motion_parameters['step_length_max'])          
             self.motion_inputs.yaw_rate = self.map(
               self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters['yaw_rate_min'], self.motion_parameters['yaw_rate_max'])            
-            self.motion_inputs.pos[2] = self.map(
+            self.motion_inputs.z_translation = self.map(
               self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters['pos_z_min'], self.motion_parameters['pos_z_max'])
-
-        
-        # TEMP FOR INITIAL MODEL SETUP
-        #self.motion_inputs.orn[0] = 0
-        #self.motion_inputs.orn[1] = 0
-        #self.motion_inputs.orn[2] = 0
-        
-        #self.motion_inputs.pos[0] = 0
-        #self.motion_inputs.pos[1] = 0
-        #self.motion_inputs.pos[2] = 0
-
-        #self.motion_inputs.pos[2]  = - self.motion_inputs.pos[2] 
-
-        #self.motion_inputs.pos[0] = self.map(- self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters['orn_y_min'], self.motion_parameters['orn_y_max'])
-
-        
-        
+                   
         return copy.deepcopy(self.motion_inputs)
-                        
-        
+
     def disconnect(self):          
         self.gamepad.disconnect()    
 

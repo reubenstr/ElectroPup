@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 
+import os
+import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
-import matplotlib.animation as animation
 from math import pi
-from StickFigure import StickFigure
-
-import os
-import yaml
-from GamepadInterface import GamepadInterface
 from time import sleep
 
+# Local source.
+from StickFigure import StickFigure
+from GamepadInterface import GamepadInterface
 
 motion_parameters_filepath = "./parameters/motion_parameters.yaml"
 frame_parameters_filepath = "./parameters/frame_parameters.yaml"       
@@ -53,27 +52,26 @@ ax.set_zlim([-0.2, 0.2])
 # Set the starting view of the plot
 ax.view_init(elev=-45,azim=45, roll=45)
 
-# Instantiate spot micro stick figure obeject
-sm = StickFigure(x=0,y=0.14,z=0, theta=00*d2r)
+sf = StickFigure(x=0,y=0.14,z=0, theta=00*d2r)
 
 # Define absolute position for the legs
-l = sm.body_length
-w = sm.body_width
-l1 = sm.hip_length
-l2 = sm.upper_leg_length
-l3 = sm.lower_leg_length
+l = sf.body_length
+w = sf.body_width
+l1 = sf.hip_length
+l2 = sf.upper_leg_length
+l3 = sf.lower_leg_length
 desired_p4_points = np.array([ [-l/2,   0,  w/2 + l1],
                                [ l/2 ,  0,  w/2 + l1],
                                [ l/2 ,  0, -w/2 - l1],
                                [-l/2 ,  0, -w/2 - l1] ])
 
-sm.set_absolute_foot_coordinates(desired_p4_points)
+sf.set_absolute_foot_coordinates(desired_p4_points)
 
 # Set a pitch angle
-sm.set_body_angles(theta=00*d2r)
+sf.set_body_angles(theta=00*d2r)
 
 # Get leg coordinates
-coords = sm.get_leg_coordinates()
+coords = sf.get_leg_coordinates()
 
 # Initialize empty list top hold line objects
 lines = []
@@ -110,12 +108,16 @@ while (True):
 
     motion_inputs = gamepad_interface.get_motion_inputs()
 
-    roll = motion_inputs.orn[0]
-    pitch = motion_inputs.orn[1]
-    yaw = motion_inputs.orn[2]
+    ##sm.set_body_angles(phi=roll,theta=pitch,psi=yaw)
 
-    sm.set_body_angles(phi=roll,theta=pitch,psi=yaw)
-    coords = sm.get_leg_coordinates()
+    swap = motion_inputs.y_translation
+    motion_inputs.y_translation = motion_inputs.z_translation
+    motion_inputs.z_translation = swap
+
+    sf.set_body_transform_inputs(x=motion_inputs.x_translation,y=motion_inputs.y_translation,z=motion_inputs.z_translation, phi=motion_inputs.roll, theta=motion_inputs.pitch, psi=motion_inputs.yaw)
+
+
+    coords = sf.get_leg_coordinates()
 
     # Construct the body of 4 lines from the first point of each leg (the four corners of the body)
     for line_index in range(4):

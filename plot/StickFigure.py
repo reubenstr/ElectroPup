@@ -9,7 +9,7 @@ d2r = pi/180
 r2d = 180/pi
 
 class Leg(object):
-    '''Encapsulates a spot micro leg that consists of 3 links and 3 joint angles
+    '''Encapsulates a leg that consists of 3 links and 3 joint angles
     
     Attributes:
         _q1: Rotation angle in radians of hip joint
@@ -220,7 +220,7 @@ class StickFigure(object):
         self.lf_leg_angles   = [0,30*d2r,-60*d2r]
         self.lb_leg_angles   = [0,30*d2r,-60*d2r]
 
-        # Create a dictionary to hold the legs of this spot micro object.
+        # Create a dictionary to hold the legs object.
         # First initialize to empty dict
         self.legs = {}
 
@@ -324,6 +324,24 @@ class StickFigure(object):
 
         self.set_absolute_foot_coordinates(foot_coords_matrix)
 
+
+    def set_body_transform_inputs(self,x,y,z,phi,theta,psi):
+        '''Set the body translation and angles
+
+        Args:
+            x: translation along the x axis in meters
+            y: translation along the y axis in meters
+            z: translation along the z axis in meters
+            phi: roll angle in radians
+            theta: pitch angle in radians
+            psi: yaw angle in radians
+        Returns:
+            Nothing
+        '''
+        ht_body = transformations.homog_transform(phi, psi, theta, x,y,z)
+        self.set_absolute_body_pose(ht_body)
+
+    
     def set_body_angles(self,phi=0,theta=0,psi=0):
         '''Set a body angles without translation of the body
 
@@ -341,11 +359,6 @@ class StickFigure(object):
         ht_body = self.ht_body
 
         ht_body[0:3,0:3] = r_xyz
-
-        # TEMP
-        ht_body[0,3] = 0.10
-        ht_body[1,3] = 0.10
-        ht_body[2,3] = 0.10
 
         # Call method to set absolute body pose
         self.set_absolute_body_pose(ht_body)
