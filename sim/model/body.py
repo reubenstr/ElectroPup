@@ -35,17 +35,12 @@ class Body(object):
 
         ht_body: homogeneous transformation matrix of the body
 
-        rightback_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
-        rightfront_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
-        leftfront_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
-        leftback_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
-
-        leg_rightback
-        leg_rightfront
-        leg_leftfront
-        leg_leftback
-        
+        back_right_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
+        front_right_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
+        front_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
+        back_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
     """
+
     def __init__(self, frame_parameters: FrameParameters):   
         '''Constructor'''
 
@@ -72,45 +67,44 @@ class Body(object):
         self.ht_body = np.matmul(transformations.homog_transxyz(self.x,self.y,self.z), transformations.homog_rotxyz(self.phi,self.psi,self.theta))
         
         # Intialize all leg angles to 0, 30, 30 degrees
-        self.rb_leg_angles   = [0,-30*d2r,60*d2r]
-        self.rf_leg_angles   = [0,-30*d2r,60*d2r]
-        self.lf_leg_angles   = [0,30*d2r,-60*d2r]
-        self.lb_leg_angles   = [0,30*d2r,-60*d2r]
+        self.br_leg_angles   = [0,-30*d2r,60*d2r]
+        self.fr_leg_angles   = [0,-30*d2r,60*d2r]
+        self.fl_leg_angles   = [0,30*d2r,-60*d2r]
+        self.bl_leg_angles   = [0,30*d2r,-60*d2r]
 
         # Create a dictionary to hold the legs object.
         # First initialize to empty dict with feet directly below joints.
         self.legs = {}
 
-        self.legs['leg_rightback'] =     Leg(self.rb_leg_angles[0],self.rb_leg_angles[1],self.rb_leg_angles[2],
+        self.legs['back_right'] =     Leg(self.br_leg_angles[0],self.br_leg_angles[1],self.br_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
-                                                     kinematics.t_rightback(self.ht_body,self.body_length,self.body_width),leg12=True) 
+                                                     kinematics.t_back_right(self.ht_body,self.body_length,self.body_width),leg12=True) 
         
-        self.legs['leg_rightfront'] =   Leg(self.rf_leg_angles[0],self.rf_leg_angles[1],self.rf_leg_angles[2],
+        self.legs['front_right'] =   Leg(self.fr_leg_angles[0],self.fr_leg_angles[1],self.fr_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
-                                                     kinematics.t_rightfront(self.ht_body,self.body_length,self.body_width),leg12=True)
+                                                     kinematics.t_front_right(self.ht_body,self.body_length,self.body_width),leg12=True)
                                                   
-        self.legs['leg_leftfront'] =    Leg(self.lf_leg_angles[0],self.lf_leg_angles[1],self.lf_leg_angles[2],
+        self.legs['front_left'] =    Leg(self.fl_leg_angles[0],self.fl_leg_angles[1],self.fl_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
-                                                     kinematics.t_leftfront(self.ht_body,self.body_length,self.body_width),leg12=False)
+                                                     kinematics.t_front_left(self.ht_body,self.body_length,self.body_width),leg12=False)
 
-        self.legs['leg_leftback'] =     Leg(self.lb_leg_angles[0],self.lb_leg_angles[1],self.lb_leg_angles[2],
+        self.legs['back_left'] =     Leg(self.bl_leg_angles[0],self.bl_leg_angles[1],self.bl_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
-                                                     kinematics.t_leftback(self.ht_body,self.body_length,self.body_width),leg12=False) 
+                                                     kinematics.t_back_left(self.ht_body,self.body_length,self.body_width),leg12=False) 
 
     def get_leg_coordinates(self):
         '''Return coordinates of each leg as a tuple of 4 sets of 4 leg points'''
         
-        return (self.legs['leg_rightback'].get_leg_points(),
-                self.legs['leg_rightfront'].get_leg_points(),
-                self.legs['leg_leftfront'].get_leg_points(),
-                self.legs['leg_leftback'].get_leg_points())
+        return (self.legs['back_right'].get_leg_points(),
+                self.legs['front_right'].get_leg_points(),
+                self.legs['front_left'].get_leg_points(),
+                self.legs['back_left'].get_leg_points())
 
     def set_leg_angles(self,leg_angs):
         ''' Set the leg angles for all four legs
 
         Args:
-            leg_angs: Tuple of 4 lists of leg angles. Legs in the order rightback
-                      rightfront, leftfront, leftback. ANgles in the order q1,q2,q3.
+            leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
                       An example input:
                         ((rb_q1,rb_q2,rb_q3),
                          (rf_q1,rf_q2,rf_q3),
@@ -120,10 +114,10 @@ class Body(object):
         Returns:
             Nothing
         '''
-        self.legs['leg_rightback'].set_angles(leg_angs[0][0],leg_angs[0][1],leg_angs[0][2])
-        self.legs['leg_rightfront'].set_angles(leg_angs[1][0],leg_angs[1][1],leg_angs[1][2])
-        self.legs['leg_leftfront'].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
-        self.legs['leg_leftback'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])            
+        self.legs['back_right'].set_angles(leg_angs[0][0],leg_angs[0][1],leg_angs[0][2])
+        self.legs['front_right'].set_angles(leg_angs[1][0],leg_angs[1][1],leg_angs[1][2])
+        self.legs['front_left'].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
+        self.legs['back_left'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])            
 
 
     def set_absolute_foot_coordinates(self,foot_coords):
@@ -133,7 +127,7 @@ class Body(object):
         Args:
             foot_coords: A 4x3 numpy matrix of desired (x4,y4,z4) positions for the end point (point 4) of each of
                     the four legs. I.e., the foot.
-                    Leg order: rigthback, rightfront, leftfront, leftback. Example input:
+                    Leg order: backright, frontright, frontleft, backleft. Example input:
                         np.array( [ [x4_rb,y4_rb,z4_rb],
                                     [x4_rf,y4_rf,z4_rf],
                                     [x4_lf,y4_lf,z4_lf],
@@ -144,10 +138,10 @@ class Body(object):
 
         # For each leg, call its method to set foot position in global coordinate frame
         
-        foot_coords_dict = {'leg_rightback':foot_coords[0],
-                            'leg_rightfront':foot_coords[1],
-                            'leg_leftfront':foot_coords[2],
-                            'leg_leftback':foot_coords[3]}
+        foot_coords_dict = {'back_right':foot_coords[0],
+                            'front_right':foot_coords[1],
+                            'front_left':foot_coords[2],
+                            'back_left':foot_coords[3]}
         
         for leg_name in self.legs:
             x4 = foot_coords_dict[leg_name][0]
@@ -168,16 +162,16 @@ class Body(object):
         self.ht_body = ht_body
 
         # Update each leg's homogeneous transformation 
-        self.legs['leg_rightback'].set_homog_transf(kinematics.t_rightback(self.ht_body,self.body_length,self.body_width))
-        self.legs['leg_rightfront'].set_homog_transf(kinematics.t_rightfront(self.ht_body,self.body_length,self.body_width))
-        self.legs['leg_leftfront'].set_homog_transf(kinematics.t_leftfront(self.ht_body,self.body_length,self.body_width))
-        self.legs['leg_leftback'].set_homog_transf(kinematics.t_leftback(self.ht_body,self.body_length,self.body_width))
+        self.legs['back_right'].set_homog_transf(kinematics.t_back_right(self.ht_body,self.body_length,self.body_width))
+        self.legs['front_right'].set_homog_transf(kinematics.t_front_right(self.ht_body,self.body_length,self.body_width))
+        self.legs['front_left'].set_homog_transf(kinematics.t_front_left(self.ht_body,self.body_length,self.body_width))
+        self.legs['back_left'].set_homog_transf(kinematics.t_back_left(self.ht_body,self.body_length,self.body_width))
 
         # Prep foot coordinates to call method to set absolute foot coordinates
-        foot_coords_matrix = np.block([ [foot_coords['leg_rightback']],
-                                        [foot_coords['leg_rightfront']],
-                                        [foot_coords['leg_leftfront']],
-                                        [foot_coords['leg_leftback']]  ])
+        foot_coords_matrix = np.block([ [foot_coords['back_right']],
+                                        [foot_coords['front_right']],
+                                        [foot_coords['front_left']],
+                                        [foot_coords['back_left']]])
        
         self.set_absolute_foot_coordinates(foot_coords_matrix)
 
@@ -220,31 +214,23 @@ class Body(object):
         # Call method to set absolute body pose
         self.set_absolute_body_pose(ht_body)
 
-    def get_leg_angles(self):
-        ''' Get the leg angles for all four legs
+    def get_joint_angles(self):
+        ''' Get the joint angles for all four legs
         Args:
             None
         Returns:
-            leg_angs: Tuple of 4 of the leg angles. Legs in the order rightback
-                      rightfront, leftfront, leftback. Angles in the order q1,q2,q3.
-                      An example output:
-                        ((rb_q1,rb_q2,rb_q3),
-                         (rf_q1,rf_q2,rf_q3),
-                         (lf_q1,lf_q2,lf_q3),
-                         (lb_q1,lb_q2,lb_q3))
+            joint_angles: dictionary containing four legs and their 
+            associated angles in the order q1,q2,q3  
         '''
 
-        leg_angles = {}
-
-        leg_angles['FL'] = self.legs['leg_leftfront'].get_leg_angles()
-
-
-        return (    self.legs['leg_rightback'].get_leg_angles(),
-                    self.legs['leg_rightfront'].get_leg_angles(),
-                    self.legs['leg_leftfront'].get_leg_angles(),
-                    self.legs['leg_leftback'].get_leg_angles()     )
-
-
-    def print_leg_angles(self):
-        ''' Print the joint angles for all four legs'''
+        joint_angles = {}
+        joint_angles['front_left'] = self.legs['front_left'].get_leg_angles()
+        joint_angles['front_right'] = self.legs['front_right'].get_leg_angles()
+        joint_angles['back_left'] = self.legs['back_left'].get_leg_angles()
+        joint_angles['back_right'] = self.legs['back_right'].get_leg_angles()
+        
+        return joint_angles
+     
+    def print_joint_angles(self):
+        ''' Print the joint angles for alll four legs'''
         return None

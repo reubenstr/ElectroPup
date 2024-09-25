@@ -28,5 +28,5 @@ class FrameParameters:
         self.foot_length = frame_parameters['foot_length']
         self.foot_y = frame_parameters['foot_y']
 
-    def error(self):
+    def hasError(self):
         return self.error

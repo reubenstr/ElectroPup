@@ -17,7 +17,7 @@
       <joint range="-180 180"/>
     </default>
   
-    <default class="hip_rear">
+    <default class="hip_back">
       <joint range="-180 180"/>
     </default>
    
@@ -110,19 +110,19 @@
 
 
 
-      <body name="rear_left" pos="0.075 0.263 0.5" quat="0 1 0 0">
+      <body name="back_left" pos="0.075 0.263 0.5" quat="0 1 0 0">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="abduction_rear_left" axis="0 -1 0"/>
+        <joint class="abductor" name="back_left_abduction" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
-        <body name="rear_left_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
+        <body name="back_left_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_left" axis="1 0 0"/>
+          <joint class="hip_back" name="back_left_hip" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
-          <body name="rear_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
+          <body name="back_left_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_left"  axis="1 0 0"/>
+            <joint class="knee" name="back_left_knee"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -131,19 +131,19 @@
       </body>
 
 
-      <body name="rear_right" pos="-0.075 0.263 0.5" quat="0 0 0 1">
+      <body name="back_right" pos="-0.075 0.263 0.5" quat="0 0 0 1">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>
-        <joint class="abductor" name="abduction_rear_right" axis="0 -1 0"/>
+        <joint class="abductor" name="back_right_abduction" axis="0 -1 0"/>
         <geom class="abduction" pos="0 0 0" mesh="abduction"/>
         
-        <body name="rear_right_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
+        <body name="back_right_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
           <inertial pos="0 0 0" quat="1 0 0 0" mass="0.942155" diaginertia="0.00539403 0.00519403 0.000795298"/>
-          <joint class="hip_rear" name="hip_rear_right" axis="1 0 0"/>
+          <joint class="hip_back" name="back_right_hip" axis="1 0 0"/>
           <geom class="upper_right2" mesh="upper-leg"/>   
           
-          <body name="rear_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
+          <body name="back_right_lower_leg" pos="0 0.140 0" quat="1 0 0 0">
             <inertial pos="0 0 0" quat="1 0 0 0" mass="0.169623" diaginertia="0.000828741 0.000813964 3.49901e-05"/>
-            <joint class="knee" name="knee_rear_right"  axis="1 0 0"/>
+            <joint class="knee" name="back_right_knee"  axis="1 0 0"/>
             <geom pos="0 0 0" rgba="1 0 0 1" mesh="lower-leg"/>
             <geom class="foot" pos="0.020 0.130 0" mesh="foot"/>
           </body>
@@ -168,14 +168,14 @@
     <general name="front_right_knee" class="multi_mode_controlled_actuator" joint="front_right_knee"/>
 
 
-    <general name="abduction_rear_left" class="multi_mode_controlled_actuator" joint="abduction_rear_left"/>
-    <general name="hip_rear_left" class="multi_mode_controlled_actuator" joint="hip_rear_left"/>
-    <general name="knee_rear_left" class="multi_mode_controlled_actuator" joint="knee_rear_left"/>
+    <general name="back_left_abduction" class="multi_mode_controlled_actuator" joint="back_left_abduction"/>
+    <general name="back_left_hip" class="multi_mode_controlled_actuator" joint="back_left_hip"/>
+    <general name="back_left_knee" class="multi_mode_controlled_actuator" joint="back_left_knee"/>
 
 
-    <general name="abduction_rear_right" class="multi_mode_controlled_actuator" joint="abduction_rear_right"/>
-    <general name="hip_rear_right" class="multi_mode_controlled_actuator" joint="hip_rear_right"/>
-    <general name="knee_rear_right" class="multi_mode_controlled_actuator" joint="knee_rear_right"/>
+    <general name="back_right_abduction" class="multi_mode_controlled_actuator" joint="back_right_abduction"/>
+    <general name="back_right_hip" class="multi_mode_controlled_actuator" joint="back_right_hip"/>
+    <general name="back_right_knee" class="multi_mode_controlled_actuator" joint="back_right_knee"/>
   </actuator>
 
   <sensor>
@@ -187,13 +187,13 @@
     <jointpos joint="front_right_hip" name="front_right_hip_pos"/>
     <jointpos joint="front_right_knee" name="front_right_knee_pos"/>
    
-    <jointpos joint="abduction_rear_left" name="abduction_rear_left_pos"/>
-    <jointpos joint="hip_rear_left" name="hip_rear_left_pos"/>
-    <jointpos joint="knee_rear_left" name="knee_rear_left_pos"/>
+    <jointpos joint="back_left_abduction" name="back_left_abduction_pos"/>
+    <jointpos joint="back_left_hip" name="back_left_hip_pos"/>
+    <jointpos joint="back_left_knee" name="back_left_knee_pos"/>
      
-    <jointpos joint="abduction_rear_right" name="abduction_rear_right_pos"/>
-    <jointpos joint="hip_rear_right" name="hip_rear_right_pos"/>
-    <jointpos joint="knee_rear_right" name="knee_rear_right_pos"/>
+    <jointpos joint="back_right_abduction" name="back_right_abduction_pos"/>
+    <jointpos joint="back_right_hip" name="back_right_hip_pos"/>
+    <jointpos joint="back_right_knee" name="back_right_knee_pos"/>
 
 
 
@@ -205,13 +205,13 @@
     <jointpos joint="front_right_hip" name="front_right_hip_vel"/>
     <jointpos joint="front_right_knee" name="front_right_knee_vel"/>
 
-    <jointvel joint="abduction_rear_left" name="abduction_rear_left_vel"/>
-    <jointvel joint="hip_rear_left" name="hip_rear_left_vel"/>
-    <jointvel joint="knee_rear_left" name="knee_rear_left_vel"/>
+    <jointvel joint="back_left_abduction" name="back_left_abduction_vel"/>
+    <jointvel joint="back_left_hip" name="back_left_hip_vel"/>
+    <jointvel joint="back_left_knee" name="back_left_knee_vel"/>
       
-    <jointvel joint="abduction_rear_right" name="abduction_rear_right_vel"/>
-    <jointvel joint="hip_rear_right" name="hip_rear_right_vel"/>
-    <jointvel joint="knee_rear_right" name="knee_rear_right_vel"/>
+    <jointvel joint="back_right_abduction" name="back_right_abduction_vel"/>
+    <jointvel joint="back_right_hip" name="back_right_hip_vel"/>
+    <jointvel joint="back_right_knee" name="back_right_knee_vel"/>
    
     <gyro site="origin" name="gyro"/>
     <accelerometer site="origin" name="accelerometer"/>

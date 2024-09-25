@@ -60,21 +60,21 @@ class GamepadInterface:
             self.motion_parameters.roll = self.map(
                 self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.roll_min, self.motion_parameters.roll_max)
             self.motion_parameters.pitch = self.map(
-              - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.pitch_min, self.motion_parameters.pitch_max)
+             - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.pitch_min, self.motion_parameters.pitch_max)
             self.motion_parameters.yaw = self.map(
                 self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters.yaw_min, self.motion_parameters.yaw_max)
-            self.motion_parameters.z_translation = self.map(
-             - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
+            self.motion_parameters.height_translation = self.map(
+            - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
                       
         elif self.motion_parameters.motion_state == MotionParameters.MotionState.MOTION:
             self.motion_parameters.yaw_rate = self.map(
                 self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)
             self.motion_parameters.step_length = self.map(
-              - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.step_length_min, self.motion_parameters.step_length_max)          
+             - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.step_length_min, self.motion_parameters.step_length_max)          
             self.motion_parameters.yaw_rate = self.map(
               self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)            
             self.motion_parameters.height_translation = self.map(
-              self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
+            - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
                    
         return copy.deepcopy(self.motion_parameters)
 

@@ -1,29 +1,26 @@
+###############################################################################
 # Frame parameters for ElectroPup v1.0
+###############################################################################
+
 # Units in meters.
 
-# x distance from hip pivot x-axis to perpendicular upper leg pivot y-axis
-shoulder_length: 0.036
+# L1, distance hip pivot center of rotation to upper leg rotation joint
+hip_length: 0.036
 
-# upper leg length from upper pivot point to lower pivot point
+# L2, upper leg length between both pivot points
 upper_leg_length: 0.140
 
-# lower leg length from upper pivot point to foot ground contact point
+# L3, lower leg length from pivot point to foot ground contact point
 lower_leg_length: 0.140
 
-# x distance between front and back upper legs pivot points 
-hip_x: 0.338
+# distance between left and right hip pivot center of rotation
+body_width: 0.150
 
-# y distance between left and right upper legs pivot points 
-hip_y: 0.150
+# distance between front and rear hip pivot center of rotation
+body_length: 0.338
 
-# x distance between front and back feet centers at ground touch 
-foot_x: 0.338
+# distance between front and back foot centers at ground touch 
+foot_length: 0.338
 
-# y distance between left and right feet centers at ground touch 
+# distance between left and right foot centers at ground touch 
 foot_y: 0.2605
-
-# how high center of body is off the ground at a rest position (not max height).
-height: 0.140
-
-# foot under upper leg servo offset (due to upper leg servos being shifted back in the CAD)
-com_offset: 0.000

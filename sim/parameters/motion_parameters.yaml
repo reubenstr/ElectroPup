@@ -1,34 +1,43 @@
+###############################################################################
 # Motion parameters and motion input limits
 # Derived by trial and error for stability and physical limit breach prevention
+###############################################################################
 
+###############################################################################
+# Rotation limits.
+###############################################################################
+# Units in degrees
+roll_min: -30
+roll_max: 30
+pitch_min: -30
+pitch_max: 30
+yaw_min: -30
+yaw_max: 30
+
+###############################################################################
+# Translation limits.
+###############################################################################
+# Units in meters.
+side_translation_min: -0.050
+side_translation_max: 0.050
+foward_translation_min: -0.050
+foward_translation_max: 0.050
+
+# Lowest allowable point of body center in the world frame.
+height_translation_min: 0.050
+
+# Highest allowable position of body center, must no be higher than the physical leg lengths.
+height_translation_max: 0.140
+
+###############################################################################
+# Gait parameters
+###############################################################################
 lateral_fraction: 0.0
 step_velocity: 0.001
 swing_period: 0.200
 clearance_height: 0.045
 penetration_depth: 0.003
-
-# Units in radians
-orn_x_min: -0.393
-orn_x_max: 0.393
-orn_y_min: -0.393
-orn_y_max: 0.393
-orn_z_min: -0.393
-orn_z_max: 0.393
-
-# Inits in meters
-pos_x_min: -0.100
-pos_x_max: 0.100
-pos_y_min: -0.100
-pos_y_max: 0.100
-
-# Min height shall be greater than body height to prevent a domain breach
-pos_z_min: -0.135
-
-# Max height shall be less than body height to prevent a domain breach
-pos_z_max: 0.135
-
 yaw_rate_min: -0.785
 yaw_rate_max:  0.785
-
 step_length_min: -0.100
 step_length_max: 0.100

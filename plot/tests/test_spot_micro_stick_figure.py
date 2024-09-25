@@ -1,9 +1,9 @@
 '''Tests the spot micro stick figure and spot micro leg classes'''
 
 import unittest
-from ..body import Leg
-from ..kinematics import kinematics as kinematics
-from ..kinematics import transformations
+from ..model.body import Leg
+from ..model import kinematics as kinematics
+from ..model import transformations
 import numpy as np
 from math import cos, sin, pi
 

@@ -24,7 +24,7 @@ foward_translation_min: -0.050
 foward_translation_max: 0.050
 
 # Lowest allowable point of body center in the world frame.
-height_translation_min: 0.140
+height_translation_min: 0.050
 
 # Highest allowable position of body center, must no be higher than the physical leg lengths.
 height_translation_max: 0.140
