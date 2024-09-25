@@ -64,7 +64,7 @@
      
       <inertial pos="0 0 0"  mass="4.48878" diaginertia="0.071033 0.0619567 0.0192519"/>     
       <!--<geom pos="0 0 0.5" rgba="0 0 1 1" mesh="body"/>-->
-      <geom pos="0 0 0." rgba="0 0 1 1" mesh="body"/>
+      <geom pos="0 0 0.5" rgba="0 0 1 1" mesh="body"/>
     
       <body name="front_left" pos="0.075 0.0075 0.5" quat="1 0 0 0">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="0.639437" diaginertia="0.000866008 0.000565866 0.000479767"/>

@@ -78,8 +78,8 @@ class Commander():
         
         
         motion_parameters = self.gamepad_interface.get_motion_parameters()
-        
-        self.body.set_body_transform_inputs(x=motion_parameters.side_translation,y=motion_parameters.height_translation,z=motion_parameters.forward_translation, phi=motion_parameters.roll, theta=motion_parameters.pitch, psi=motion_parameters.yaw)
+        #motion_parameters.roll = math.radians(30)        
+        self.body.set_body_pose_by_transform_inputs(x=motion_parameters.side_translation,y=motion_parameters.height_translation,z=motion_parameters.forward_translation, phi=motion_parameters.roll, theta=motion_parameters.pitch, psi=motion_parameters.yaw)
         
         self.joint_angles = self.body.get_joint_angles()
   
@@ -144,7 +144,7 @@ if __name__ == '__main__':
             joint_angles = commander.get_joint_angles()
 
             for key, value in joint_angles.items():
-                formatted_value = [f"{num:.2f}" for num in value]
+                formatted_value = [f"{math.degrees(num):.2f}" for num in value]
                 print(f"[{key}] {formatted_value}")
        
             sleep(0.10)

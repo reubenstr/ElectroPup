@@ -28,7 +28,7 @@ def t_back_right(t_m,l,w):
     '''
     temp_homog_transf = np.block( [ [ transformations.roty(pi/2), np.array([[-l/2],[0],[w/2]])  ],
                                     [np.array([0,0,0,1])] ]    )
-    # return t_m @ temp_homog_transf
+
     return np.matmul(t_m,temp_homog_transf)
 
 def t_front_right(t_m,l,w):
@@ -47,7 +47,7 @@ def t_front_right(t_m,l,w):
     '''
     temp_homog_transf = np.block( [ [ transformations.roty(pi/2), np.array([[l/2],[0],[w/2]])  ],
                                     [np.array([0,0,0,1])] ]    )
-    # return t_m @ temp_homog_transf
+
     return np.matmul(t_m,temp_homog_transf)
 
 def t_front_left(t_m,l,w):
@@ -66,7 +66,7 @@ def t_front_left(t_m,l,w):
     '''
     temp_homog_transf = np.block( [ [ transformations.roty(-pi/2), np.array([[l/2],[0],[-w/2]])  ],
                                     [np.array([0,0,0,1])] ]    )
-    # return t_m @ temp_homog_transf
+
     return np.matmul(t_m,temp_homog_transf)
 
 def t_back_left(t_m,l,w):
@@ -85,7 +85,7 @@ def t_back_left(t_m,l,w):
     '''
     temp_homog_transf = np.block( [ [ transformations.roty(-pi/2), np.array([[-l/2],[0],[-w/2]])  ],
                                     [np.array([0,0,0,1])] ]    )
-    # return t_m @ temp_homog_transf
+
     return np.matmul(t_m,temp_homog_transf)
 
 
@@ -194,7 +194,6 @@ def t_0_to_4(theta1, theta2, theta3, l1, l2, l3):
     Returns:
         A 4x4 numpy matrix. Homogeneous transform from joint 0 to 4
     '''
-    # return t_0_to_1(theta1,l1) @ t_1_to_2() @ t_2_to_3(theta2,l2) @ t_3_to_4(theta3,l3)
     return np.matmul(np.matmul(np.matmul(t_0_to_1(theta1,l1), t_1_to_2()), t_2_to_3(theta2,l2)), t_3_to_4(theta3,l3))
 
 def ikine(x4,y4,z4,l1,l2,l3,legs12=True):
@@ -222,14 +221,20 @@ def ikine(x4,y4,z4,l1,l2,l3,legs12=True):
         q3 = atan2(sqrt(1-D**2),D)
     else:
         q3 = atan2(-sqrt(1-D**2),D)
-    
-    q2 = atan2(z4, sqrt(x4**2 + y4**2 - l1**2)) - atan2(l3*sin(q3), l2 + l3*cos(q3) )  
+
+
+    # Check domain (impossible to reach positions given the leg length)
+    sqrt_component = x4**2 + y4**2 - l1**2
+    if  sqrt_component < 0:         
+        raise ValueError 
+
+    q2 = atan2(z4, sqrt(sqrt_component)) - atan2(l3*sin(q3), l2 + l3*cos(q3) )      
 
     # After using the equations, there seem to be two errors:
     #   1. The first y4 should not have a negative sign
     #   2. The entire equation should be multiplied by -1
     # The equation for q1 below reflects these changes 
-    q1 = atan2(y4, x4) + atan2(sqrt(x4**2 + y4**2 - l1**2), -l1)
+    q1 = atan2(y4, x4) + atan2(sqrt(sqrt_component), -l1)
 
     return (q1,q2,q3)
 

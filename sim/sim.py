@@ -54,24 +54,20 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
             "back_right_knee",
         ]
 
-        # for jn in joint_names:
-        #   print(jn, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, jn) )
+        # Map joint angles from inverse kinematics to simulation model.
 
-        # current_joint_positions = np.array([data.qpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, jn)] for jn in joint_names])
-        # print(current_joint_positions)
-
-        target_positions = {}
-        target_positions['front_left_abduction'] = joint_angles['front_left'][0]
-        target_positions['front_left_hip'] = joint_angles['front_left'][1]
+        target_positions = {}    
+        target_positions['front_left_abduction'] = joint_angles['front_left'][0] * -1
+        target_positions['front_left_hip'] = joint_angles['front_left'][1] + math.radians(-90)
         target_positions['front_left_knee'] = joint_angles['front_left'][2]
-        target_positions['front_right_abduction'] = joint_angles['front_right'][0]
-        target_positions['front_right_hip'] = joint_angles['front_right'][1]
+        target_positions['front_right_abduction'] = joint_angles['front_right'][0] * 1
+        target_positions['front_right_hip'] = joint_angles['front_right'][1]  + math.radians(90)
         target_positions['front_right_knee'] = joint_angles['front_right'][2]
-        target_positions['back_left_abduction'] = joint_angles['back_left'][0]
-        target_positions['back_left_hip'] = joint_angles['back_left'][1]
+        target_positions['back_left_abduction'] = joint_angles['back_left'][0] * 1
+        target_positions['back_left_hip'] = joint_angles['back_left'][1] + math.radians(-90)
         target_positions['back_left_knee'] = joint_angles['back_left'][2]
-        target_positions['back_right_abduction'] = joint_angles['back_right'][0]
-        target_positions['back_right_hip'] = joint_angles['back_right'][1]
+        target_positions['back_right_abduction'] = joint_angles['back_right'][0] * -1
+        target_positions['back_right_hip'] = joint_angles['back_right'][1] + math.radians(90)
         target_positions['back_right_knee'] = joint_angles['back_right'][2]
    
         for _, (key, value) in enumerate(target_positions.items()):

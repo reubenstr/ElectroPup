@@ -7,6 +7,7 @@ from .leg import Leg
 from . import kinematics
 from . import transformations
 from FrameParameters import FrameParameters
+from .exceptions import JointOutOfBounds
 
 d2r = pi/180
 r2d = 180/pi
@@ -44,11 +45,15 @@ class Body(object):
     def __init__(self, frame_parameters: FrameParameters):   
         '''Constructor'''
 
+        self.frame_parameters = frame_parameters
+
         self.hip_length = frame_parameters.hip_length
         self.upper_leg_length = frame_parameters.upper_leg_length
         self.lower_leg_length = frame_parameters.lower_leg_length
         self.body_width = frame_parameters.body_width
         self.body_length = frame_parameters.body_length
+        self.foot_length = frame_parameters.foot_length
+        self.foot_width = frame_parameters.foot_width
 
         init_height = (self.upper_leg_length + self.lower_leg_length) / 2.0
 
@@ -99,26 +104,6 @@ class Body(object):
                 self.legs['front_right'].get_leg_points(),
                 self.legs['front_left'].get_leg_points(),
                 self.legs['back_left'].get_leg_points())
-
-    def set_leg_angles(self,leg_angs):
-        ''' Set the leg angles for all four legs
-
-        Args:
-            leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
-                      An example input:
-                        ((rb_q1,rb_q2,rb_q3),
-                         (rf_q1,rf_q2,rf_q3),
-                         (lf_q1,lf_q2,lf_q3),
-                         (lb_q1,lb_q2,lb_q3))
-
-        Returns:
-            Nothing
-        '''
-        self.legs['back_right'].set_angles(leg_angs[0][0],leg_angs[0][1],leg_angs[0][2])
-        self.legs['front_right'].set_angles(leg_angs[1][0],leg_angs[1][1],leg_angs[1][2])
-        self.legs['front_left'].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
-        self.legs['back_left'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])            
-
 
     def set_absolute_foot_coordinates(self,foot_coords):
         '''Set foot coordinates to a set inputted in the global coordinate frame and compute 
@@ -176,7 +161,7 @@ class Body(object):
         self.set_absolute_foot_coordinates(foot_coords_matrix)
 
 
-    def set_body_transform_inputs(self,x,y,z,phi,theta,psi):
+    def set_body_pose_by_transform_inputs(self,phi,theta,psi,x,y,z):
         '''Set the body translation and orientation angles
 
         Args:
@@ -189,10 +174,24 @@ class Body(object):
         Returns:
             Nothing
         '''
-        ht_body = transformations.homog_transform(phi, psi, theta, x,y,z)
-        self.set_absolute_body_pose(ht_body)
 
+        preserved_ht_body = self.ht_body 
+
+        try:
+            ht_body = transformations.homog_transform(phi, psi, theta, x, y, z)
+            self.set_absolute_body_pose(ht_body)            
+        except ValueError:            
+            self.set_absolute_body_pose(preserved_ht_body)
+            raise ValueError
+        
+        try:
+            self.check_joint_angles()
+        except JointOutOfBounds:            
+            self.set_absolute_body_pose(preserved_ht_body)
+            raise JointOutOfBounds
     
+    """ 
+    # Not used; does not process domain and bounds checks
     def set_body_angles(self,phi=0,theta=0,psi=0):
         '''Set a body angles without translation of the body
 
@@ -212,7 +211,27 @@ class Body(object):
         ht_body[0:3,0:3] = r_xyz
 
         # Call method to set absolute body pose
-        self.set_absolute_body_pose(ht_body)
+        self.set_absolute_body_pose(ht_body) """
+
+
+    def set_joint_angles(self,leg_angs):
+        ''' Set the joint angles for all four legs
+
+        Args:
+            leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
+                      An example input:
+                        ((rb_q1,rb_q2,rb_q3),
+                         (rf_q1,rf_q2,rf_q3),
+                         (lf_q1,lf_q2,lf_q3),
+                         (lb_q1,lb_q2,lb_q3))
+
+        Returns:
+            Nothing
+        '''
+        self.legs['back_right'].set_angles(leg_angs[0][0],leg_angs[0][1],leg_angs[0][2])
+        self.legs['front_right'].set_angles(leg_angs[1][0],leg_angs[1][1],leg_angs[1][2])
+        self.legs['front_left'].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
+        self.legs['back_left'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])    
 
     def get_joint_angles(self):
         ''' Get the joint angles for all four legs
@@ -230,7 +249,26 @@ class Body(object):
         joint_angles['back_right'] = self.legs['back_right'].get_leg_angles()
         
         return joint_angles
+    
+    def check_joint_angles(self):
+        ''' Checks the bounds of joint angles.
+            Throws exception if joint is out of bounds
+        Args:
+            None
+        Returns:
+            None        
+        '''
+
+        for key, leg in self.legs.items():
+            abduction, hip, knee = leg.get_leg_angles()   
+            if abduction < self.frame_parameters.abduction_joint_lower_bounds or abduction > self.frame_parameters.abduction_joint_upper_bounds:
+                raise JointOutOfBounds(key, 'abduction', abduction, self.frame_parameters.abduction_joint_lower_bounds, self.frame_parameters.abduction_joint_upper_bounds)
+            if hip < self.frame_parameters.hip_joint_lower_bounds or hip > self.frame_parameters.hip_joint_upper_bounds:
+                raise JointOutOfBounds(key, 'hip', hip, self.frame_parameters.hip_joint_lower_bounds, self.frame_parameters.hip_joint_upper_bounds)
+            if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
+                raise JointOutOfBounds(key, 'knee', knee, self.frame_parameters.knee_joint_lower_bounds, self.frame_parameters.knee_joint_upper_bounds)
+           
      
     def print_joint_angles(self):
-        ''' Print the joint angles for alll four legs'''
+        ''' Print the joint angles for all four legs'''
         return None
