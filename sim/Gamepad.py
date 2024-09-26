@@ -609,6 +609,38 @@ class PS4(Gamepad):
         }
         self._setupReverseMaps()
 
+class PS5(Gamepad):
+    fullName = 'PlayStation 5 controller'
+
+    def __init__(self, joystickNumber = 0):
+        Gamepad.__init__(self, joystickNumber)
+        self.axisNames = {
+            0: 'LEFT-X',
+            1: 'LEFT-Y',
+            2: 'L2',
+            3: 'RIGHT-X',
+            4: 'RIGHT-Y',
+            5: 'R2',
+            6: 'DPAD-X',
+            7: 'DPAD-Y'
+        }
+        self.buttonNames = {
+            0:  'CROSS',
+            1:  'CIRCLE',
+            2:  'TRIANGLE',
+            3:  'SQUARE',
+            4:  'L1',
+            5:  'R1',
+            6:  'L2',
+            7:  'R2',
+            8:  'SHARE',
+            9:  'OPTIONS',
+            10: 'PS',
+            11: 'L3',
+            12: 'R3'
+        }
+        self._setupReverseMaps()       
+
 class Xbox360(Gamepad):
     fullName = 'Xbox 360 controller'
 

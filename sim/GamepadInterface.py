@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 """
-    Converts gamepad inputs into motion parameters ready to be consumed.
+    Converts gamepad inputs into motion parameters ready to be consumed by kinematics.
+
+    Code assumes using a PS4 controller by default.
 """
 
-import os
 import time
-import yaml
 import copy
 from time import sleep
 
@@ -17,25 +17,22 @@ from MotionParameters import MotionParameters
 class GamepadInterface:
     def __init__(self, motion_parameters: MotionParameters):
         self.motion_parameters = motion_parameters
-                   
-    ###############################################################################
-    # Methods
-    ###############################################################################
-
+      
     def connect_gamepad(self):
         # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
         joystick_id = 0  
         
-        max_retries = 5
+        max_retries = 3
         retry = 0
+        print(f"[GAMEPAD] attempting to connect to joystick with ID {joystick_id}...")
         while not Gamepad.available(joystick_id):
-            print(f"[GAMEPAD] not detected on joystick ID {joystick_id}!")
+            print(f"[GAMEPAD] joystick not detected on ID {joystick_id}!")
             retry += 1
             if retry  > max_retries:
                 return False
             time.sleep(1.0)
             
-        print(f"[GAMEPAD] connected to joystick ID {joystick_id}")
+        print(f"[GAMEPAD] joystick connected on ID {joystick_id}")
         self.gamepad = Gamepad.PS4(joystick_id)              
         self.gamepad.startBackgroundUpdates()
         return True

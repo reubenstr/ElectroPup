@@ -136,11 +136,9 @@ class Leg(object):
 
     def get_foot_position_in_global_coords(self):
         ''' Return coordinates of the foot in the leg's local coordinate frame'''
-        # ht_foot = self._ht_leg_start @ self._t01 @ self._t12 @ self._t23 @ self._t34
         ht_foot = np.matmul(np.matmul(np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12), self._t23), self._t34)
         return ht_foot[0:3,3]
     
     def get_leg_angles(self):
         '''Return leg angles as a tuple of 3 angles, (q1, q2, q3)'''
-
         return (self._q1,self._q2,self._q3)

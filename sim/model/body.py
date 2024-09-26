@@ -6,11 +6,11 @@ import numpy as np
 from math import pi, sin, cos
 from enum import Enum
 
-from .leg import Leg
+from . leg import Leg
 from . import kinematics
 from . import transformations
+from . exceptions import DomainBreach
 from FrameParameters import FrameParameters
-from .exceptions import DomainBreach
 
 d2r = pi/180
 r2d = 180/pi
@@ -44,7 +44,6 @@ class Body(object):
         front_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
         back_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
     """
-
     
     class ErrorState(Enum):
         NONE = 1
@@ -77,7 +76,7 @@ class Body(object):
         l = self.body_length
         w = self.body_width
         l1 = self.hip_length
-        offset = -0.00      
+        offset = -0.00 # TEMP: testing stylistic poses 
         
         global_foot_positions = {}
         global_foot_positions['back_right'] = [-l/2,   0,  w/2 + l1 + offset]
@@ -101,7 +100,7 @@ class Body(object):
             theta: pitch angle in radians
             psi: yaw angle in radians
         Returns:
-            Nothing
+            ErrorState
 
         Performs inverse kinematics on joints prior to saving the results into the legs allowing
         to throw exceptions during calculations to prevent domain breaches or undesired poses
@@ -210,8 +209,5 @@ class Body(object):
 
     def print_joint_angles(self):
         ''' Print the joint angles for all four legs'''
-        return None
-    
-    
-    def get_error_state(self):     
-        return self.error_state
+        return None    
+ 

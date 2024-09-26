@@ -74,7 +74,7 @@ class MotionParameters:
         return self.error
 
     def print(self):
-       print("Print not created!")
+       print(self.roll, self.pitch, self.yaw)
        
 
    
