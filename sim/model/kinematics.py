@@ -219,8 +219,7 @@ def ikine(x4,y4,z4,l1,l2,l3,legs12=True):
     D = (x4**2 + y4**2 + z4**2 - l1**2 - l2**2 - l3**2)/(2*l2*l3)
 
     # Check domain (impossible to reach positions given the leg length)
-    if D > 1.0 or D < -1.0:  
-        print("C")   
+    if D > 1.0 or D < -1.0:        
         raise DomainBreach 
 
     if legs12 == True:
@@ -230,8 +229,7 @@ def ikine(x4,y4,z4,l1,l2,l3,legs12=True):
 
     # Check domain (impossible to reach positions given the leg length)
     sqrt_component = x4**2 + y4**2 - l1**2
-    if  sqrt_component < 0.0:  
-        print(x4,y4,z4,l1,l2,l3,legs12)       
+    if  sqrt_component < 0.0: 
         raise DomainBreach           
 
     q2 = atan2(z4, sqrt(sqrt_component)) - atan2(l3*sin(q3), l2 + l3*cos(q3) )      

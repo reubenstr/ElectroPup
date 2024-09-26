@@ -27,7 +27,7 @@ foward_translation_max: 0.050
 height_translation_min: 0.050
 
 # Highest allowable position of body center, must no be higher than the physical leg lengths.
-height_translation_max: 0.140
+height_translation_max: 0.250
 
 ###############################################################################
 # Gait parameters

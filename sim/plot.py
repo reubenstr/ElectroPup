@@ -17,7 +17,6 @@ from model.body import Body
 from GamepadInterface import GamepadInterface
 from FrameParameters import FrameParameters
 from MotionParameters import MotionParameters
-from model.exceptions import JointOutOfBounds
 
 
 ###############################################################################
@@ -52,8 +51,6 @@ ax.set_zlim([-0.2, 0.2])
 
 ax.view_init(elev=-45,azim=45, roll=45)
 
-
-
 plt.ion()
 plt.show()
 
@@ -83,9 +80,6 @@ while (True):
     motion_parameters = gamepad_interface.get_motion_parameters()
 
     error_state = body.set_body_pose_by_transform_inputs(phi=motion_parameters.roll, theta=motion_parameters.pitch, psi=motion_parameters.yaw, x=motion_parameters.side_translation,y=motion_parameters.height_translation, z=motion_parameters.forward_translation)
-
-    print(error_state.name)
-
     if error_state == Body.ErrorState.NONE:  
                 
         for line in plt.gca().lines:       
