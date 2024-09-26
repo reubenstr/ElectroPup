@@ -1,6 +1,9 @@
 """
 Forward and inverse kinematic transformations for a quadruped robot. 
 
+Source from: 
+https://github.com/mike4192/spot_micro_kinematics_python
+
 Equations from:
 Sen, Muhammed Arif & Bakircioglu, Veli & Kalyoncu, Mete. (2017). 
 Inverse Kinematic Analysis Of A Quadruped Robot.

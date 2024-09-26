@@ -71,6 +71,9 @@ class Body(object):
         self.legs['back_left'] = None
 
     def create_default_global_foot_positions(self):
+        ''' Creates a default global foot positions dict for reference and testing.      
+        
+        '''
         l = self.body_length
         w = self.body_width
         l1 = self.hip_length
@@ -86,7 +89,9 @@ class Body(object):
 
         
     def set_body_pose_by_transform_inputs(self,phi,theta,psi,x,y,z):
-        '''Set the body translation and orientation angles
+        ''' Set the body translation and orientation angles
+            Perform full inverse kinematics
+            Check for domain breaches and joint boundries errors
 
         Args:
             x: translation along the x axis in meters
@@ -147,6 +152,7 @@ class Body(object):
 
     def set_joint_angles(self,leg_angs):
         ''' Set the joint angles for all four legs
+            Purpose is model verification
 
         Args:
             leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
@@ -184,13 +190,12 @@ class Body(object):
     
     
     def check_joint_angles(self, legs):
-        ''' Checks the bounds of joint angles.
-            Throws JointOutOfBounds exception if joint is out of bounds
+        ''' Checks the bounds of joint angles        
         Args:
-            None
+            Legs dictionary to check
         Returns:
             None: no error
-            string: error (string contents describes the error)
+            string: error (string describes the error)
         '''
 
         for key, leg in legs.items():
@@ -201,8 +206,6 @@ class Body(object):
                 return f"Leg {key} {'hip'} joint is out of bounds where angle {math.degrees(hip):0.2f} is outside of [{math.degrees(self.frame_parameters.hip_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.hip_joint_upper_bounds):0.2f}]!"
             if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
-
-
 
 
     def print_joint_angles(self):

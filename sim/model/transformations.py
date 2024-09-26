@@ -1,6 +1,8 @@
-#!/usr/bin/env python
+""" 
 
-""" Functions for computing 3D rotation, transformation, and homogenenous transformation matrices """
+Functions for computing 3D rotation, transformation, and homogenenous transformation matrices 
+
+"""
 
 import numpy as np
 from math import cos, sin
@@ -80,7 +82,7 @@ def rotxyz(x_ang,y_ang,z_ang):
     Returns:
         The 3D rotation matrix for a x, y, z rotation
     """
-    # return rotx(x_ang) @ roty(y_ang) @ rotz(z_ang)
+
     return np.matmul(np.matmul(rotx(x_ang), roty(y_ang)), rotz(z_ang))
 
 
@@ -178,6 +180,4 @@ def ht_inverse(ht):
     temp_vec_ht = np.eye(4)
     temp_vec_ht[0:3,3] = temp_vec
 
-    # Return the matrix product
-    # return temp_rot_ht @ temp_vec_ht
     return np.matmul(temp_rot_ht, temp_vec_ht)
