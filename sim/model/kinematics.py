@@ -10,6 +10,7 @@ International Journal of Scientific & Technology Research. 6.
 from . import transformations
 from math import pi, cos, sin, atan2, sqrt
 import numpy as np
+from .exceptions import DomainBreach
 
 def t_back_right(t_m,l,w):
     '''
@@ -217,16 +218,21 @@ def ikine(x4,y4,z4,l1,l2,l3,legs12=True):
     # Supporting variable D
     D = (x4**2 + y4**2 + z4**2 - l1**2 - l2**2 - l3**2)/(2*l2*l3)
 
+    # Check domain (impossible to reach positions given the leg length)
+    if D > 1.0 or D < -1.0:  
+        print("C")   
+        raise DomainBreach 
+
     if legs12 == True:
         q3 = atan2(sqrt(1-D**2),D)
     else:
         q3 = atan2(-sqrt(1-D**2),D)
 
-
     # Check domain (impossible to reach positions given the leg length)
     sqrt_component = x4**2 + y4**2 - l1**2
-    if  sqrt_component < 0:         
-        raise ValueError 
+    if  sqrt_component < 0.0:  
+        print(x4,y4,z4,l1,l2,l3,legs12)       
+        raise DomainBreach           
 
     q2 = atan2(z4, sqrt(sqrt_component)) - atan2(l3*sin(q3), l2 + l3*cos(q3) )      
 

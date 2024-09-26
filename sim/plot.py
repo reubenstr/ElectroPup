@@ -52,6 +52,8 @@ ax.set_zlim([-0.2, 0.2])
 
 ax.view_init(elev=-45,azim=45, roll=45)
 
+
+
 plt.ion()
 plt.show()
 
@@ -61,10 +63,10 @@ plt.show()
 ###############################################################################
 
 while (True):
-    for line in plt.gca().lines:       
-        line.remove()
-   
-  
+    
+    for text in plt.gca().texts:       
+        text.remove()    
+     
     # Define absolute position for the legs.
     # Values can be updated by a gait to show trajectory.
     l = body.body_length
@@ -76,19 +78,25 @@ while (True):
                                 [ l/2 ,  0, -w/2 - l1- offset],
                                 [-l/2 ,  0, -w/2 - l1- offset] ])
 
-    body.set_absolute_foot_coordinates(desired_p4_points)
+    #body.set_absolute_foot_coordinates(desired_p4_points)
+      
+    motion_parameters = gamepad_interface.get_motion_parameters()
 
-    try:    
-        motion_parameters = gamepad_interface.get_motion_parameters()
-  
-        body.set_body_pose_by_transform_inputs(phi=motion_parameters.roll, theta=motion_parameters.pitch, psi=motion_parameters.yaw, x=motion_parameters.side_translation,y=motion_parameters.height_translation, z=motion_parameters.forward_translation)
-           
+    error_state = body.set_body_pose_by_transform_inputs(phi=motion_parameters.roll, theta=motion_parameters.pitch, psi=motion_parameters.yaw, x=motion_parameters.side_translation,y=motion_parameters.height_translation, z=motion_parameters.forward_translation)
+
+    print(error_state.name)
+
+    if error_state == Body.ErrorState.NONE:  
+                
+        for line in plt.gca().lines:       
+            line.remove()
+
         # Set leg angles to zero degrees to determined zeroed position.    
         # a = ((0,0,0), (0,0,0), (0,0,0), (0,0,0))
         # body.set_leg_angles(a)
-      
+        
         coords = body.get_leg_coordinates()
-         
+            
         # Construct the body of 4 lines from the first point of each leg (the four corners of the body)
         for i in range(4):
             # For last leg, connect back to first leg point
@@ -99,7 +107,7 @@ while (True):
             x_vals = [coords[ind][0][0], coords[ind+1][0][0]]
             y_vals = [coords[ind][0][1], coords[ind+1][0][1]]
             z_vals = [coords[ind][0][2], coords[ind+1][0][2]]
-            ax.plot(x_vals,y_vals,z_vals,color='k')[0]
+            ax.plot(x_vals,y_vals,z_vals,color='k', marker='o')[0]
 
         # Plot color order for leg links: (hip, upper leg, lower leg)
         plt_colors = ['r','c','b']
@@ -108,17 +116,12 @@ while (True):
                 x_vals = [leg[i][0], leg[i+1][0]]
                 y_vals = [leg[i][1], leg[i+1][1]]
                 z_vals = [leg[i][2], leg[i+1][2]]
-                ax.plot(x_vals,y_vals,z_vals,color=plt_colors[i])[0]
-            
-        fig.canvas.draw()
-        fig.canvas.flush_events()
+                ax.plot(x_vals,y_vals,z_vals,color=plt_colors[i], marker='o')[0]
+    else:
+        # Alert the user there is a calculation or bounds error
+        ax.text(0, 0, 0, error_state.name, fontsize=12, color='black', bbox=dict(facecolor='red', alpha=0.5, edgecolor='red'))
+   
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
-    except ValueError:
-        print("***DOMAIN ERROR***")
-        continue 
-    except JointOutOfBounds:
-        print("JointOutOfBounds")
-        continue  
-    
-    
     sleep(0.010)

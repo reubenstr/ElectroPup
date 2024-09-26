@@ -1,13 +1,15 @@
 
-import matplotlib.pyplot as plt
+
+import copy
 import numpy as np
 from math import pi, sin, cos
+from enum import Enum
 
 from .leg import Leg
 from . import kinematics
 from . import transformations
 from FrameParameters import FrameParameters
-from .exceptions import JointOutOfBounds
+from .exceptions import JointOutOfBounds, DomainBreach
 
 d2r = pi/180
 r2d = 180/pi
@@ -42,6 +44,12 @@ class Body(object):
         back_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
     """
 
+    
+    class ErrorState(Enum):
+        NONE = 1
+        IK = 2
+        JOINT = 3
+
     def __init__(self, frame_parameters: FrameParameters):   
         '''Constructor'''
 
@@ -64,6 +72,11 @@ class Body(object):
         self.theta = 0
         self.psi = 0   
 
+        self.error_state = Body.ErrorState.NONE
+
+        self.preserved_ht_body = None
+        self.preserved_foot_coords = None
+     
         # Initialize Body Pose
         # Convention for this class is to initialize the body pose at a x,y,z position, with a phi,theta,psi orientation
         # To achieve this pose, need to apply a homogeneous translation first, then a homgeneous rotation
@@ -81,22 +94,23 @@ class Body(object):
         # First initialize to empty dict with feet directly below joints.
         self.legs = {}
 
-        self.legs['back_right'] =     Leg(self.br_leg_angles[0],self.br_leg_angles[1],self.br_leg_angles[2],
+        self.legs['back_right'] = Leg(self.br_leg_angles[0],self.br_leg_angles[1],self.br_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
                                                      kinematics.t_back_right(self.ht_body,self.body_length,self.body_width),leg12=True) 
         
-        self.legs['front_right'] =   Leg(self.fr_leg_angles[0],self.fr_leg_angles[1],self.fr_leg_angles[2],
+        self.legs['front_right'] = Leg(self.fr_leg_angles[0],self.fr_leg_angles[1],self.fr_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
                                                      kinematics.t_front_right(self.ht_body,self.body_length,self.body_width),leg12=True)
                                                   
-        self.legs['front_left'] =    Leg(self.fl_leg_angles[0],self.fl_leg_angles[1],self.fl_leg_angles[2],
+        self.legs['front_left'] = Leg(self.fl_leg_angles[0],self.fl_leg_angles[1],self.fl_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
                                                      kinematics.t_front_left(self.ht_body,self.body_length,self.body_width),leg12=False)
 
-        self.legs['back_left'] =     Leg(self.bl_leg_angles[0],self.bl_leg_angles[1],self.bl_leg_angles[2],
+        self.legs['back_left'] = Leg(self.bl_leg_angles[0],self.bl_leg_angles[1],self.bl_leg_angles[2],
                                                      self.hip_length,self.upper_leg_length,self.lower_leg_length,
                                                      kinematics.t_back_left(self.ht_body,self.body_length,self.body_width),leg12=False) 
 
+    
     def get_leg_coordinates(self):
         '''Return coordinates of each leg as a tuple of 4 sets of 4 leg points'''
         
@@ -105,6 +119,7 @@ class Body(object):
                 self.legs['front_left'].get_leg_points(),
                 self.legs['back_left'].get_leg_points())
 
+    
     def set_absolute_foot_coordinates(self,foot_coords):
         '''Set foot coordinates to a set inputted in the global coordinate frame and compute 
         and set the joint angles to achieve them using inverse kinematics
@@ -134,6 +149,7 @@ class Body(object):
             z4 = foot_coords_dict[leg_name][2]
             self.legs[leg_name].set_foot_position_in_global_coords(x4,y4,z4)
 
+    
     def set_absolute_body_pose(self, ht_body):
         '''Set absolute pose of body, while holding foot positions in place'''
         
@@ -173,23 +189,54 @@ class Body(object):
             psi: yaw angle in radians
         Returns:
             Nothing
+
+        Performs inverse kinematics on joints prior to saving the results into the legs allowing
+        to throw exceptions during calculations to prevent domain breaches or undesired poses
+        on a physical system.
+
         '''
-
-        preserved_ht_body = self.ht_body 
-
+     
         try:
             ht_body = transformations.homog_transform(phi, psi, theta, x, y, z)
-            self.set_absolute_body_pose(ht_body)            
-        except ValueError:            
-            self.set_absolute_body_pose(preserved_ht_body)
-            raise ValueError
+                        
+            legs = {}
+            legs['back_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_right(ht_body,self.body_length,self.body_width),leg12=True) 
+            legs['front_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_right(ht_body,self.body_length,self.body_width),leg12=True)
+            legs['front_left'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_left(ht_body,self.body_length,self.body_width),leg12=False)
+            legs['back_left'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_left(ht_body,self.body_length,self.body_width),leg12=False)
+            
+            l = self.body_length
+            w = self.body_width
+            l1 = self.hip_length
+            offset = -0.0          
+            
+            foot_positions_global = {}
+            foot_positions_global['back_right'] = [-l/2,   0,  w/2 + l1 + offset]
+            foot_positions_global['front_right'] = [ l/2 ,  0,  w/2 + l1+ offset]
+            foot_positions_global['front_left'] = [ l/2 ,  0, -w/2 - l1- offset]
+            foot_positions_global['back_left'] = [-l/2 ,  0, -w/2 - l1- offset]
+                          
+            for key in legs.keys():
+                x4 = foot_positions_global[key][0]
+                y4 = foot_positions_global[key][1]
+                z4 = foot_positions_global[key][2]
+                legs[key].set_foot_position_in_global_coords(x4,y4,z4)
+
+            self.check_joint_angles(legs)
+                
+            for key in self.legs.keys():
+                self.legs[key] = legs[key]
+
+        except DomainBreach as error:
+            print(error) 
+            return Body.ErrorState.IK
+        except JointOutOfBounds as error:
+            print(error)             
+            return Body.ErrorState.JOINT
+      
+        return Body.ErrorState.NONE
         
-        try:
-            self.check_joint_angles()
-        except JointOutOfBounds:            
-            self.set_absolute_body_pose(preserved_ht_body)
-            raise JointOutOfBounds
-    
+              
     """ 
     # Not used; does not process domain and bounds checks
     def set_body_angles(self,phi=0,theta=0,psi=0):
@@ -233,6 +280,7 @@ class Body(object):
         self.legs['front_left'].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
         self.legs['back_left'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])    
 
+    
     def get_joint_angles(self):
         ''' Get the joint angles for all four legs
         Args:
@@ -250,16 +298,17 @@ class Body(object):
         
         return joint_angles
     
-    def check_joint_angles(self):
+    
+    def check_joint_angles(self, legs):
         ''' Checks the bounds of joint angles.
-            Throws exception if joint is out of bounds
+            Throws JointOutOfBounds exception if joint is out of bounds
         Args:
             None
         Returns:
             None        
         '''
 
-        for key, leg in self.legs.items():
+        for key, leg in legs.items():
             abduction, hip, knee = leg.get_leg_angles()   
             if abduction < self.frame_parameters.abduction_joint_lower_bounds or abduction > self.frame_parameters.abduction_joint_upper_bounds:
                 raise JointOutOfBounds(key, 'abduction', abduction, self.frame_parameters.abduction_joint_lower_bounds, self.frame_parameters.abduction_joint_upper_bounds)
@@ -272,3 +321,6 @@ class Body(object):
     def print_joint_angles(self):
         ''' Print the joint angles for all four legs'''
         return None
+    
+    def get_error_state(self):     
+        return self.error_state
