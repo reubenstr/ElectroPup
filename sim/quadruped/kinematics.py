@@ -13,7 +13,7 @@ International Journal of Scientific & Technology Research. 6.
 from . import transformations
 from math import pi, cos, sin, atan2, sqrt
 import numpy as np
-from .exceptions import DomainBreach
+from . exceptions import DomainBreach
 
 def t_back_right(t_m,l,w):
     '''

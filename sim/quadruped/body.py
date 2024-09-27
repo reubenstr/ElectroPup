@@ -8,7 +8,7 @@ from . leg import Leg
 from . import kinematics
 from . import transformations
 from . exceptions import DomainBreach
-from .parameters.frame_parameters import FrameParameters
+from . parameters.frame_parameters import FrameParameters
 
 
 class Body(object):

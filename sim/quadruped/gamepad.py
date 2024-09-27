@@ -12,14 +12,6 @@ import time
 import struct
 import threading
 
-
-def available(joystickNumber):
-    """
-        Check if a joystick is connected and ready to use givin the provided ID.
-    """
-    joystickPath = '/dev/input/js' + str(joystickNumber)
-    return os.path.exists(joystickPath)
-
 class Gamepad:
     EVENT_CODE_BUTTON = 0x01
     EVENT_CODE_AXIS = 0x02
@@ -55,8 +47,10 @@ class Gamepad:
 
     def __init__(self, joystickNumber = 0):
         self.joystickNumber = str(joystickNumber)
-        self.joystickPath = '/dev/input/js' + self.joystickNumber
+        self.joystickPath = '/dev/input/js' + self.joystickNumber       
         retryCount = 5
+      
+        print(f"[GAMEPAD] attempting to connect to joystick at {self.joystickPath}")   
         while True:
             try:
                 self.joystickFile = open(self.joystickPath, 'rb')
@@ -66,7 +60,10 @@ class Gamepad:
                 if retryCount > 0:
                     time.sleep(0.5)
                 else:
-                    raise IOError('Could not open gamepad %s: %s' % (self.joystickNumber, str(e)))
+                    raise IOError('[GAMEPAD] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
+        
+        print(f"[GAMEPAD] connected")         
+
         self.eventSize = struct.calcsize('IhBB')
         self.pressedMap = {}
         self.wasPressedMap = {}

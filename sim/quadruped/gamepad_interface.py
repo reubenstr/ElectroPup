@@ -6,12 +6,11 @@
     Code assumes using a PS4 controller by default.
 """
 
-import time
 import copy
 from time import sleep
 
-from . import gamepad
-from .parameters.motion_parameters import MotionParameters
+from . gamepad import PS4
+from . parameters.motion_parameters import MotionParameters
 
 class GamepadInterface:
     def __init__(self, motion_parameters: MotionParameters):
@@ -19,20 +18,8 @@ class GamepadInterface:
       
     def connect_gamepad(self):
         # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
-        joystick_id = 0  
-        
-        max_retries = 3
-        retry = 0
-        print(f"[GAMEPAD] attempting to connect to joystick with ID {joystick_id}...")
-        while not gamepad.available(joystick_id):
-            print(f"[GAMEPAD] joystick not detected on ID {joystick_id}!")
-            retry += 1
-            if retry  > max_retries:
-                return False
-            time.sleep(1.0)
-            
-        print(f"[GAMEPAD] joystick connected on ID {joystick_id}")
-        self.gamepad = gamepad.PS4(joystick_id)              
+        joystick_number = 0                   
+        self.gamepad = PS4(joystick_number)              
         self.gamepad.startBackgroundUpdates()
         return True
 

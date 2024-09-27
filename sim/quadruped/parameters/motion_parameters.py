@@ -67,4 +67,4 @@ class MotionParameters:
         self.yaw_rate = 0  
 
     def print(self):
-       print(self.roll, self.pitch, self.yaw) 
+       print(self.roll, self.pitch, self.yaw, self.side_translation, self.forward_translation, self.height_translation) 
