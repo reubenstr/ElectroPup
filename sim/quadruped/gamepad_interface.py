@@ -61,6 +61,9 @@ class GamepadInterface:
                    
         return copy.deepcopy(self.motion_parameters)
 
+    def is_connected(self):          
+        return self.gamepad.isConnected()
+
     def disconnect(self):          
         self.gamepad.disconnect()    
   

@@ -37,26 +37,26 @@ class Simulation():
     def get_timestep(self):
         return self.model.opt.timestep
 
-
     def tick(self, joint_angles):
                   
         # Map joint angles from inverse kinematics to joint names of simulation model.
         target_positions = {}    
-        target_positions['front_left_abduction'] = joint_angles['front_left'][0] * -1
+        target_positions['front_left_abduction'] = joint_angles['front_left'][0]
         target_positions['front_left_hip'] = joint_angles['front_left'][1] 
         target_positions['front_left_knee'] = joint_angles['front_left'][2]
-        target_positions['front_right_abduction'] = joint_angles['front_right'][0] * 1
+        target_positions['front_right_abduction'] = joint_angles['front_right'][0]
         target_positions['front_right_hip'] = joint_angles['front_right'][1] 
         target_positions['front_right_knee'] = joint_angles['front_right'][2]
-        target_positions['back_left_abduction'] = joint_angles['back_left'][0] * 1
+        target_positions['back_left_abduction'] = joint_angles['back_left'][0]
         target_positions['back_left_hip'] = joint_angles['back_left'][1]
         target_positions['back_left_knee'] = joint_angles['back_left'][2]
-        target_positions['back_right_abduction'] = joint_angles['back_right'][0] * -1
+        target_positions['back_right_abduction'] = joint_angles['back_right'][0]
         target_positions['back_right_hip'] = joint_angles['back_right'][1] 
         target_positions['back_right_knee'] = joint_angles['back_right'][2]
-
+       
+        # Set all joints angles to zero to verify model matches expected zero positions of the inverse kinematics.
         #for key in target_positions.keys():
-        #    target_positions[key] = 0
+        #    target_positions[key] = math.radians(15)
    
         # Apply target positions to simulation model.
         for _, (key, value) in enumerate(target_positions.items()):
@@ -84,10 +84,8 @@ if __name__ == "__main__":
    
     start = time.time()
     
-    try:
-
-        # TODO: check for gamepad disconnect
-        while True: #simulation.is_running():
+    try:       
+        while simulation.is_running() and gamepad_interface.is_connected():
             step_start = time.time() 
             
             motion_parameters = gamepad_interface.get_motion_parameters()

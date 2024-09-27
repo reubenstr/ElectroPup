@@ -31,6 +31,14 @@ python3 -m mujoco.viewer --mjcf=./scene.xml
 
 https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 
+
+###############################################################################
+Conformity
+
+
+
+
+
 ###############################################################################
 https://hardwaretester.com/gamepad
 

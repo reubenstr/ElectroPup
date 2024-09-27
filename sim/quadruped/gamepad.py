@@ -4,7 +4,12 @@
 """
     Gamepad provides buttons and axis inputs from a gamepad.
 
+
+    TODO:
+        Auto reconnect after disconnect or IOError
+
     Original source and documentation: https://github.com/piborg/Gamepad
+
 """
 
 import os
@@ -50,7 +55,7 @@ class Gamepad:
         self.joystickPath = '/dev/input/js' + self.joystickNumber       
         retryCount = 5
       
-        print(f"[GAMEPAD] attempting to connect to joystick at {self.joystickPath}")   
+        print(f"[Gamepad] attempting to connect to joystick at {self.joystickPath}")   
         while True:
             try:
                 self.joystickFile = open(self.joystickPath, 'rb')
@@ -60,9 +65,9 @@ class Gamepad:
                 if retryCount > 0:
                     time.sleep(0.5)
                 else:
-                    raise IOError('[GAMEPAD] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
+                    raise IOError('[Gamepad] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
         
-        print(f"[GAMEPAD] connected")         
+        print(f"[Gamepad] connected")         
 
         self.eventSize = struct.calcsize('IhBB')
         self.pressedMap = {}
@@ -102,16 +107,12 @@ class Gamepad:
         if self.connected:
             try:
                 rawEvent = self.joystickFile.read(self.eventSize)
-            except IOError as e:
+                self.connected = True
+                return struct.unpack('IhBB', rawEvent)                 
+            except Exception as e:
                 self.connected = False
-                raise IOError('Gamepad %s disconnected: %s' % (self.joystickNumber, str(e)))
-            if rawEvent is None:
-                self.connected = False
-                raise IOError('Gamepad %s disconnected' % self.joystickNumber)
-            else:
-                return struct.unpack('IhBB', rawEvent)
-        else:
-            raise IOError('Gamepad has been disconnected')
+                print(f"[Gamepad] joystick {self.joystickNumber} disconnected with error {str(e)}")
+                raise IOError
 
     def _rawEventToDescription(self, event):
         """Decodes the raw event from getNextEventRaw into a formatted string."""
@@ -170,7 +171,12 @@ class Gamepad:
         After each call the internal state used by getPressed and getAxis is updated.
 
         Throws an IOError if the gamepad is disconnected"""
-        self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
+        
+        try:
+            self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
+        except:
+            return
+        
         skip = False
         eventName = None
         entityName = None
@@ -243,7 +249,12 @@ class Gamepad:
         """Updates the internal button and axis states with the next pending event.
 
         This call waits for a new event if there are not any waiting to be processed."""
-        self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
+        
+        try:
+            self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
+        except:
+            return
+              
         if eventType == Gamepad.EVENT_CODE_BUTTON:
             if value == 0:
                 finalValue = False

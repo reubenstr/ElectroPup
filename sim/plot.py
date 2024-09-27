@@ -121,7 +121,7 @@ if __name__ == "__main__":
     plot.create_plot()
 
     try:
-        while True:
+        while gamepad_interface.is_connected():
 
             if gamepad_connected:
                 motion_parameters = gamepad_interface.get_motion_parameters()
@@ -134,5 +134,8 @@ if __name__ == "__main__":
 
             sleep(0.010)
 
-    except:
-        gamepad_interface.disconnect()
+    except Exception as e:
+        print(str(e))
+          
+    
+    gamepad_interface.disconnect()

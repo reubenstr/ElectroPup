@@ -75,8 +75,8 @@
       <geom pos="0 0 0.5" rgba="0 0 1 1" mesh="body" contype="0" conaffinity="0" />
 
       <body name="front_left" pos="0.075 0.0075 0.5" quat="1 0 0 0">
-        <inertial pos="0 0 0" quat="0 1 0 0" mass="1.000" diaginertia="0.003316 0.003316 0.0001" />
-        <joint class="abductor" name="front_left_abduction" axis="0 -1 0" />
+        <inertial pos="0 0 0" quat="1 0 0 0" mass="1.000" diaginertia="0.003316 0.003316 0.0001" />
+        <joint class="abductor" name="front_left_abduction" axis="0 1 0" />
         <geom class="abduction" pos="0 0 0" mesh="abduction" />
 
         <body name="front_left_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
@@ -136,7 +136,7 @@
 
       <body name="back_right" pos="-0.075 0.263 0.5" quat="0 0 0 1">
         <inertial pos="0 0 0" quat="1 0 0 0" mass="1.000" diaginertia="0.003316 0.003316 0.0001" />
-        <joint class="abductor" name="back_right_abduction" axis="0 -1 0" />
+        <joint class="abductor" name="back_right_abduction" axis="0 1 0" />
         <geom class="abduction" pos="0 0 0" mesh="abduction" />
 
         <body name="back_right_leg_assembly" pos="0.0345 -0.041 0" quat="0 1 0 0">
