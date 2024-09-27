@@ -2,21 +2,20 @@
 
 """
     Creates a 3D wire plot of a quadruped body and legs.
-    Controls the quadruped rotation and translation using a gamepad.
+    Gamepad controls the quadruped for live rotation and translation updates.
     
-    Used to validate body frame, inverse kinematics, and pose input (gaits) prior to applying code to physics simulations.
+    Used to validate body frame, inverse kinematics, and pose input (gaits) prior to applying code to physics simulations or physical system.
 """
-import math
-import numpy as np
+
 import matplotlib.pyplot as plt
 from math import pi
 from time import sleep
 
 # Local source.
-from model.body import Body
-from GamepadInterface import GamepadInterface
-from FrameParameters import FrameParameters
-from MotionParameters import MotionParameters
+from body import Body
+from gamepad_interface import GamepadInterface
+from parameters.frame_parameters import FrameParameters
+from parameters.motion_parameters import MotionParameters
 
 
 class Plot:
@@ -126,8 +125,9 @@ if __name__ == "__main__":
 
             if gamepad_connected:
                 motion_parameters = gamepad_interface.get_motion_parameters()
-
+            
             else:
+                # Create an error free pose to show in case a gamepad is not connected.
                 motion_parameters.height_translation = 0.200
 
             plot.update_plot(motion_parameters)

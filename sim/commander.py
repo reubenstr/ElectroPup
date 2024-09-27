@@ -10,7 +10,7 @@ import numpy as np
 #from bezier_gait import BezierGait
 
 # Local source.
-from model.body import Body
+from quadruped.body import Body
 from GamepadInterface import GamepadInterface
 from FrameParameters import FrameParameters
 from MotionParameters import MotionParameters

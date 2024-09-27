@@ -1,7 +1,7 @@
-# Readme
+# Quadruped
 
 Generates quadruped inverse kinematics.
-Creates wireframe plot of quadruped.
+Creates 3D wireframe plot of quadruped.
 Gamepad controls rotation and translation of the plotted quadruped.
 
 # Original Repository
@@ -23,3 +23,6 @@ Changed method names removing references to spot to prefer more generic naming.
 ### TODO
 
 Rotate coordinate convention to match MuJoCo (swap Y and Z)
+Fix need to swap rotation and translation order when creating homogenous transformation (original code causes quadruped to lean instead of roll) Swap causes unit tests to fail.
+
+Add limits preventing knee joints from penetrating world floor.

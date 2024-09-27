@@ -1,5 +1,3 @@
-
-
 import copy
 import math
 import numpy as np
@@ -10,10 +8,8 @@ from . leg import Leg
 from . import kinematics
 from . import transformations
 from . exceptions import DomainBreach
-from FrameParameters import FrameParameters
+from .parameters.frame_parameters import FrameParameters
 
-d2r = pi/180
-r2d = 180/pi
 
 class Body(object):
     """

@@ -14,18 +14,14 @@ class MotionParameters:
         MOTION = 2
 
     def __init__(self, motion_parameters_filepath):
-
-        self.error = False
-
-        try:
-            if os.path.exists(motion_parameters_filepath):
-                with open(motion_parameters_filepath, "r") as stream:
-                    motion_inputs = yaml.safe_load(stream)
-                    print(f"[MotionParameters] parameter file loaded, filepath: {motion_parameters_filepath}")
-            else:
-                print(f"[MotionParameters] parameter file not found, filepath: {motion_parameters_filepath}")
-        except:
-            self.error = True
+  
+        if os.path.exists(motion_parameters_filepath):
+            with open(motion_parameters_filepath, "r") as stream:
+                motion_inputs = yaml.safe_load(stream)
+                print(f"[MotionParameters] parameter file loaded, filepath: {motion_parameters_filepath}")
+        else:
+            print(f"[MotionParameters] parameter file not found, filepath: {motion_parameters_filepath}")
+            raise FileNotFoundError
 
         #
         # Parameters
@@ -68,13 +64,7 @@ class MotionParameters:
         self.height_translation = 0
 
         self.step_length = 0
-        self.yaw_rate = 0
-
-    def is_error(self):
-        return self.error
+        self.yaw_rate = 0  
 
     def print(self):
-       print(self.roll, self.pitch, self.yaw)
-       
-
-   
+       print(self.roll, self.pitch, self.yaw) 

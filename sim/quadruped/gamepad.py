@@ -4,7 +4,7 @@
 """
     Gamepad provides buttons and axis inputs from a gamepad.
 
-    Original source: https://github.com/piborg/Gamepad
+    Original source and documentation: https://github.com/piborg/Gamepad
 """
 
 import os

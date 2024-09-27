@@ -1,4 +1,4 @@
-"""Tests for the spot micro kinematics module"""
+"""Tests for the kinematics module"""
 
 import unittest
 from .. import kinematics
@@ -6,7 +6,7 @@ from .. import transformations
 import numpy as np
 from math import cos, sin, pi
 
-class TestSpotMicroKinematics(unittest.TestCase):
+class TestKinematics(unittest.TestCase):
     '''Tests rotation matrices'''
 
     def test_t_rightback(self):

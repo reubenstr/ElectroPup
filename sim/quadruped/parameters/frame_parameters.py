@@ -1,5 +1,5 @@
 """ 
-   
+  Class containing frame parameters for quadruped rotation, translation, and states.
 """
 
 import os
@@ -9,18 +9,15 @@ import numpy as np
 
 class FrameParameters:
     def __init__(self, frame_parameters_filepath):
-
-        self.error = False
-
-        try:
-            if os.path.exists(frame_parameters_filepath):
-                with open(frame_parameters_filepath, 'r') as stream:
-                    frame_parameters = yaml.safe_load(stream)
-            else:
-                print(f"[Frame] parameter file not found! Filepath: {frame_parameters_filepath}")
-        except:
-             self.error = True
-
+        
+        if os.path.exists(frame_parameters_filepath):
+            with open(frame_parameters_filepath, 'r') as stream:
+                frame_parameters = yaml.safe_load(stream)
+                print(f"[Frame] parameter file loaded, filepath: {frame_parameters_filepath}")
+        else:
+            print(f"[Frame] parameter file not found! filepath: {frame_parameters_filepath}")
+            raise FileNotFoundError
+     
         # Frame dimensions:
         self.hip_length = frame_parameters['hip_length']
         self.upper_leg_length = frame_parameters['upper_leg_length']
@@ -37,6 +34,3 @@ class FrameParameters:
         self.hip_joint_upper_bounds = math.radians(frame_parameters['hip_joint_upper_bounds'])
         self.knee_joint_lower_bounds = math.radians(frame_parameters['knee_joint_lower_bounds'])
         self.knee_joint_upper_bounds = math.radians(frame_parameters['knee_joint_upper_bounds'])
-
-    def hasError(self):
-        return self.error

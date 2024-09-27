@@ -10,9 +10,8 @@ import time
 import copy
 from time import sleep
 
-import Gamepad
-from MotionParameters import MotionParameters
-
+from . import gamepad
+from .parameters.motion_parameters import MotionParameters
 
 class GamepadInterface:
     def __init__(self, motion_parameters: MotionParameters):
@@ -25,7 +24,7 @@ class GamepadInterface:
         max_retries = 3
         retry = 0
         print(f"[GAMEPAD] attempting to connect to joystick with ID {joystick_id}...")
-        while not Gamepad.available(joystick_id):
+        while not gamepad.available(joystick_id):
             print(f"[GAMEPAD] joystick not detected on ID {joystick_id}!")
             retry += 1
             if retry  > max_retries:
@@ -33,7 +32,7 @@ class GamepadInterface:
             time.sleep(1.0)
             
         print(f"[GAMEPAD] joystick connected on ID {joystick_id}")
-        self.gamepad = Gamepad.PS4(joystick_id)              
+        self.gamepad = gamepad.PS4(joystick_id)              
         self.gamepad.startBackgroundUpdates()
         return True
 
