@@ -45,7 +45,8 @@ sudo udevadm control --reload-rules
 sudo udevadm trigger
 ls -l /dev/bus/usb/002/038  # Adjust the path based on your system's output
 
-
+https://github.com/VermontCoder/read_sbus
+https://www.digikey.com/en/products/detail/texas-instruments/SN74LVC1G14DBVT/1592006
 
 ###############################################################################
 image converter
