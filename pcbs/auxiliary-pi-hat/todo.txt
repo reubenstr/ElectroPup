@@ -1,0 +1,18 @@
+
+holes to small: lcd, mcu, etc
+
+choose smaller screen move it over
+
+NEO logic level transistors
+I2c toggle for IMU to PI or MCU
+
+
+Add DAC/AMP?
+
+4x contact
+
+buzzer
+
+
+
+

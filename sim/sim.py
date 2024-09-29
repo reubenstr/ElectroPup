@@ -56,7 +56,7 @@ class Simulation():
        
         # Set all joints angles to zero to verify model matches expected zero positions of the inverse kinematics.
         #for key in target_positions.keys():
-        #    target_positions[key] = math.radians(15)
+        #    target_positions[key] = math.radians(0)
    
         # Apply target positions to simulation model.
         for _, (key, value) in enumerate(target_positions.items()):
@@ -82,6 +82,7 @@ if __name__ == "__main__":
 
     body = Body(frame_parameters=frame_parameters)
    
+    joint_angles = None
     start = time.time()
     
     try:       
@@ -102,7 +103,7 @@ if __name__ == "__main__":
             if error_state == Body.ErrorState.NONE:
                 joint_angles = body.get_joint_angles()
 
-                simulation.tick(joint_angles)
+            simulation.tick(joint_angles)
 
             # Delay between simulation steps.
             time_until_next_step = simulation.get_timestep() - (time.time() - step_start)
@@ -114,9 +115,4 @@ if __name__ == "__main__":
         print(traceback.format_exc())
 
     finally:
-        gamepad_interface.disconnect()    
-
-
-    
-
-   
+        gamepad_interface.disconnect()  

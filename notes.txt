@@ -15,7 +15,7 @@ Per leg:
         motor back: 6x M3x18mm
         motor wheel: 1x M3x12mm
         motor wheel: 2x M3x20mm
-        motor wheel pin: 3x M3 x 
+        motor wheel pin: 3x M3 x 8mm
     Lower Leg:    
         motor front: 6x M2.5x14mm
         motor wheel: 3x M3x12mm
@@ -36,8 +36,45 @@ https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 Conformity
 
 
+###############################################################################
+aux-board
+
+sudo nano /etc/udev/rules.d/99-dfu.rules
+SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666"
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+ls -l /dev/bus/usb/002/038  # Adjust the path based on your system's output
 
 
+
+###############################################################################
+image converter
+
+
+https://github.com/riuson/lcd-image-converter
+
+Install dependancies:
+sudo apt-get update
+sudo apt-get install libqt5svg5-dev
+sudo apt-get install libqt5xmlpatterns5-dev
+sudo apt-get install qt5-qmake qtbase5-dev qttools5-dev-tools
+
+
+Make from source:
+git clone https://github.com/riuson/lcd-image-converter.git ~/lcd-image-converter
+cd ~/lcd-image-converter
+qmake
+make
+
+
+
+###############################################################################
+Gaits / pregenators
+
+https://github.com/mike4192/spotMicro
+https://github.com/chvmp/champ_setup_assistant?tab=readme-ov-file
+https://github.com/BitsRobocon/Quadruped-DIPLOID
+https://github.com/cguweb-com/Arduino-Projects/tree/main/Nova-SM3
 
 ###############################################################################
 https://hardwaretester.com/gamepad
