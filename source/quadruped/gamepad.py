@@ -544,6 +544,7 @@ class Gamepad:
         self.connected = False
         self.removeAllEventHandlers()
         self.stopBackgroundUpdates()
+        self.updateThread.join()
         del self.joystickFile
 
 

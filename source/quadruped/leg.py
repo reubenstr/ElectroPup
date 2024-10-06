@@ -1,10 +1,7 @@
-from math import pi, sin, cos
+from math import pi, degrees
 import numpy as np
 from . import kinematics
 from . import transformations
-
-d2r = pi/180
-r2d = 180/pi
 
 class Leg(object):
     '''Encapsulates a leg that consists of 3 links and 3 joint angles
@@ -139,6 +136,10 @@ class Leg(object):
         ht_foot = np.matmul(np.matmul(np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12), self._t23), self._t34)
         return ht_foot[0:3,3]
     
-    def get_leg_angles(self):
+    def get_leg_angles_in_radians(self):
         '''Return leg angles as a tuple of 3 angles, (q1, q2, q3)'''
         return (self._q1,self._q2,self._q3)
+    
+    def get_leg_angles_in_degrees(self):
+        '''Return leg angles in degrees as a dictionary as q1,q2,q3 '''        
+        return {'abduction':degrees(self._q1), 'hip':degrees(self._q2), 'knee':degrees(self._q3)}

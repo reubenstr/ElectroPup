@@ -22,7 +22,7 @@ class CanInterface():
         # How long the interface waits for a reply from a motor.
         self.timeout_ms = 30.0  
         
-        self.prints_enabled = True
+        self.prints_enabled = False
 
     ###############################################################################
     # CAN Methods

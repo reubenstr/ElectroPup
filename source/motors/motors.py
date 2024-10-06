@@ -32,7 +32,9 @@ from queue import Queue, Empty
 from dataclasses import dataclass
 from typing import Dict
 from enum import Enum
-from can_interface import CanInterface
+
+# Local
+from . can_interface import CanInterface
 
 
 class Motor():
@@ -62,11 +64,11 @@ class Motor():
         self.reply_timeout_count : int = 0
 
 
-class MotorDirection(Enum):
-    CLOCKWISE = 0
-    COUNTER_CLOCKWISE = 1
+class MotorDirection(Enum):  
+    COUNTER_CLOCKWISE = 0
+    CLOCKWISE = 1
 
-class MotorSet(Thread):
+class Motors(Thread):
     
     ###############################################################################
     # Class Initialization
@@ -78,7 +80,7 @@ class MotorSet(Thread):
         '''
         Parameters:
         - can_bus_id (str): the ID of the CAN bus, example CAN0, CAN1
-                      
+        - motor_tags (str): list of tags as keys to access motor objects                      
         '''
         
         self.exit_event = Event()   
@@ -179,6 +181,10 @@ class MotorSet(Thread):
     def get_motors(self):      
         with self.lock:                    
             return self.motors.copy()
+        
+    def get_motor_angle(self, motor_tag : str):      
+        with self.lock:                    
+            return self.motors[motor_tag].angle_degrees
         
     def op_set_target_angle_to_current_angle(self):
         """
@@ -319,8 +325,8 @@ class MotorSet(Thread):
         while difference < -180:
             difference += 360
         
-        direction = MotorDirection.CLOCKWISE if difference >= 0 else MotorDirection.COUNTER_CLOCKWISE        
-        #print(f"[] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
+        direction = MotorDirection.COUNTER_CLOCKWISE if difference >= 0 else MotorDirection.CLOCKWISE        
+        print(f"[] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
         return direction
 
 
@@ -338,7 +344,7 @@ if __name__ == "__main__":
         motor_tags = ["FLA", "FLH", "FLK"]
         
      
-        motor_set_0 = MotorSet(can_bus_id=can_bus_id, motor_tags=motor_tags)        
+        motor_set_0 = Motors(can_bus_id=can_bus_id, motor_tags=motor_tags)        
               
         motor_set_0.motors_on()
         
@@ -346,8 +352,7 @@ if __name__ == "__main__":
         motor_set_0.can_interface.enable_prints(False)
          
        
-        test = 2
-        
+        test = 1        
         if test == 0:    
             """
             Vibrate individual motors for identification and debugging.
@@ -392,7 +397,8 @@ if __name__ == "__main__":
                     start_print = time.time()             
                     motors = motor_set_0.get_motors()  
                     print(motors["FLA"].angle_degrees)
-        
+                  
+             
     
     except Exception as e:
         print(e)
