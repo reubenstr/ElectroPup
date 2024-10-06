@@ -19,6 +19,12 @@ Per leg:
     Lower Leg:    
         motor front: 6x M2.5x14mm
         motor wheel: 3x M3x12mm
+        
+8x M5*10mm brass insert (7mm dia)
+8x M5*15mm low-profile bolt
+
+8x M3x4 brass-insert (hip)
+8x M3*8mm bolt - sacrifical (hip) 
 
 ###############################################################################
 pip install mujoco
@@ -34,6 +40,16 @@ https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 
 ###############################################################################
 Conformity
+
+
+###############################################################################
+Rasberry Pi
+###############################################################################
+
+ssh pi@pidog.local
+user: pi
+pass: pi
+
 
 
 ###############################################################################

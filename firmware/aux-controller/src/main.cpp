@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <math.h>
 #include <SPI.h>
 #include "TFT_eSPI.h"
 #include "CRC32.h"
@@ -6,8 +7,7 @@
 
 TFT_eSPI tft = TFT_eSPI();
 
-const uint32_t heartbeatBlinkRateMs{250};
-
+// TODO: move pin to platformio.ini
 #define TFT_CS PIN_A4
 #define TFT_RST PIN_A2
 #define TFT_DC PIN_A3
@@ -16,6 +16,10 @@ const int cornerRadiusPx{2};
 
 uint32_t lastMessageReceivedMillis;
 const uint32_t noCommsTimeoutMs{1000};
+
+Page page = Page::SPLASH;
+
+float batteryVoltage{0};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Program
@@ -33,6 +37,10 @@ void HeartBeat()
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Display
+///////////////////////////////////////////////////////////////////////////////
+
 void InitDisplay()
 {
   tft.begin();
@@ -41,9 +49,31 @@ void InitDisplay()
   delay(25);
   tft.fillScreen(TFT_BLACK);
   tft.setTextDatum(CC_DATUM);
+
+  UpdateDisplay(true);
 }
 
-void UpdateDisplay()
+void UpdateDisplay(bool forceRefresh = false)
+{
+  if (page == Page::SPLASH)
+  {
+    DisplaySplashPage();
+  }
+  else if (page == Page::SYSTEM)
+  {
+    DisplaySystemPage(forceRefresh);
+  }
+  else if (page == Page::BATTERY)
+  {
+    DisplayBatteryPage(forceRefresh);
+  }
+}
+
+void DisplaySplashPage()
+{
+}
+
+void DisplaySystemPage(bool forceRefresh = false)
 {
   tft.setTextFont(2);
   tft.setTextSize(1);
@@ -57,6 +87,7 @@ void UpdateDisplay()
 
   {
     // SYSTEM
+    static bool previousSystemStatus[numSystemStatus];
     const int xOffset = 7;
     const int yOffset = 20;
     const int xMult = 29;
@@ -66,15 +97,22 @@ void UpdateDisplay()
     {
       for (int y = 0; y < 2; y++)
       {
-        uint32_t color = systemStatus[index] ? TFT_RED: TFT_GREEN;
-        tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
-        tft.drawString(systemStatusStrings[index++], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
+        if (previousSystemStatus[index] != systemErrors[index] || forceRefresh)
+        {
+          previousSystemStatus[index] = systemErrors[index];
+
+          uint32_t color = systemErrors[index] ? TFT_RED : TFT_GREEN;
+          tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
+          tft.drawString(systemStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
+        }
+        index++;
       }
     }
   }
 
   {
     // MOTORS
+    static bool previousMotorStatus[numMotors];
     const int xOffset = 7;
     const int yOffset = 86;
     const int xMult = 29;
@@ -85,14 +123,19 @@ void UpdateDisplay()
     {
       for (int y = 0; y < 3; y++)
       {
-        uint32_t color = motorStatus[index] ? TFT_RED: TFT_GREEN;
-        tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
-        tft.drawString(motorStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
+        if (previousMotorStatus[index] != motorErrors[index] || forceRefresh)
+        {
+          previousMotorStatus[index] = motorErrors[index];
+          uint32_t color = motorErrors[index] ? TFT_RED : TFT_GREEN;
+          tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
+          tft.drawString(motorStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
+        }
         index++;
       }
     }
   }
 
+  if (forceRefresh)
   {
     // tft.fillRect(79, 0, 2, tft.height(), TFT_GREEN);
     tft.drawLine(0, 0, tft.width() - 1, 0, TFT_GREEN);
@@ -101,6 +144,14 @@ void UpdateDisplay()
     tft.drawLine(0, tft.height() - 1, 0, 0, TFT_GREEN);
   }
 }
+
+void DisplayBatteryPage(bool forceRefresh = false)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Communications
+///////////////////////////////////////////////////////////////////////////////
 
 void InitMessageComms()
 {
@@ -127,13 +178,15 @@ void CheckForMessage()
       Serial.println("Message CRC32 is valid.");
       lastMessageReceivedMillis = millis();
 
-      systemStatus[0] = message.messageData.jointAngle;
-      systemStatus[1] = message.messageData.inverseKinematics;
-      systemStatus[2] = message.messageData.joystick;
-      systemStatus[3] = message.messageData.overCurrent;
+      systemErrors[0] = message.messageData.jointAngleError;
+      systemErrors[1] = message.messageData.inverseKinematicsError;
+      systemErrors[2] = message.messageData.joystickError;
+      systemErrors[3] = message.messageData.overCurrentError;
 
       for (int i = 0; i < numMotors; i++)
-        motorStatus[i] = message.messageData.motorStatus[i];
+        motorErrors[i] = message.messageData.motorErrors[i];
+
+      batteryVoltage = message.messageData.batteryVoltage;
     }
     else
     {
@@ -148,6 +201,38 @@ void CheckCommsTimeout()
   if (millis() - lastMessageReceivedMillis > noCommsTimeoutMs)
   {
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Calculations
+///////////////////////////////////////////////////////////////////////////////
+
+float CalcBatteryPercent()
+{
+  // https://electronics.stackexchange.com/questions/435837/calculate-battery-percentage-on-lipo-battery
+  return 123 - (123 / pow(1 + pow(batteryVoltage / 3.7, 80), 0.165));
+}
+
+bool IsLowBattery()
+{
+  return CalcBatteryPercent() < lowBatteryPercent;
+}
+
+bool IsError()
+{
+  for (int i = 0; i < numSystemStatus; i++)
+  {
+    if (systemErrors[i])
+      return true;
+  }
+
+  for (int i = 0; i < numMotors; i++)
+  {
+    if (motorErrors[i])
+      return true;
+  }
+
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
