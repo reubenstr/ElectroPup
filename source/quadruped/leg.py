@@ -140,6 +140,13 @@ class Leg(object):
         '''Return leg angles as a tuple of 3 angles, (q1, q2, q3)'''
         return (self._q1,self._q2,self._q3)
     
-    def get_leg_angles_in_degrees(self):
-        '''Return leg angles in degrees as a dictionary as q1,q2,q3 '''        
-        return {'abduction':degrees(self._q1), 'hip':degrees(self._q2), 'knee':degrees(self._q3)}
+    def get_leg_angles_in_degrees(self, normalize : bool):
+        '''Return leg angles in degrees as a dictionary as q1,q2,q3 '''  
+        
+        if normalize:
+            abduction = degrees(self._q1) + 360 if degrees(self._q1) < 0 else degrees(self._q1)
+            hip = degrees(self._q2) + 360 if degrees(self._q2) < 0 else degrees(self._q2)
+            knee = degrees(self._q3) + 360 if degrees(self._q3) < 0 else degrees(self._q3)
+            return {'abduction':abduction, 'hip':hip, 'knee':knee}
+        else:              
+            return {'abduction':degrees(self._q1), 'hip':degrees(self._q2), 'knee':degrees(self._q3)}

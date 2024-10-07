@@ -39,6 +39,8 @@ if __name__ == "__main__":
     motors_front.motors_on()
     
     motors_front.start()
+    
+    temp = 0
 
     try:
         while gamepad_interface.is_connected():
@@ -56,7 +58,7 @@ if __name__ == "__main__":
                 )
                 
                 if error_state == Body.ErrorState.NONE:
-                    joint_angles = body.get_joint_angles()
+                    joint_angles = body.get_joint_angles(True)
 
                     #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
                     #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  
@@ -66,7 +68,18 @@ if __name__ == "__main__":
                     flh=joint_angles['front_left']['hip']  
                     flk=joint_angles['front_left']['knee']  
                     
-                    #fla = 0
+                    import random
+                    #fla = 90.0 +  random.random() / 2
+                    #fla = fla + 45
+                    
+                    temp += 1
+                    fla = temp                   
+                    flh = temp# + random.random() / 2
+                    
+                   
+                    #flk = 30 +  random.randint(1, 2) * 5
+                    
+                    
                     
                     a1 = motors_front.get_motor_angle("FLA")
                     a2 = motors_front.get_motor_angle("FLH")
@@ -74,16 +87,16 @@ if __name__ == "__main__":
                     
                     print(f"{fla:0.2f}, {a1:0.2f} | {flh:0.2f}, {a2:0.2f} | {flk:0.2f}, {a3:0.2f}")
                     
-                    
-                    motors_front.set_motor_targets(motor_tag="FLA", speed=1000, angle=fla)   
-                    motors_front.set_motor_targets(motor_tag="FLH", speed=1000, angle=flh)  
-                    motors_front.set_motor_targets(motor_tag="FLK", speed=1000, angle=flk) 
+                    speed = 2000
+                    motors_front.set_motor_targets(motor_tag="FLA", speed=speed, angle=fla)   
+                    motors_front.set_motor_targets(motor_tag="FLH", speed=speed, angle=flh)  
+                    motors_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
                     
                 else:
                     print(error_state.name)
                     pass
 
-            sleep(0.010)
+            sleep(0.250)
             
     except KeyboardInterrupt:
         print ('Keyboard interrupt, exiting')

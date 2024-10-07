@@ -78,14 +78,20 @@ class CanInterface():
         '''        
             Sets speed and angle of the motor.
         '''       
+        
+        # temp:
+        if motor_id == 3:
+            print(angle)
+        
+        
         speed_low_byte = speed & 0x00FF
         speed_high_byte = speed >> 8 & 0x00FF 
         angle_byte_0 = int(angle * 1000.0) >> 0 & 0x000000FF
         angle_byte_1 = int(angle * 1000.0) >> 8 & 0x000000FF
         angle_byte_2 = int(angle * 1000.0) >> 16 & 0x000000FF
         angle_byte_3 = int(angle * 1000.0) >> 24 & 0x000000FF
-        self.can_send_message(motor_id, [0xA6, direction, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3])
-        message = self.wait_for_reply()
+        self.can_send_message(motor_id, [0xA5, direction, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3])
+        message = self.wait_for_reply()        
         return message and motor_id == message.arbitration_id - 0x140      
       
     def cmd_motor_increment_angle(self, motor_id : int, speed : int, angle : float):    

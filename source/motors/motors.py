@@ -217,14 +217,14 @@ class Motors(Thread):
             else:
                 self.motors[motor_tag].reply_timeout_count += 1   
                 continue                               
-                    
-            self.motors[motor_tag].reply_timeout_count = 0          
-            direction = self.angle_direction(current_angle=sensor_angle, target_angle=angle)    
-            success = self.can_interface.cmd_motor_single_angle( motor.motor_id, direction.value, speed, angle)  
+                         
+            direction = self.angle_direction(motor_tag = motor_tag, current_angle=sensor_angle, target_angle=angle)    
+            success = self.can_interface.cmd_motor_single_angle(motor.motor_id, direction.value, speed, angle)  
             if success:
                 self.motors[motor_tag].reply_timeout_count = 0 
             else:
-                self.motors[motor_tag].reply_timeout_count += 1           
+                self.motors[motor_tag].reply_timeout_count += 1   
+                           
     
     def _worker_get_all_status(self):
         """Get motor status from the motors"""        
@@ -270,12 +270,18 @@ class Motors(Thread):
             return
 
         while not self.exit_event.is_set() and not self.halt: 
+            
+            #start = time.time()          
                         
             self._worker_set_all_targets()
             
-            self._worker_get_all_status()
+            #self._worker_get_all_status()
             
             self._worker_check_for_errors()  
+            
+            #print(f"{((time.time() - start) * 1000):0.2f}")
+            
+            sleep(0.010)
                     
         
         
@@ -314,8 +320,8 @@ class Motors(Thread):
     ###############################################################################
     # Helpers
     ###############################################################################
-    @staticmethod
-    def angle_direction(current_angle : float, target_angle : float):   
+ 
+    def angle_direction(self, motor_tag: str, current_angle : float, target_angle : float):   
         """Determine the direction of movement from going from the current angle to the target angle"""
         difference = target_angle - current_angle
     
@@ -326,7 +332,8 @@ class Motors(Thread):
             difference += 360
         
         direction = MotorDirection.COUNTER_CLOCKWISE if difference >= 0 else MotorDirection.CLOCKWISE        
-        print(f"[] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
+        if motor_tag == 'FLH':
+            print(f"[{self.tag}][{motor_tag}] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
         return direction
 
 
