@@ -36,7 +36,7 @@ if __name__ == "__main__":
     motor_tags = ["FLA", "FLH", "FLK"]
     motors_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
     
-    motors_front.motors_on()
+    motors_front.cmd_all_motors_on()
     
     motors_front.start()
     
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                     motors_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
                     
                     if motors_front.is_halted():
-                        motors = motors_front.get_motors()
+                        motors = motors_front.get_all_motors()
                         for motor_tag, motor in motors.items():
                             print(f"[{motor_tag}] {motor.reply_timeout_count}")
                             
