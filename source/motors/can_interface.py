@@ -74,7 +74,7 @@ class CanInterface():
         message = self.wait_for_reply()
         return message and motor_id == message.arbitration_id - 0x140    
                               
-    def cmd_motor_single_angle(self, motor_id : int, direction : bool, speed : int, angle : float):    
+    def cmd_motor_multi_angle_2(self, motor_id : int, direction : bool, speed : int, angle : float):    
         '''        
             Sets speed and angle of the motor.
         '''       
@@ -90,7 +90,7 @@ class CanInterface():
         angle_byte_1 = int(angle * 1000.0) >> 8 & 0x000000FF
         angle_byte_2 = int(angle * 1000.0) >> 16 & 0x000000FF
         angle_byte_3 = int(angle * 1000.0) >> 24 & 0x000000FF
-        self.can_send_message(motor_id, [0xA5, direction, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3])
+        self.can_send_message(motor_id, [0xA4, direction, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3])
         message = self.wait_for_reply()        
         return message and motor_id == message.arbitration_id - 0x140      
       

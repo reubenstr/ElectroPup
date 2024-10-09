@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 )
                 
                 if error_state == Body.ErrorState.NONE:
-                    joint_angles = body.get_joint_angles(True)
+                    joint_angles = body.get_joint_angles(False)
 
                     #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
                     #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  
@@ -68,35 +68,31 @@ if __name__ == "__main__":
                     flh=joint_angles['front_left']['hip']  
                     flk=joint_angles['front_left']['knee']  
                     
-                    import random
-                    #fla = 90.0 +  random.random() / 2
-                    #fla = fla + 45
-                    
-                    temp += 1
-                    fla = temp                   
-                    flh = temp# + random.random() / 2
-                    
+              
                    
-                    #flk = 30 +  random.randint(1, 2) * 5
-                    
-                    
-                    
+                                        
                     a1 = motors_front.get_motor_angle("FLA")
                     a2 = motors_front.get_motor_angle("FLH")
                     a3 = motors_front.get_motor_angle("FLK")
                     
                     print(f"{fla:0.2f}, {a1:0.2f} | {flh:0.2f}, {a2:0.2f} | {flk:0.2f}, {a3:0.2f}")
                     
-                    speed = 2000
+                    speed = 2500
                     motors_front.set_motor_targets(motor_tag="FLA", speed=speed, angle=fla)   
                     motors_front.set_motor_targets(motor_tag="FLH", speed=speed, angle=flh)  
                     motors_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
+                    
+                    if motors_front.is_halted():
+                        motors = motors_front.get_motors()
+                        for motor_tag, motor in motors.items():
+                            print(f"[{motor_tag}] {motor.reply_timeout_count}")
+                            
                     
                 else:
                     print(error_state.name)
                     pass
 
-            sleep(0.250)
+            sleep(0.010)
             
     except KeyboardInterrupt:
         print ('Keyboard interrupt, exiting')

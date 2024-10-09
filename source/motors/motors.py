@@ -7,9 +7,7 @@
     
     Class expects the hardware ID of the actuators to be 1 to number_of_motors
 
-    Actuator driver limitations:
-        - Does not auto select rotation direction to make shortest distance to target angle. 
-            Therefore the library polls the motor angle and selects the rotation direction. 
+    Actuator driver limitations:       
         - The driver does not have a min and max angle, therefore there is a danger of collision.
         - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
             of setting these parameters.
@@ -59,7 +57,7 @@ class Motor():
         self.over_voltage_protection  : bool = False
         self.over_temperature_protection : bool = False
         self.lost_input_protection : bool     = False    
-        
+             
         # Communication states:
         self.reply_timeout_count : int = 0
 
@@ -137,7 +135,11 @@ class Motors(Thread):
             sleep(0.250)
             self.can_interface.cmd_motor_increment_angle(motor_id, speed=250, angle=-1)
             sleep(0.250)
-               
+     
+    def get_motor_tag_by_motor_id(self, motor_id : int):
+            for key, motor in self.motors.items():
+                if motor.motor_id == motor_id:
+                    return key
             
     ###############################################################################
     # All Motors
@@ -167,13 +169,12 @@ class Motors(Thread):
     ###############################################################################
     # Protected Getters and Setters
     ###############################################################################
-       
-    
+           
     def set_motor_targets(self, motor_tag : str, speed : int, angle : float):         
         with self.lock:
             self.motors[motor_tag].target_speed = speed
             self.motors[motor_tag].target_angle_degrees = angle
-    
+         
     def get_motor_targets(self,  motor_tag : str):      
         with self.lock:                    
             return self.motors[motor_tag].target_speed, self.motors[motor_tag].target_angle_degrees
@@ -185,7 +186,23 @@ class Motors(Thread):
     def get_motor_angle(self, motor_tag : str):      
         with self.lock:                    
             return self.motors[motor_tag].angle_degrees
+       
+    def op_fetch_motor_angle(self, motor_tag : str):
+        with self.lock: 
+            motor_id = self.motors[motor_tag].motor_id
+            sensor_angle = self.can_interface.req_motor_single_angle(motor_id)    
+            if sensor_angle:
+                self.motors[motor_tag].angle_degrees = sensor_angle  
+                return True
+            return False
         
+    def op_fetch_all_motor_angles(self):
+        with self.lock:    
+            for motor_tag, motor in self.motors.items():
+                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)    
+                if sensor_angle:
+                    self.motors[motor_tag].angle_degrees = sensor_angle
+                   
     def op_set_target_angle_to_current_angle(self):
         """
         Sets all motor target angles to current current
@@ -199,8 +216,7 @@ class Motors(Thread):
             else:
                 return False 
         return True                            
-                
-        
+                        
     ###############################################################################
     # Worker
     ###############################################################################
@@ -210,21 +226,21 @@ class Motors(Thread):
         for motor_tag, motor in self.motors.items():   
             speed, angle = self.get_motor_targets (motor_tag)                                      
             
-            sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)  
+            """ sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)  
             if sensor_angle:
                 self.motors[motor_tag].angle_degrees = sensor_angle
                 self.motors[motor_tag].reply_timeout_count = 0 
             else:
                 self.motors[motor_tag].reply_timeout_count += 1   
-                continue                               
+                continue       """                         
                          
-            direction = self.angle_direction(motor_tag = motor_tag, current_angle=sensor_angle, target_angle=angle)    
-            success = self.can_interface.cmd_motor_single_angle(motor.motor_id, direction.value, speed, angle)  
+            #direction = self.angle_direction(motor_tag = motor_tag, current_angle=sensor_angle, target_angle=angle)    
+            direction = MotorDirection.CLOCKWISE
+            success = self.can_interface.cmd_motor_multi_angle_2(motor.motor_id, direction.value, speed, angle)  
             if success:
                 self.motors[motor_tag].reply_timeout_count = 0 
             else:
                 self.motors[motor_tag].reply_timeout_count += 1   
-                           
     
     def _worker_get_all_status(self):
         """Get motor status from the motors"""        
@@ -271,7 +287,7 @@ class Motors(Thread):
 
         while not self.exit_event.is_set() and not self.halt: 
             
-            #start = time.time()          
+            start = time.time()          
                         
             self._worker_set_all_targets()
             
@@ -279,7 +295,7 @@ class Motors(Thread):
             
             self._worker_check_for_errors()  
             
-            #print(f"{((time.time() - start) * 1000):0.2f}")
+            print(f"{((time.time() - start) * 1000):0.2f}")
             
             sleep(0.010)
                     
@@ -289,7 +305,7 @@ class Motors(Thread):
     # General 
     ###############################################################################  
     
-    
+  
     def is_error(self, motors : Dict[str, Motor]) :
         """        
         Args:
@@ -311,8 +327,9 @@ class Motors(Thread):
         return self.halt
        
     def shutdown(self):
-        self.exit_event.set()   
-        self.join()    
+        if self.is_alive():
+            self.exit_event.set()   
+            self.join()    
         self.motors_off()
         self.can_interface.can_deinit()    
                        
