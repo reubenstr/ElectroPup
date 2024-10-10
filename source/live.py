@@ -32,15 +32,23 @@ if __name__ == "__main__":
     
     body = Body(frame_parameters=frame_parameters)
 
-    #motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]     
-    motor_tags = ["FLA", "FLH", "FLK"]
-    motors_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
+
+    motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]     
+    #motor_tags = ["FLA", "FLH", "FLK"]
+    motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
+ 
     
-    motors_front.cmd_all_motors_on()
+    #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
+    # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
+    #motor_interface_back.cmd_all_motors_off()
     
-    motors_front.start()
+      
+    motor_interface_front.cmd_all_motors_on()
     
-    temp = 0
+    motor_interface_front.start()
+    
+    
+    
 
     try:
         while gamepad_interface.is_connected():
@@ -56,9 +64,10 @@ if __name__ == "__main__":
                     y=motion_parameters.height_translation,
                     z=motion_parameters.forward_translation,
                 )
-                
-                if error_state == Body.ErrorState.NONE:
-                    joint_angles = body.get_joint_angles(False)
+                if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
+                    print(error_state.name)
+                elif error_state == Body.ErrorState.NONE:
+                    joint_angles = body.get_joint_angles()
 
                     #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
                     #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  
@@ -69,28 +78,22 @@ if __name__ == "__main__":
                     flk=joint_angles['front_left']['knee']  
                     
               
-                   
-                                        
-                    a1 = motors_front.get_motor_angle("FLA")
-                    a2 = motors_front.get_motor_angle("FLH")
-                    a3 = motors_front.get_motor_angle("FLK")
-                    
-                    print(f"{fla:0.2f}, {a1:0.2f} | {flh:0.2f}, {a2:0.2f} | {flk:0.2f}, {a3:0.2f}")
+                         
                     
                     speed = 2500
-                    motors_front.set_motor_targets(motor_tag="FLA", speed=speed, angle=fla)   
-                    motors_front.set_motor_targets(motor_tag="FLH", speed=speed, angle=flh)  
-                    motors_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
+                    motor_interface_front.set_motor_targets(motor_tag="FLA", speed=speed, angle=fla)   
+                    motor_interface_front.set_motor_targets(motor_tag="FLH", speed=speed, angle=flh)  
+                    motor_interface_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
                     
-                    if motors_front.is_halted():
-                        motors = motors_front.get_all_motors()
+                    if not motor_interface_front.is_alive():
+                        motors = motor_interface_front.get_all_motors()
                         for motor_tag, motor in motors.items():
                             print(f"[{motor_tag}] {motor.reply_timeout_count}")
                             
+                            # is_can_error
+                            
                     
-                else:
-                    print(error_state.name)
-                    pass
+               
 
             sleep(0.010)
             
@@ -102,5 +105,5 @@ if __name__ == "__main__":
         print(traceback.format_exc())
         
     finally:          
-        motors_front.shutdown()
+        motor_interface_front.shutdown()
         gamepad_interface.disconnect()

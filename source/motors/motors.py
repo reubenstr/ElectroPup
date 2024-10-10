@@ -1,18 +1,18 @@
 #!/usr/bin/python3
 
 """
-    Controls a set of MG4010E-i10v3 actuators.
-    
-    Groups a collection of motors contained on a single CAN bus network.
+    Controls a collection of MG4010E-i10v3 actuators on a single CAN bus network.
     
     Class expects the hardware ID of the actuators to be [1 to number_of_motors]
 
+    Creates a constains stream of target (angle, speed) updates via a thread.
+    
+    Application should poll for errors and take action such as shutting down the other motors.
+
     Actuator driver limitations:       
-        - The driver does not have a min and max angle, therefore there is a danger of collision.
+        - The driver does not have a min and max angle, therefore there is a higher risk of collision.
         - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
-            of setting these parameters.
-             
-            
+            of setting these parameters. The torque limit is used to create 'compliance'.            
 """
 
 import os
@@ -60,7 +60,7 @@ class Motor():
              
         # Communication states:
         self.reply_timeout_count : int = 0
-
+        
 
 class MotorDirection(Enum):  
     COUNTER_CLOCKWISE = 0
@@ -93,10 +93,10 @@ class Motors(Thread):
         self.can_interface = CanInterface(can_bus_id)
         self.can_interface.op_can_init()
         
+        # Timeouts and Timings:
         self.max_reply_timeouts_allow = 3
-        
-        self.halt = False
-        
+        self.get_status_rate_seconds : float = 0.500
+                
     ###############################################################################
     # Per Motor
     ###############################################################################      
@@ -228,13 +228,36 @@ class Motors(Thread):
         
         :return: True if all angles have been set, False if a motor did not reply to the command        
         """
-        for motor_tag, motor in self.motors.items():                      
-            sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)  
-            if sensor_angle:
-                self.motors[motor_tag].target_angle_degrees = sensor_angle                
-            else:
-                return False 
-        return True                            
+        with self.lock: 
+            for motor_tag, motor in self.motors.items():                      
+                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)  
+                if sensor_angle:
+                    self.motors[motor_tag].reply_timeout_count = 0 
+                    self.motors[motor_tag].target_angle_degrees = sensor_angle                
+                else:
+                    self.motors[motor_tag].reply_timeout_count += 1 
+                    return False 
+            return True    
+    
+    def is_error(self) :
+        """        
+        Args:
+            motors (Dict[str, Motor]): _description_
+
+        Returns:
+            bool: True if motor contains a fault state or comms error
+        """
+        if self.can_interface.is_can_error():
+            return True
+        
+        with self.lock: 
+            error = False
+            for motor_tag, motor in self.motors.items():
+                if motor.under_voltage_protection or motor.over_voltage_protection or motor.over_temperature_protection or motor.lost_input_protection:                 
+                    error = True
+                if motor.reply_timeout_count > self.max_reply_timeouts_allow:
+                    error = True
+            return error                        
                         
     ###############################################################################
     # Worker
@@ -244,7 +267,11 @@ class Motors(Thread):
         """Send target speed and angle to the motors"""
         for motor_tag, motor in self.motors.items():   
             speed, angle = self.get_motor_targets (motor_tag)         
-            self.can_interface.cmd_motor_multi_angle_2(motor.motor_id, speed, angle)  
+            success = self.can_interface.cmd_motor_multi_angle_2(motor.motor_id, speed, angle)  
+            if success:
+                self.motors[motor_tag].reply_timeout_count = 0  
+            else:
+                self.motors[motor_tag].reply_timeout_count += 1     
     
     def _worker_get_all_status(self):
         """Get motor status from the motors"""        
@@ -258,71 +285,45 @@ class Motors(Thread):
                     self.motors[motor_tag].over_voltage_protection = result['over_voltage_protection']
                     self.motors[motor_tag].over_temperature_protection = result['over_temperature_protection']
                     self.motors[motor_tag].lost_input_protection = result['lost_input_protection']  
-
-    def _worker_check_for_errors(self):
-        """Check motor status for errors"""        
-        with self.lock: 
-            if self.is_error(self.motors):
-                self.halt = True
-                print(f"[{self.tag}] *** HALT STATE ***")                
-                self.cmd_all_motors_off()
        
     def run(self):      
         """
         Main function that continously updates motor targets (speed, position) and checks for errors.
         """  
-                
-        if self.halt:
-            print(f"[{self.tag}] error, unable to start thread, in a halt state!")
-            return
-        else:
-            print(f"[{self.tag}] thread started")
-            
+
+        # Set target angles to current motor angle to prevent undesired start motor jumps.
         if self.op_set_all_target_angles_to_current_angles():    
             print(f"[{self.tag}] target angles set to current angles")
         else:
             print(f"[{self.tag}] error, unable to set all motor target angles, exiting thread!")
             return
 
-        while not self.exit_event.is_set() and not self.halt: 
+        start_status_time = time.time()
+        while not self.exit_event.is_set(): 
             
-            #start = time.time()          
+            start = time.time()          
                         
             self._worker_set_all_targets()
             
-            # TODO: check periodically
-            #self._worker_get_all_status()
+            if time.time() - start_status_time > self.get_status_rate_seconds:
+                start_status_time = time.time()            
+                self._worker_get_all_status()
             
-            self._worker_check_for_errors()  
-            
-            #print(f"[] processing time: {((time.time() - start) * 1000):0.2f}")
-            
-            sleep(0.010)
-               
-               
+            if self.is_error():
+                print(f"[{self.tag}] error, exiting thread!")  
+                self.cmd_all_motors_off()
+                break               
+                         
+            print(f"[] processing time: {((time.time() - start) * 1000):0.2f}")
+
+
     ###############################################################################
     # General 
     ###############################################################################  
-      
-    def is_error(self, motors : Dict[str, Motor]) :
-        """        
-        Args:
-            motors (Dict[str, Motor]): _description_
-
-        Returns:
-            bool: True if motor contains a fault state or comms error
-        """
-        error = False
-        for motor_tag, motor in motors.items():
-            if motor.under_voltage_protection or motor.over_voltage_protection or motor.over_temperature_protection or motor.lost_input_protection:                 
-                error = True
-            if motor.reply_timeout_count > self.max_reply_timeouts_allow:
-               error = True
-        return error
-                                
-    def is_halted(self):
-        return self.halt
-       
+             
+    def is_can_error(self):
+        return self.can_interface.is_can_error()         
+              
     def shutdown(self):
         if self.is_alive():
             self.exit_event.set()   
@@ -354,7 +355,7 @@ class Motors(Thread):
 ###############################################################################
 if __name__ == "__main__":
     
-    print("Starting MotorSet test...")
+    print("Starting motor test...")
 
     try:   
         can_bus_id = 'can0'
@@ -427,5 +428,4 @@ if __name__ == "__main__":
     finally:         
         motor_set_0.shutdown()       
                    
-        sys.exit(0)
-   
+        sys.exit(0)   

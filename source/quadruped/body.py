@@ -167,7 +167,7 @@ class Body(object):
         self.legs['back_left'].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])    
 
     
-    def get_joint_angles(self, normalize : bool):
+    def get_joint_angles(self):
         ''' Get the joint angles for all four legs
         Args:
             normalize: fetches angles normalized (360 added to negative angles)
@@ -177,10 +177,10 @@ class Body(object):
         '''
 
         joint_angles = {}
-        joint_angles['front_left'] = self.legs['front_left'].get_leg_angles_in_degrees(normalize)
-        joint_angles['front_right'] = self.legs['front_right'].get_leg_angles_in_degrees(normalize)
-        joint_angles['back_left'] = self.legs['back_left'].get_leg_angles_in_degrees(normalize)
-        joint_angles['back_right'] = self.legs['back_right'].get_leg_angles_in_degrees(normalize)
+        joint_angles['front_left'] = self.legs['front_left'].get_leg_angles_in_degrees()
+        joint_angles['front_right'] = self.legs['front_right'].get_leg_angles_in_degrees()
+        joint_angles['back_left'] = self.legs['back_left'].get_leg_angles_in_degrees()
+        joint_angles['back_right'] = self.legs['back_right'].get_leg_angles_in_degrees()
         
         return joint_angles
     

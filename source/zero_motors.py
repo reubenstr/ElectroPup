@@ -133,7 +133,7 @@ def main(stdscr):
                         
             stdscr.addstr(14, 0, "—————————————————————————————————")
             stdscr.addstr(15, 0, warning, curses.color_pair(3))
-            stdscr.addstr(16, 0, "0 = zero, arrow = move row, q = quit")    
+            stdscr.addstr(16, 0, "0 = zero, arrows = move row, q = quit")    
                
         except KeyboardInterrupt:
             break        

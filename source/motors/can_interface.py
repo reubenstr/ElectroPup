@@ -23,9 +23,11 @@ class CanInterface():
         self.timeout_ms = 30.0  
         
         self.prints_enabled = False
+        
+        self.error = False
 
     ###############################################################################
-    # CAN Operations
+    # Operations
     ###############################################################################
 
     def op_can_init(self):
@@ -33,7 +35,11 @@ class CanInterface():
             print(f"[{self.tag}] initializing")
         os.system(f'sudo ip link set {self.can_bus_id} type can bitrate 1000000') 
         os.system(f'sudo ifconfig {self.can_bus_id} up')
-        self.canbus = can.interface.Bus(channel = self.can_bus_id, bustype = 'socketcan')
+        try:
+            self.canbus = can.interface.Bus(channel = self.can_bus_id, bustype = 'socketcan')
+        except Exception as e:
+            self.error = True
+            print(f"[{self.tag}] {type(e).__name__} {e}")
 
     def op_can_deinit(self):     
         if self.prints_enabled:  
@@ -48,41 +54,42 @@ class CanInterface():
             msg = can.Message(is_extended_id=False, arbitration_id=identifier, data=data)
             self.canbus.send(msg)
             return True
-        except Exception as e:
+        except Exception as e:  
+            self.error = True         
             if self.prints_enabled: 
-                print(f"[{self.tag}] {e}")
+                print(f"[{self.tag}] {type(e).__name__} {e}")
             return False
     
     def op_wait_for_reply(self):  
         return self.canbus.recv(self.timeout_ms / 1000.0)
    
     ###############################################################################
-    # Motor Commands
+    # Commands
     ###############################################################################
 
     def cmd_motor_off(self, motor_id: int):      
         if not self.op_can_send_message(motor_id, [0x80, 0, 0, 0, 0, 0, 0, 0]):
             return False
-        message = self.op_wait_for_reply()
-        return message and motor_id == message.arbitration_id - 0x140            
+        reply = self.op_wait_for_reply()
+        return reply and motor_id == reply.arbitration_id - 0x140            
 
     def cmd_motor_on(self, motor_id : int):  
         if not self.op_can_send_message(motor_id, [0x88, 0, 0, 0, 0, 0, 0, 0]):
             return False
-        message = self.op_wait_for_reply()
-        return message and motor_id == message.arbitration_id - 0x140
+        reply = self.op_wait_for_reply()
+        return reply and motor_id == reply.arbitration_id - 0x140
                
     def cmd_clear_motor_errors(self, motor_id : int):        
         if not self.op_can_send_message(motor_id, [0x9B, 0, 0, 0, 0, 0, 0, 0]):
             return False
-        message = self.op_wait_for_reply()
-        return message and motor_id == message.arbitration_id - 0x140    
+        reply = self.op_wait_for_reply()
+        return reply and motor_id == reply.arbitration_id - 0x140    
         
     def cmd_set_zero_to_current_pos(self, motor_id : int):      
         if not self.op_can_send_message(motor_id, [0x19, 0, 0, 0, 0, 0, 0, 0]):
             return False
-        message = self.op_wait_for_reply()
-        return message and motor_id == message.arbitration_id - 0x140    
+        reply = self.op_wait_for_reply()
+        return reply and motor_id == reply.arbitration_id - 0x140    
                               
     def cmd_motor_multi_angle_2(self, motor_id : bool, speed : int, angle : float):    
         '''        
@@ -96,8 +103,8 @@ class CanInterface():
         angle_byte_3 = int(angle * 1000.0) >> 24 & 0x000000FF
         if not self.op_can_send_message(motor_id, [0xA4, 0, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3]):
             return False
-        message = self.op_wait_for_reply()        
-        return message and motor_id == message.arbitration_id - 0x140      
+        reply = self.op_wait_for_reply()                      
+        return reply and motor_id == reply.arbitration_id - 0x140      
       
     def cmd_motor_increment_angle(self, motor_id : int, speed : int, angle : float):    
         '''        
@@ -111,21 +118,21 @@ class CanInterface():
         angle_byte_3 = int(angle * 1000.0) >> 24 & 0x000000FF
         if not self.op_can_send_message(motor_id, [0xA8, 0, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3]):
             return False
-        message = self.op_wait_for_reply()
-        return message and motor_id == message.arbitration_id - 0x140      
+        reply = self.op_wait_for_reply()
+        return reply and motor_id == reply.arbitration_id - 0x140      
 
     ###############################################################################
-    # Motor Requests
+    # Requests
     ###############################################################################
 
     def req_state_1(self, motor_id: int):          
         if not self.op_can_send_message(motor_id, [0x9A, 0, 0, 0, 0, 0, 0, 0])   :
             return None
-        message = self.op_wait_for_reply()
-        if message:
-             reply_motor_id = message.arbitration_id - 0x140
+        reply = self.op_wait_for_reply()
+        if reply:
+             reply_motor_id = reply.arbitration_id - 0x140
              if motor_id == reply_motor_id:                     
-                reply_data = message.data        
+                reply_data = reply.data        
                 temperature = reply_data[1]
                 voltage = (reply_data[2] | reply_data[3] << 8) / 100.0 # Datasheet is wrong, not DATA[3] and DATA[4].  
                 under_voltage_protection = bool(reply_data[7] & 0b00000001)
@@ -144,11 +151,11 @@ class CanInterface():
     def req_state_2(self, motor_id: int):           
         if not self.op_can_send_message(motor_id, [0x9C, 0, 0, 0, 0, 0, 0, 0])   :
             return None
-        message = self.op_wait_for_reply()
-        if message:
-            reply_motor_id = message.arbitration_id - 0x140
+        reply = self.op_wait_for_reply()
+        if reply:
+            reply_motor_id = reply.arbitration_id - 0x140
             if motor_id == reply_motor_id:         
-                reply_data = message.data        
+                reply_data = reply.data        
                 temperature = reply_data[1]
                 watts_raw = self.convert_twos_compliment(reply_data[2] | reply_data[3] << 8)       
                 watts = self.map_range(float(watts_raw), -2048.0, 2048.0, -33.0, 33.0)
@@ -165,16 +172,22 @@ class CanInterface():
     def req_motor_single_angle(self, motor_id: int):   
         if not self.op_can_send_message(motor_id, [0x94, 0, 0, 0, 0, 0, 0, 0]):
             return None
-        message =self. op_wait_for_reply()
-        if message:
-            reply_motor_id = message.arbitration_id - 0x140
+        reply = self. op_wait_for_reply()
+        if reply:
+            reply_motor_id = reply.arbitration_id - 0x140
             if motor_id == reply_motor_id:                      
-                reply_data = message.data
+                reply_data = reply.data
                 angle_degrees = ((reply_data[7] << 24) | (reply_data[6] << 16) | (reply_data[5] << 8) | reply_data[4] << 0) / 1000                
                 if self.prints_enabled:
                     print(f"[{self.tag }][M{reply_motor_id}] req_motor_single_angle reply, angle: {angle_degrees} degrees")
                 return angle_degrees
-    
+    ###############################################################################
+    # General
+    ###############################################################################
+
+    def is_can_error(self):
+        return self.error
+
     ###############################################################################
     # Helpers
     ###############################################################################
