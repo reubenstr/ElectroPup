@@ -17,14 +17,17 @@ Per leg:
         motor wheel: 2x M3x20mm
         motor wheel pin: 3x M3 x 8mm
     Lower Leg:    
-        motor front: 6x M2.5x14mm
-        motor wheel: 3x M3x12mm
+        motor front: 6x M2.5x14mm 
+        motor wheel: 3x M3x20mm
         
 8x M5*10mm brass insert (7mm dia)
 8x M5*15mm low-profile bolt
 
 8x M3x4 brass-insert (hip)
 8x M3*8mm bolt - sacrifical (hip) 
+
+4x M3x4 brass-insert - PCB
+4x M3x16mm - PCB
 
 ###############################################################################
 pip install mujoco
