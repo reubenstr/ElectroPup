@@ -108,6 +108,8 @@ sudo apt install python3-rich
 
 
 ###############################################################################
+# CAN Sheild
+###############################################################################
 CAN sheild: https://www.waveshare.com/2-ch-can-hat.htm
 
 Installation and setup for RPI:
@@ -161,8 +163,12 @@ Loopback test, connect H to H, L to L:
 	cansend can1 141#8800000000000000
 	cansend can1 141#8000000000000000
 
+###############################################################################
+# Dependancies 
+###############################################################################
 
-
+On Raspberry Pi (Raspberry Pi OS Lite, Bookworm 64-bit )
+sudo apt install python3-yaml
 
 ###############################################################################
 

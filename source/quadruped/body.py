@@ -3,6 +3,7 @@ import math
 import numpy as np
 from math import pi, sin, cos
 from enum import Enum
+from typing import Dict
 
 from . leg import Leg
 from . import kinematics
@@ -59,7 +60,7 @@ class Body(object):
         self.foot_length = frame_parameters.foot_length
         self.foot_width = frame_parameters.foot_width
     
-        self.legs = {}
+        self.legs : Dict[str, Leg] = {}
         self.legs['back_right'] = None        
         self.legs['front_right'] = None                                                  
         self.legs['front_left'] = None
@@ -169,22 +170,22 @@ class Body(object):
     def get_joint_angles(self):
         ''' Get the joint angles for all four legs
         Args:
-            None
+            normalize: fetches angles normalized (360 added to negative angles)
         Returns:
             joint_angles: dictionary containing four legs and their 
             associated angles in the order q1,q2,q3  
         '''
 
         joint_angles = {}
-        joint_angles['front_left'] = self.legs['front_left'].get_leg_angles()
-        joint_angles['front_right'] = self.legs['front_right'].get_leg_angles()
-        joint_angles['back_left'] = self.legs['back_left'].get_leg_angles()
-        joint_angles['back_right'] = self.legs['back_right'].get_leg_angles()
+        joint_angles['front_left'] = self.legs['front_left'].get_leg_angles_in_degrees()
+        joint_angles['front_right'] = self.legs['front_right'].get_leg_angles_in_degrees()
+        joint_angles['back_left'] = self.legs['back_left'].get_leg_angles_in_degrees()
+        joint_angles['back_right'] = self.legs['back_right'].get_leg_angles_in_degrees()
         
         return joint_angles
     
     
-    def check_joint_angles(self, legs):
+    def check_joint_angles(self, legs : Dict[str, Leg]):
         ''' Checks the bounds of joint angles        
         Args:
             Legs dictionary to check
@@ -194,7 +195,7 @@ class Body(object):
         '''
 
         for key, leg in legs.items():
-            abduction, hip, knee = leg.get_leg_angles()   
+            abduction, hip, knee = leg.get_leg_angles_in_radians()
             if abduction < self.frame_parameters.abduction_joint_lower_bounds or abduction > self.frame_parameters.abduction_joint_upper_bounds:
                 return f"Leg {key} {'abduction'} joint is out of bounds where angle {math.degrees(abduction):0.2f} is outside of [{math.degrees(self.frame_parameters.abduction_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.abduction_joint_upper_bounds):0.2f}]!"
             if hip < self.frame_parameters.hip_joint_lower_bounds or hip > self.frame_parameters.hip_joint_upper_bounds:
@@ -203,7 +204,8 @@ class Body(object):
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
 
 
+
     def print_joint_angles(self):
-        ''' Print the joint angles for all four legs'''
+        ''' Print the joint angles for all four legs '''
         return None    
  
