@@ -1,4 +1,4 @@
-23850284577860402
+23871018922280848
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -96746,3 +96746,87 @@ LCD-Display-1.8-128x160-Hiletgo
 0
 8
 8
+general
++Batt Conn.
+
+
+0
+2
+2
+general
+4x_18650_LiPo_Module
+
+
+0
+8
+8
+general
+BNO055 Module
+
+
+0
+10
+10
+general
+HY2120
+
+
+0
+5
+5
+general
+PB-09N23P-03Q_MAL
+
+PB-09N23P-03Q 
+0
+2
+2
+general
+Precision_pot
+
+
+0
+3
+3
+general
+RPi_Hat_Mounting_Hole
+Mounting hole, Befestigungsbohrung, 2,7mm, No Annular, Kein Restring,
+Mounting hole, Befestigungsbohrung, 2,7mm, No Annular, Kein Restring,
+0
+0
+0
+general
+Samtec_HLE-120-02-XXX-DV-BE-XX-XX
+
+
+0
+40
+40
+general
+usb-PCB
+
+
+0
+4
+4
+mcus
+KB2040
+
+
+0
+26
+26
+sbcs
+Raspberry Pi - Hat Template - Full Size
+
+
+0
+44
+44
+sbcs
+Raspberry Pi - Hat Template - Full Size Extended
+
+
+0
+44
+44

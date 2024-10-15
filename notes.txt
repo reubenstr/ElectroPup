@@ -170,6 +170,20 @@ Loopback test, connect H to H, L to L:
 On Raspberry Pi (Raspberry Pi OS Lite, Bookworm 64-bit )
 sudo apt install python3-yaml
 
+
+
+###############################################################################
+# Serial 
+###############################################################################
+
+
+sudo raspi-config
+3) Interface Options
+I6 Serial Port
+Would you like a login shell to be accessible over serial? No
+Would you like the serial port hardware to be enabled? Yes
+reboot
+
 ###############################################################################
 
 3450 * 3.7 = 12.7w/hr

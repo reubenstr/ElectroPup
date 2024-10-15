@@ -1,0 +1,9 @@
+/gerber_to_order/
+/gerbers/
+/auxiliary-pi-hat-backups/
+/aux-board-backups/
+
+/~auxiliary-pi-hat.kicad_sch.lck
+/~auxiliary-pi-hat.kicad_pcb.lck
+/fp-info-cache
+/#auto_saved_files#

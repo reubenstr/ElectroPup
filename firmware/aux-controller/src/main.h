@@ -11,7 +11,6 @@ const uint32_t heartbeatBlinkRateMs{250};
 
 const float lowBatteryPercent{0.20};
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Display
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,12 +38,12 @@ bool motorErrors[numMotors];
 #pragma pack(1)
 struct MessageData
 {
-    bool jointAngleError;
+    /*bool jointAngleError;
     bool inverseKinematicsError;
     bool joystickError;
     bool overCurrentError;
 
-    bool motorErrors[numMotors];
+    bool motorErrors[numMotors];*/
 
     float batteryVoltage;
 };
@@ -68,3 +67,31 @@ void DisplayBatteryPage(bool forceRefresh);
 
 bool IsLowBattery();
 bool IsError();
+
+///////////////////////////////////////////////////////////////////////////////
+// Temp Helpers
+///////////////////////////////////////////////////////////////////////////////
+
+uint32_t crc32(uint8_t *data, int length)
+{
+    const uint32_t POLYNOMIAL = 0x04C11DB7;
+    uint32_t crc = 0xFFFFFFFF;
+
+    for (size_t i = 0; i < length; i++)
+    {
+        crc ^= data[i] << 24;
+        for (int j = 0; j < 8; ++j)
+        {
+            if (crc & 0x80000000)
+            {
+                crc = (crc << 1) ^ POLYNOMIAL;
+            }
+            else
+            {
+                crc <<= 1;
+            }
+            crc &= 0xFFFFFFFF;
+        }
+    }
+    return crc ^ 0xFFFFFFFF;
+}

@@ -17,7 +17,7 @@ const int cornerRadiusPx{2};
 uint32_t lastMessageReceivedMillis;
 const uint32_t noCommsTimeoutMs{1000};
 
-Page page = Page::SPLASH;
+Page page = Page::SYSTEM;
 
 float batteryVoltage{0};
 
@@ -34,6 +34,15 @@ void HeartBeat()
   {
     start = millis();
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  }
+}
+
+void CheckUserButton()
+{
+  if (digitalRead(USER_BTN) == LOW)
+  {
+    Serial.println("USER BTN TEST");
+    delay(100);
   }
 }
 
@@ -161,24 +170,39 @@ void InitMessageComms()
 
 void CheckForMessage()
 {
-
   uint8_t data[256];
 
   Message message;
 
   if (Serial1.readBytes((uint8_t *)&message, sizeof(Message)))
   {
-
     CRC32 crc;
-    crc.add((uint8_t *)&message, sizeof(MessageData));
+
+    uint8_t b[4];
+    b[0] = 0;
+    b[1] = 0;
+    b[2] = 0;
+    b[3] = 0;
+    crc.add(b, 4);
+    //crc.add((uint8_t *)&message, sizeof(MessageData));
     uint32_t crc32Result = crc.calc();
+
+    crc32Result = crc32(b, 4);
+
+
+    uint8_t t[100];
+    memcpy(t, &message, 8);
+    for (int i = 0 ; i < 8; i++)
+    {
+      Serial.printf(" %u", t[i]);
+    }
 
     if (crc.calc() == message.crc32)
     {
       Serial.println("Message CRC32 is valid.");
       lastMessageReceivedMillis = millis();
 
-      systemErrors[0] = message.messageData.jointAngleError;
+      /*systemErrors[0] = message.messageData.jointAngleError;
       systemErrors[1] = message.messageData.inverseKinematicsError;
       systemErrors[2] = message.messageData.joystickError;
       systemErrors[3] = message.messageData.overCurrentError;
@@ -186,7 +210,7 @@ void CheckForMessage()
       for (int i = 0; i < numMotors; i++)
         motorErrors[i] = message.messageData.motorErrors[i];
 
-      batteryVoltage = message.messageData.batteryVoltage;
+      batteryVoltage = message.messageData.batteryVoltage;*/
     }
     else
     {
@@ -246,6 +270,8 @@ void setup()
 
   pinMode(LED_BUILTIN, OUTPUT);
 
+  pinMode(USER_BTN, INPUT_PULLUP);
+
   InitMessageComms();
 
   InitDisplay();
@@ -259,13 +285,13 @@ void loop()
 {
   HeartBeat();
 
+  CheckUserButton();
+
   CheckForMessage();
 
   CheckCommsTimeout();
 
-  UpdateDisplay();
-
-  delay(1000);
+  UpdateDisplay();  
 }
 
 /*
