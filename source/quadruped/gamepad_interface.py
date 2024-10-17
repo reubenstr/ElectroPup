@@ -10,11 +10,24 @@ import copy
 from time import sleep
 
 from . gamepad import PS4
-from . parameters.motion_parameters import MotionParameters
+from . parameters.motion_parameters import MotionParameters, MotionState
 
 class GamepadInterface:
     def __init__(self, motion_parameters: MotionParameters):
         self.motion_parameters = motion_parameters
+                
+        self.motor_update_callback = None
+        self.pose_update_callback = None
+        
+        self.triangle_button_release_flag = True
+        self.r3_button_release_flag = True
+        self.l3_button_release_flag = True
+        
+    def register_motor_update_callback(self, callback):
+        self.motor_update_callback = callback
+        
+    def register_pose_update_callback(self, callback):
+        self.pose_update_callback = callback
       
     def connect_gamepad(self):
         # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
@@ -22,24 +35,31 @@ class GamepadInterface:
         self.gamepad = PS4(joystick_number)              
         self.gamepad.startBackgroundUpdates()
         return True
-
-    def get_motion_parameters(self):
+    
+    def get_motion_parameters(self, motion_state: MotionState):
             
         # BUTTONS:        
-        if self.gamepad.isPressed("TRIANGLE") == True and self.mode_toggle_button_release_flag == True:
-            self.mode_toggle_button_release_flag = False
-            if self.motion_parameters.motion_state == MotionParameters.MotionState.MOTION:
-                self.motion_parameters.motion_state = MotionParameters.MotionState.POSE
-            elif self.motion_parameters.motion_state == MotionParameters.MotionState.POSE:
-                self.motion_parameters.motion_state = MotionParameters.MotionState.MOTION
+        if self.gamepad.isPressed("TRIANGLE") == True and self.triangle_button_release_flag == True:
+            self.triangle_button_release_flag = False            
+            self.pose_update_callback()            
         elif self.gamepad.isPressed("TRIANGLE") == False:
-            self.mode_toggle_button_release_flag = True
+            self.triangle_button_release_flag = True
+            
+        if self.gamepad.isPressed("L3") == True and self.l3_button_release_flag == True and self.gamepad.isPressed("R3") == True and self.r3_button_release_flag == True:             
+            self.r3_button_release_flag = False  
+            self.l3_button_release_flag = False 
+            self.motor_update_callback()            
+        elif self.gamepad.isPressed("L3")  and self.gamepad.isPressed("R3")== False:
+            self.r3_button_release_flag = True  
+            self.l3_button_release_flag = True  
+            
+            
                   
         # AXES:    
         # Joystick at up position generates negative values.
         # Joystick at down position generates positive values.
         # Some inputs reorientates some joysticks to match desired functionality.            
-        if self.motion_parameters.motion_state == MotionParameters.MotionState.POSE:                      
+        if motion_state == MotionState.POSE:                      
             self.motion_parameters.roll = self.map(
                 self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.roll_min, self.motion_parameters.roll_max)
             self.motion_parameters.pitch = self.map(
@@ -49,7 +69,7 @@ class GamepadInterface:
             self.motion_parameters.height_translation = self.map(
             - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
                       
-        elif self.motion_parameters.motion_state == MotionParameters.MotionState.MOTION:
+        elif motion_state == MotionState.MOTION:
             self.motion_parameters.yaw_rate = self.map(
                 self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)
             self.motion_parameters.step_length = self.map(

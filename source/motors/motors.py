@@ -82,7 +82,9 @@ class Motors(Thread):
         '''
         
         self.exit_event = Event()   
-        self.lock = Lock()   
+        self.lock = Lock()  
+        
+        self.comm_lock = Lock()  
         
         self.tag = can_bus_id.upper()
         
@@ -96,6 +98,9 @@ class Motors(Thread):
         # Timeouts and Timings:
         self.max_reply_timeouts_allow = 3
         self.get_status_rate_seconds : float = 0.500
+        
+        # Control:
+        self.motors_on : bool = False
                 
     ###############################################################################
     # Per Motor
@@ -155,24 +160,28 @@ class Motors(Thread):
     ###############################################################################      
                
     def cmd_all_motors_on(self):
-        success = True
-        start = time.time()
-        for motor in self.motors.values():            
-            success = self.can_interface.cmd_motor_on(motor.motor_id)
-            if not success:
-                success = False      
-        print(f"[{self.tag}][ALL] command motors on completed, success: {success}, time: {time.time() - start:0.3f}")
-        return success
+        with self.comm_lock:
+            self.motors_on = True
+            success = True
+            start = time.time()
+            for motor in self.motors.values():            
+                success = self.can_interface.cmd_motor_on(motor.motor_id)
+                if not success:
+                    success = False      
+            print(f"[{self.tag}][ALL] command motors on completed, success: {success}, time: {time.time() - start:0.3f}")
+            return success
                 
     def cmd_all_motors_off(self):
-        success = True
-        start = time.time()
-        for motor in self.motors.values():
-            success = self.can_interface.cmd_motor_off(motor.motor_id)
-            if not success:
-                success = False       
-        print(f"[{self.tag}][ALL] command motors off completed, success: {success}, time: {time.time() - start:0.3f}")
-        return success
+        with self.comm_lock:
+            self.motors_on = False
+            success = True
+            start = time.time()
+            for motor in self.motors.values():
+                success = self.can_interface.cmd_motor_off(motor.motor_id)
+                if not success:
+                    success = False       
+            print(f"[{self.tag}][ALL] command motors off completed, success: {success}, time: {time.time() - start:0.3f}")
+            return success
            
                 
     ###############################################################################
@@ -241,14 +250,16 @@ class Motors(Thread):
     
     def is_error(self) :
         """        
-        Args:
-            motors (Dict[str, Motor]): _description_
+        Args:          
 
         Returns:
             bool: True if motor contains a fault state or comms error
         """
         if self.can_interface.is_can_error():
             return True
+        
+        if not self.is_alive():
+            return True    
         
         with self.lock: 
             error = False
@@ -301,20 +312,27 @@ class Motors(Thread):
         start_status_time = time.time()
         while not self.exit_event.is_set(): 
             
-            start = time.time()          
-                        
-            self._worker_set_all_targets()
-            
-            if time.time() - start_status_time > self.get_status_rate_seconds:
-                start_status_time = time.time()            
-                self._worker_get_all_status()
+            start = time.time()        
             
             if self.is_error():
                 print(f"[{self.tag}] error, exiting thread!")  
                 self.cmd_all_motors_off()
-                break               
-                         
-            print(f"[] processing time: {((time.time() - start) * 1000):0.2f}")
+                break           
+                        
+            if self.motors_on == True:
+                with self.comm_lock:
+                    self._worker_set_all_targets()
+                    
+                    if time.time() - start_status_time > self.get_status_rate_seconds:
+                        start_status_time = time.time()            
+                        self._worker_get_all_status()
+                    
+                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")
+                    
+            else:
+                sleep(0.010)
+                                         
+            
 
 
     ###############################################################################
