@@ -182,6 +182,18 @@ class Motors(Thread):
                     success = False       
             print(f"[{self.tag}][ALL] command motors off completed, success: {success}, time: {time.time() - start:0.3f}")
             return success
+        
+    def cmd_all_motors_clear_errors(self):
+        with self.comm_lock:           
+            success = True
+            start = time.time()
+            for motor_tag, motor in self.motors.items():
+                self.motors[motor_tag].reply_timeout_count = 0
+                success = self.can_interface.cmd_clear_motor_errors(motor.motor_id)
+                if not success:
+                    success = False       
+            print(f"[{self.tag}][ALL] command clear errors completed, success: {success}, time: {time.time() - start:0.3f}")
+            return success
            
                 
     ###############################################################################
@@ -268,7 +280,9 @@ class Motors(Thread):
                     error = True
                 if motor.reply_timeout_count > self.max_reply_timeouts_allow:
                     error = True
-            return error                        
+            return error      
+        
+                            
                         
     ###############################################################################
     # Worker
@@ -327,8 +341,7 @@ class Motors(Thread):
                         start_status_time = time.time()            
                         self._worker_get_all_status()
                     
-                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")
-                    
+                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")                    
             else:
                 sleep(0.010)
                                          

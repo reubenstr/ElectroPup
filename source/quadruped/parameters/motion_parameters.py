@@ -8,9 +8,17 @@ import math
 import numpy as np
 from enum import Enum
 
+
+
 class KineticState(Enum):
-    POSE = 1
-    MOTION = 2
+    INIT = -1
+    ERROR = 0
+    STARTUP = 1
+    HALT = 2
+    STAND = 3
+    POSE = 4
+    MOTION = 5
+    FLIP = 6
         
 class ControllerEvent(Enum):
     KINETIC_STATE_TOGGLE = 1

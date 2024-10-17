@@ -35,36 +35,66 @@ class Live():
         motor_tags = ["FLA", "FLH", "FLK"]
         self.motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
         self.motor_interface_front.cmd_all_motors_off()
-        self.motor_interface_front.start()
+        
             
         #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
         #motor_interface_back.cmd_all_motors_off()
           
+                
+        self.kinetic_state : KineticState = KineticState.STARTUP
+        self.previous_kinetic_state : KineticState = KineticState.INIT        
+        self.speed : int = 0
         
-        self.motors_on : bool = False
-        self.motion_state : KineticState = KineticState.POSE
         
-        
-    def controller_event_callback(self, event : ControllerEvent):        
+    def controller_event_callback(self, event : ControllerEvent):    
+        print(f"[EVENT] controller event received: {event.name}")
         if event == ControllerEvent.KINETIC_STATE_TOGGLE:        
-            if self.motion_state == KineticState.POSE:
-                self.motion_state = KineticState.MOTION
-            elif self.motion_state == KineticState.MOTION:
-                self.motion_state = KineticState.POSE             
-            print(f"[] kinetic state changed to: {self.motion_state.name}")
+            if self.kinetic_state == KineticState.POSE:
+                self.kinetic_state = KineticState.MOTION
+            elif self.kinetic_state == KineticState.MOTION:
+                self.kinetic_state = KineticState.POSE 
+        elif event == ControllerEvent.MOTOR_POWER_TOGGLE: 
+            if self.kinetic_state == KineticState.HALT: 
+                self.kinetic_state = KineticState.STAND 
+            elif self.kinetic_state != KineticState.ERROR: 
+                self.kinetic_state = KineticState.HALT                    
+
+                    
+    def apply_controller_input(self):                
+        motion_parameters = self.gamepad_interface.get_motion_parameters()
         
-        elif event == ControllerEvent.MOTOR_POWER_TOGGLE:
-            # TODO: both inferfaces: add back        
-            if self.motor_interface_front.is_error() == False: # and self.motor_interface_back.is_error() == False       
-                if self.motors_on == False:
-                    self.motor_interface_front.cmd_all_motors_on()
-                    #self.motor_interface_back.cmd_all_motors_on()
-                    self.motors_on = True
-                elif self.motors_on == True:
-                    self.motor_interface_front.cmd_all_motors_off()
-                    #self.motor_interface_back.cmd_all_motors_off()
-                    self.motors_on = False
+        error_state = self.body.set_body_pose_by_transform_inputs(
+            phi=motion_parameters.roll,
+            theta=motion_parameters.pitch,
+            psi=motion_parameters.yaw,
+            x=motion_parameters.side_translation,
+            y=motion_parameters.height_translation,
+            z=motion_parameters.forward_translation,
+        )
+        if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
+            print(error_state.name)
+        elif error_state == Body.ErrorState.NONE:
+            joint_angles = self.body.get_joint_angles()
+
+            #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
+            #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  
+            #motors_front.set_motor_targets(motor_tag="FLK", speed=500, angle=joint_angles['front_left']['knee']) 
+            
+            fla=joint_angles['front_left']['abduction']  
+            flh=joint_angles['front_left']['hip']  
+            flk=joint_angles['front_left']['knee']  
+                            
+            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=fla)   
+            self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=flh)  
+            self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=flk) 
+            
+            """ if not self.motor_interface_front.is_alive():
+                motors = self.motor_interface_front.get_all_motors()
+                for motor_tag, motor in motors.items():
+                    print(f"[{motor_tag}] {motor.reply_timeout_count}")
+                    
+                    # is_can_error """
                 
     ###############################################################################
     # Main Loop
@@ -76,42 +106,63 @@ class Live():
             if not self.gamepad_interface.is_connected():  
                 return
             
+            self.gamepad_interface.tick(self.kinetic_state)
+            
+            # Execute once after kinetic state change:            
+            if self.previous_kinetic_state != self.kinetic_state:   
+                self.previous_kinetic_state = self.kinetic_state
+                print(f"[STATE] kinetic state changed to: {self.kinetic_state.name}")
+                             
+                if self.kinetic_state == KineticState.ERROR:
+                    self.motor_interface_front.cmd_all_motors_off()
+                    #self.motor_interface_back.cmd_all_motors_off()    
+                
+                elif self.kinetic_state == KineticState.STARTUP:
+                    self.motor_interface_front.start()
+                    #self.motor_interface_back.start()
+                    self.kinetic_state = KineticState.HALT
+                
+                elif self.kinetic_state == KineticState.HALT:
+                    self.motor_interface_front.cmd_all_motors_off()
+                    #self.motor_interface_back.cmd_all_motors_off()
+                
+                elif self.kinetic_state == KineticState.STAND: 
+                    self.speed = 20                         
+                    self.motor_interface_front.cmd_all_motors_on()
+                    #self.motor_interface_back.cmd_all_motors_on() 
+                    self.kinetic_state = KineticState.POSE                  
+                                
+                elif self.kinetic_state == KineticState.POSE:
+                    self.speed = 2000
+                                 
+                elif self.kinetic_state == KineticState.MOTION:
+                    self.speed = 2000
+                      
+                elif self.kinetic_state == KineticState.FLIP:
+                    pass
+                
+                
+            
+            # Kinetic state machine:
+            if self.kinetic_state == KineticState.ERROR:
+                pass
+            elif self.kinetic_state == KineticState.HALT:
+                pass
+            elif self.kinetic_state == KineticState.STAND:                       
+                pass
+            elif self.kinetic_state == KineticState.POSE:                
+                self.apply_controller_input()                
+            elif self.kinetic_state == KineticState.MOTION:               
+                self.apply_controller_input()   
+            elif self.kinetic_state == KineticState.FLIP:
+                pass
+                   
+           
+            if self.motor_interface_front.is_error(): # and self.motor_interface_back.is_error() == False 
+                self.kinetic_state = KineticState.ERROR
             
            
-            motion_parameters = self.gamepad_interface.get_motion_parameters(self.motion_state)
             
-            error_state = self.body.set_body_pose_by_transform_inputs(
-                phi=motion_parameters.roll,
-                theta=motion_parameters.pitch,
-                psi=motion_parameters.yaw,
-                x=motion_parameters.side_translation,
-                y=motion_parameters.height_translation,
-                z=motion_parameters.forward_translation,
-            )
-            if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
-                print(error_state.name)
-            elif error_state == Body.ErrorState.NONE:
-                joint_angles = self.body.get_joint_angles()
-
-                #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
-                #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  
-                #motors_front.set_motor_targets(motor_tag="FLK", speed=500, angle=joint_angles['front_left']['knee']) 
-                
-                fla=joint_angles['front_left']['abduction']  
-                flh=joint_angles['front_left']['hip']  
-                flk=joint_angles['front_left']['knee']  
-                    
-                speed = 1250
-                self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=speed, angle=fla)   
-                self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=speed, angle=flh)  
-                self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=speed, angle=flk) 
-                
-                if not self.motor_interface_front.is_alive():
-                    motors = self.motor_interface_front.get_all_motors()
-                    for motor_tag, motor in motors.items():
-                        print(f"[{motor_tag}] {motor.reply_timeout_count}")
-                        
-                        # is_can_error
                        
             sleep(0.010)
     

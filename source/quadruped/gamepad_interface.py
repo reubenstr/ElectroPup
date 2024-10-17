@@ -37,7 +37,12 @@ class GamepadInterface:
         self.gamepad.startBackgroundUpdates()
         return True
     
-    def get_motion_parameters(self, motion_state: KineticState):
+    def tick(self, motion_state: KineticState):
+        """Call frequently to capture events from the gamepad library.
+
+        Args:
+            motion_state (KineticState): _description_
+        """
             
         # BUTTONS:        
         if self.gamepad.isPressed("TRIANGLE") == True and self.triangle_button_release_flag == True:
@@ -53,9 +58,7 @@ class GamepadInterface:
         elif self.gamepad.isPressed("L3")  and self.gamepad.isPressed("R3")== False:
             self.r3_button_release_flag = True  
             self.l3_button_release_flag = True  
-            
-            
-                  
+                              
         # AXES:    
         # Joystick at up position generates negative values.
         # Joystick at down position generates positive values.
@@ -79,7 +82,8 @@ class GamepadInterface:
               self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)            
             self.motion_parameters.height_translation = self.map(
             - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
-                   
+   
+    def get_motion_parameters(self):    
         return copy.deepcopy(self.motion_parameters)
 
     def is_connected(self):          
