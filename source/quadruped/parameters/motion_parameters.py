@@ -8,9 +8,14 @@ import math
 import numpy as np
 from enum import Enum
 
-class MotionState(Enum):
-        POSE = 1
-        MOTION = 2
+class KineticState(Enum):
+    POSE = 1
+    MOTION = 2
+        
+class ControllerEvent(Enum):
+    KINETIC_STATE_TOGGLE = 1
+    MOTOR_POWER_TOGGLE = 2
+    
 
 class MotionParameters: 
     def __init__(self, motion_parameters_filepath : str):

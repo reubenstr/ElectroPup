@@ -12,7 +12,7 @@ from rich import print # Overrides print and injects colors
 from quadruped.body import Body
 from quadruped.gamepad_interface import GamepadInterface
 from quadruped.parameters.frame_parameters import FrameParameters
-from quadruped.parameters.motion_parameters import MotionParameters, MotionState
+from quadruped.parameters.motion_parameters import MotionParameters, KineticState, ControllerEvent
 from motors.motors import Motors
 
 
@@ -25,8 +25,7 @@ class Live():
         motion_parameters = MotionParameters(motion_parameters_filepath)
 
         self.gamepad_interface = GamepadInterface(motion_parameters)
-        self.gamepad_interface.register_pose_update_callback(self.pose_update_callback)
-        self.gamepad_interface.register_motor_update_callback(self.motor_update_callback)
+        self.gamepad_interface.register_controller_event_callback(self.controller_event_callback)
         self.gamepad_interface.connect_gamepad()
         
         
@@ -41,36 +40,32 @@ class Live():
         #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
         #motor_interface_back.cmd_all_motors_off()
-                
-        
-        
+          
         
         self.motors_on : bool = False
-        self.motion_state : MotionState = MotionState.POSE
+        self.motion_state : KineticState = KineticState.POSE
         
         
-    def pose_update_callback(self):
-        if self.motion_state == MotionState.POSE:
-             self.motion_state = MotionState.MOTION
-        elif self.motion_state == MotionState.MOTION:
-             self.motion_state = MotionState.POSE             
-        print(f"[] motion state changed to: {self.motion_state.name}")
+    def controller_event_callback(self, event : ControllerEvent):        
+        if event == ControllerEvent.KINETIC_STATE_TOGGLE:        
+            if self.motion_state == KineticState.POSE:
+                self.motion_state = KineticState.MOTION
+            elif self.motion_state == KineticState.MOTION:
+                self.motion_state = KineticState.POSE             
+            print(f"[] kinetic state changed to: {self.motion_state.name}")
         
-    def motor_update_callback(self):        
-        # TODO: both inferfaces: add back        
-        if self.motor_interface_front.is_error() == False: # and self.motor_interface_back.is_error() == False       
-            if self.motors_on == False:
-                self.motor_interface_front.cmd_all_motors_on()
-                #self.motor_interface_back.cmd_all_motors_on()
-                self.motors_on = True
-            elif self.motors_on == True:
-                self.motor_interface_front.cmd_all_motors_off()
-                #self.motor_interface_back.cmd_all_motors_off()
-                self.motors_on = False
-        
-        
-           
-     
+        elif event == ControllerEvent.MOTOR_POWER_TOGGLE:
+            # TODO: both inferfaces: add back        
+            if self.motor_interface_front.is_error() == False: # and self.motor_interface_back.is_error() == False       
+                if self.motors_on == False:
+                    self.motor_interface_front.cmd_all_motors_on()
+                    #self.motor_interface_back.cmd_all_motors_on()
+                    self.motors_on = True
+                elif self.motors_on == True:
+                    self.motor_interface_front.cmd_all_motors_off()
+                    #self.motor_interface_back.cmd_all_motors_off()
+                    self.motors_on = False
+                
     ###############################################################################
     # Main Loop
     ###############################################################################       
