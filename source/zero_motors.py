@@ -13,6 +13,7 @@ from time import sleep
 from collections import OrderedDict
 import curses
 from contextlib import redirect_stdout
+from math import degrees
 
 # Local:
 from motors.motors import Motors

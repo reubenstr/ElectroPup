@@ -194,7 +194,7 @@ class CanInterface():
                     print(f"[{self.tag }][M{reply_motor_id}] req_motor_multi_angle reply, angle: {angle_degrees} degrees")
                 return angle_degrees
             
-    def req_motor_single_angle(self, motor_id: int):   
+    """ def req_motor_single_angle(self, motor_id: int):   
         if not self.op_can_send_message(motor_id, [0x94, 0, 0, 0, 0, 0, 0, 0]):
             return None
         reply = self. op_wait_for_reply()
@@ -205,7 +205,7 @@ class CanInterface():
                 angle_degrees = ((reply_data[7] << 24) | (reply_data[6] << 16) | (reply_data[5] << 8) | (reply_data[4] << 0)) / 1000                
                 if self.prints_enabled:
                     print(f"[{self.tag }][M{reply_motor_id}] req_motor_single_angle reply, angle: {angle_degrees} degrees")
-                return angle_degrees
+                return angle_degrees """
             
     ###############################################################################
     # General

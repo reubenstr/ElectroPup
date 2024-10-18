@@ -7,6 +7,7 @@ import traceback
 from math import pi
 from time import sleep
 from rich import print # Overrides print and injects colors
+from math import degrees
 
 # Local source.
 from quadruped.body import Body
@@ -37,9 +38,9 @@ class Live():
         self.motor_interface_front.cmd_all_motors_off()
         
         
-        self.motor_interface_front.set_limits("FLA", frame_parameters.abduction_joint_lower_bounds, frame_parameters.abduction_joint_upper_bounds)
-        self.motor_interface_front.set_limits("FLH", frame_parameters.hip_joint_lower_bounds, frame_parameters.hip_joint_upper_bounds)
-        self.motor_interface_front.set_limits("FLK", frame_parameters.knee_joint_lower_bounds, frame_parameters.knee_joint_upper_bounds)
+        self.motor_interface_front.set_limits("FLA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
+        self.motor_interface_front.set_limits("FLH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
+        self.motor_interface_front.set_limits("FLK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))
 
          
         
