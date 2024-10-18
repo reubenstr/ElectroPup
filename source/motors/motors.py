@@ -45,7 +45,7 @@ class Motor():
         self.target_speed: int = 100
         self.target_angle_degrees : float = 0
            
-        # Motor states:
+        # Motor states (from motor driver):
         self.temperature : int = 0
         self.voltage : float = 0               
         self.watts : float = 0
@@ -53,15 +53,21 @@ class Motor():
         self.encoder_position : int = 0
         self.angle_degrees : float = 0
         
-        # Motor fault states
+        # Motor fault states (from motor driver):
         self.under_voltage_protection : bool = False
         self.over_voltage_protection  : bool = False
         self.over_temperature_protection : bool = False
         self.lost_input_protection : bool = False    
+        
+        # Motor fault states (from library):
+        self.angle_limit_breached : bool = False
              
         # Communication states:
         self.reply_timeout_count : int = 0
         
+        # Limits:
+        self.angle_min : float = 0
+        self.angle_max : float = 0
 
 class MotorDirection(Enum):  
     COUNTER_CLOCKWISE = 0
@@ -200,6 +206,11 @@ class Motors(Thread):
     # Protected Getters, Setters, and Operations
     ###############################################################################
            
+    def set_limits(self, motor_tag : str, angle_min : float, angle_max : float):
+        with self.lock:
+            self.motors[motor_tag].angle_min = angle_min
+            self.motors[motor_tag].angle_max = angle_max
+        
     def set_motor_targets(self, motor_tag : str, speed : int, angle : float):              
         with self.lock:
             self.motors[motor_tag].target_speed = speed
@@ -254,19 +265,12 @@ class Motors(Thread):
         with self.lock:
             for motor_tag, motor in self.motors.items():
                 if self.is_angle_within_range(motor, tolerance) == False:
-                    print(motor_tag, motor.angle_degrees, motor.target_angle_degrees)
-                    return False
-                
-            # TEMP  
-            for motor_tag, motor in self.motors.items():               
-                print("IN RANGE: ", motor_tag, motor.angle_degrees, motor.target_angle_degrees, motor.angle_degrees - motor.target_angle_degrees)
-                  
-                
+                    return False                    
             return True 
     
     def is_error(self) :
         """        
-        Args:          
+        Args: None          
 
         Returns:
             bool: True if motor contains a fault state or comms error
@@ -280,6 +284,8 @@ class Motors(Thread):
         with self.lock: 
             error = False
             for motor_tag, motor in self.motors.items():
+                if motor.angle_limit_breached:
+                    error = True                
                 if motor.under_voltage_protection or motor.over_voltage_protection or motor.over_temperature_protection or motor.lost_input_protection:                 
                     error = True
                 if motor.reply_timeout_count > self.max_reply_timeouts_allow:
@@ -325,7 +331,14 @@ class Motors(Thread):
                     self.motors[motor_tag].over_voltage_protection = result['over_voltage_protection']
                     self.motors[motor_tag].over_temperature_protection = result['over_temperature_protection']
                     self.motors[motor_tag].lost_input_protection = result['lost_input_protection']  
-       
+    
+    def _worker_check_all_angle_limits(self)   :
+        with self.lock:
+            for motor_tag, motor in self.motors.items(): 
+                if motor.angle_degrees < motor.angle_min or motor.angle_degrees > motor.angle_max:
+                     self.angle_limit_breached = True 
+              
+    
     def run(self):      
         """
         Main function that continously updates motor targets (speed, position) and checks for errors.
@@ -354,6 +367,8 @@ class Motors(Thread):
                 self._worker_get_all_angles()  
                                        
                 self._worker_get_all_status()
+                
+                
                     
                 #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")                    
             
@@ -361,7 +376,7 @@ class Motors(Thread):
     ###############################################################################
     # General 
     ###############################################################################  
-           
+                    
     @staticmethod
     def is_angle_within_range(motor : Motor, tolerance: float) -> bool:        
         def normalize(angle):

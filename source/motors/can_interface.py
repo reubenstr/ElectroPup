@@ -8,6 +8,7 @@ import os
 import sys 
 import can
 from rich import print
+import numpy as np
 
 class CanInterface():
     
@@ -169,6 +170,30 @@ class CanInterface():
                         'encoder_position' : encoder_position}
             
             
+    def req_motor_multi_angle(self, motor_id: int):   
+        if not self.op_can_send_message(motor_id, [0x92, 0, 0, 0, 0, 0, 0, 0]):
+            return None
+        reply = self. op_wait_for_reply()
+        if reply:
+            reply_motor_id = reply.arbitration_id - 0x140
+            if motor_id == reply_motor_id:                      
+                reply_data = reply.data
+                                 
+                # The data appears to be shifted right by 8 bits which breaks int64 twos compliment convention.                                     
+                angle_degrees : int = (
+                    (reply_data[1] << 8)  |  # Low byte
+                    (reply_data[2] << 16) |  # Byte 2
+                    (reply_data[3] << 24) |  # Byte 3
+                    (reply_data[4] << 32) |  # Byte 4
+                    (reply_data[5] << 40) |  # Byte 5
+                    (reply_data[6] << 48) |  # Byte 6
+                    (reply_data[7] << 56))   # Byte 7                    
+                angle_degrees = ((self.convert_twos_compliment_64(angle_degrees) >> 8) / 1000.0)
+                                          
+                if self.prints_enabled:
+                    print(f"[{self.tag }][M{reply_motor_id}] req_motor_multi_angle reply, angle: {angle_degrees} degrees")
+                return angle_degrees
+            
     def req_motor_single_angle(self, motor_id: int):   
         if not self.op_can_send_message(motor_id, [0x94, 0, 0, 0, 0, 0, 0, 0]):
             return None
@@ -177,10 +202,11 @@ class CanInterface():
             reply_motor_id = reply.arbitration_id - 0x140
             if motor_id == reply_motor_id:                      
                 reply_data = reply.data
-                angle_degrees = ((reply_data[7] << 24) | (reply_data[6] << 16) | (reply_data[5] << 8) | reply_data[4] << 0) / 1000                
+                angle_degrees = ((reply_data[7] << 24) | (reply_data[6] << 16) | (reply_data[5] << 8) | (reply_data[4] << 0)) / 1000                
                 if self.prints_enabled:
                     print(f"[{self.tag }][M{reply_motor_id}] req_motor_single_angle reply, angle: {angle_degrees} degrees")
                 return angle_degrees
+            
     ###############################################################################
     # General
     ###############################################################################
@@ -194,9 +220,30 @@ class CanInterface():
     @staticmethod
     def convert_twos_compliment(value):
         if value >= 0x8000:  # 0x8000 is 32768 in decimal, the value of the MSB for 16-bit               
-                return value - 0x10000  # 0x10000 is 65536, the range of 16-bit unsigned integer
-        else:           
-            return value
+            return value - 0x10000  # 0x10000 is 65536, the range of 16-bit unsigned integer                   
+        return value
+        
+    @staticmethod
+    def convert_twos_compliment_64(value):  
+        max_int64 = 2**63 - 1      
+        if value > max_int64:                  
+            value -= 2**64 
+        return value 
+        
+    @staticmethod
+    def twos_complement_to_float_64(value):
+        # Define the max value for signed 64-bit integer
+        max_int64 = 2**63 - 1
+        min_int64 = -2**63
+        
+        # Check if the value is negative in two's complement representation
+        if value > max_int64:
+            # Convert to negative equivalent
+            value -= 2**64
+        
+        # Now value is a signed integer
+        return float(value)
+       
     
     @staticmethod
     def map_range(x, in_min, in_max, out_min, out_max):

@@ -35,6 +35,14 @@ class Live():
         motor_tags = ["FLA", "FLH", "FLK"]
         self.motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
         self.motor_interface_front.cmd_all_motors_off()
+        
+        
+        self.motor_interface_front.set_limits("FLA", frame_parameters.abduction_joint_lower_bounds, frame_parameters.abduction_joint_upper_bounds)
+        self.motor_interface_front.set_limits("FLH", frame_parameters.hip_joint_lower_bounds, frame_parameters.hip_joint_upper_bounds)
+        self.motor_interface_front.set_limits("FLK", frame_parameters.knee_joint_lower_bounds, frame_parameters.knee_joint_upper_bounds)
+
+         
+        
                 
         #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
