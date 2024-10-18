@@ -20,12 +20,12 @@ class CanInterface():
         self.tag = self.can_bus_id.upper() 
         
         # How long the interface waits for a reply from a motor.
-        self.timeout_ms = 30.0  
+        self.timeout_ms : float = 30.0  
         
-        self.prints_enabled = False
+        self.prints_enabled : bool = False
         
-        self.error = False
-
+        self.error : bool = False
+        
     ###############################################################################
     # Operations
     ###############################################################################
@@ -187,7 +187,7 @@ class CanInterface():
 
     def is_can_error(self):
         return self.error
-
+    
     ###############################################################################
     # Helpers
     ###############################################################################

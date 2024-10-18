@@ -51,6 +51,12 @@ class GamepadInterface:
         elif self.gamepad.isPressed("TRIANGLE") == False:
             self.triangle_button_release_flag = True
             
+        if self.gamepad.isPressed("CROSS") == True and self.cross_button_release_flag == True:
+            self.cross_button_release_flag = False            
+            self.trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)            
+        elif self.gamepad.isPressed("CROSS") == False:
+            self.cross_button_release_flag = True
+            
         if self.gamepad.isPressed("L3") == True and self.l3_button_release_flag == True and self.gamepad.isPressed("R3") == True and self.r3_button_release_flag == True:             
             self.r3_button_release_flag = False  
             self.l3_button_release_flag = False 
@@ -58,6 +64,9 @@ class GamepadInterface:
         elif self.gamepad.isPressed("L3")  and self.gamepad.isPressed("R3")== False:
             self.r3_button_release_flag = True  
             self.l3_button_release_flag = True  
+            
+            
+     
                               
         # AXES:    
         # Joystick at up position generates negative values.

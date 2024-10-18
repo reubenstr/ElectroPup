@@ -73,7 +73,7 @@ class Body(object):
         l = self.body_length
         w = self.body_width
         l1 = self.hip_length
-        offset = -0.00 # TEMP: testing stylistic poses 
+        offset = -0.00 # TEMP: for testing stylistic poses 
         
         global_foot_positions = {}
         global_foot_positions['back_right'] = [-l/2,   0,  w/2 + l1 + offset]
@@ -125,7 +125,6 @@ class Body(object):
             if error_string != None:
                 print(error_string)
                 return Body.ErrorState.JOINT
-
                 
             for key in self.legs.keys():
                 self.legs[key] = legs[key]

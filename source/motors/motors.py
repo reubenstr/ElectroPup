@@ -12,7 +12,8 @@
     Actuator driver limitations:       
         - The driver does not have a min and max angle, therefore there is a higher risk of collision.
         - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
-            of setting these parameters. The torque limit is used to create 'compliance'.            
+            of setting these parameters. The torque limit is used to create 'compliance'.  
+               
 """
 
 import os
@@ -56,7 +57,7 @@ class Motor():
         self.under_voltage_protection : bool = False
         self.over_voltage_protection  : bool = False
         self.over_temperature_protection : bool = False
-        self.lost_input_protection : bool     = False    
+        self.lost_input_protection : bool = False    
              
         # Communication states:
         self.reply_timeout_count : int = 0
@@ -97,10 +98,9 @@ class Motors(Thread):
         
         # Timeouts and Timings:
         self.max_reply_timeouts_allow = 3
-        self.get_status_rate_seconds : float = 0.500
-        
+      
         # Control:
-        self.motors_on : bool = False
+        self.motors_on : bool = False       
                 
     ###############################################################################
     # Per Motor
@@ -194,13 +194,13 @@ class Motors(Thread):
                     success = False       
             print(f"[{self.tag}][ALL] command clear errors completed, success: {success}, time: {time.time() - start:0.3f}")
             return success
-           
+                 
                 
     ###############################################################################
     # Protected Getters, Setters, and Operations
     ###############################################################################
            
-    def set_motor_targets(self, motor_tag : str, speed : int, angle : float):         
+    def set_motor_targets(self, motor_tag : str, speed : int, angle : float):              
         with self.lock:
             self.motors[motor_tag].target_speed = speed
             self.motors[motor_tag].target_angle_degrees = angle
@@ -232,16 +232,6 @@ class Motors(Thread):
             else:
                 self.motors[motor_tag].reply_timeout_count += 1     
                 return False
-        
-    def op_fetch_all_motor_angles(self):    
-        with self.lock:    
-            for motor_tag, motor in self.motors.items():
-                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)    
-                if sensor_angle:
-                    self.motors[motor_tag].reply_timeout_count = 0 
-                    self.motors[motor_tag].angle_degrees = sensor_angle
-                else:
-                    self.motors[motor_tag].reply_timeout_count += 1 
                    
     def op_set_all_target_angles_to_current_angles(self):
         """
@@ -251,14 +241,28 @@ class Motors(Thread):
         """
         with self.lock: 
             for motor_tag, motor in self.motors.items():                      
-                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)  
+                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)               
                 if sensor_angle:
                     self.motors[motor_tag].reply_timeout_count = 0 
-                    self.motors[motor_tag].target_angle_degrees = sensor_angle                
+                    self.motors[motor_tag].angle_degrees = sensor_angle                
                 else:
                     self.motors[motor_tag].reply_timeout_count += 1 
                     return False 
-            return True    
+            return True   
+        
+    def op_is_all_motor_angles_within_range(self, tolerance : float): 
+        with self.lock:
+            for motor_tag, motor in self.motors.items():
+                if self.is_angle_within_range(motor, tolerance) == False:
+                    print(motor_tag, motor.angle_degrees, motor.target_angle_degrees)
+                    return False
+                
+            # TEMP  
+            for motor_tag, motor in self.motors.items():               
+                print("IN RANGE: ", motor_tag, motor.angle_degrees, motor.target_angle_degrees, motor.angle_degrees - motor.target_angle_degrees)
+                  
+                
+            return True 
     
     def is_error(self) :
         """        
@@ -291,12 +295,23 @@ class Motors(Thread):
     def _worker_set_all_targets(self):
         """Send target speed and angle to the motors"""
         for motor_tag, motor in self.motors.items():   
-            speed, angle = self.get_motor_targets (motor_tag)         
+            speed, angle = self.get_motor_targets (motor_tag)                        
             success = self.can_interface.cmd_motor_multi_angle_2(motor.motor_id, speed, angle)  
             if success:
                 self.motors[motor_tag].reply_timeout_count = 0  
             else:
                 self.motors[motor_tag].reply_timeout_count += 1     
+    
+    def _worker_get_all_angles(self):    
+        with self.lock:    
+            for motor_tag, motor in self.motors.items():
+                sensor_angle = self.can_interface.req_motor_single_angle(motor.motor_id)    
+                if sensor_angle:
+                    self.motors[motor_tag].reply_timeout_count = 0 
+                    self.motors[motor_tag].angle_degrees = sensor_angle
+                else:
+                    self.motors[motor_tag].reply_timeout_count += 1 
+    
     
     def _worker_get_all_status(self):
         """Get motor status from the motors"""        
@@ -315,43 +330,46 @@ class Motors(Thread):
         """
         Main function that continously updates motor targets (speed, position) and checks for errors.
         """  
-
+       
         # Set target angles to current motor angle to prevent undesired start motor jumps.
         if self.op_set_all_target_angles_to_current_angles():    
             print(f"[{self.tag}] target angles set to current angles")
         else:
             print(f"[{self.tag}] error, unable to set all motor target angles, exiting thread!")
             return
-
-        start_status_time = time.time()
-        while not self.exit_event.is_set(): 
-            
+                  
+        while not self.exit_event.is_set():             
             start = time.time()        
             
             if self.is_error():
                 print(f"[{self.tag}] error, exiting thread!")  
                 self.cmd_all_motors_off()
                 break           
-                        
-            if self.motors_on == True:
-                with self.comm_lock:
-                    self._worker_set_all_targets()
-                    
-                    if time.time() - start_status_time > self.get_status_rate_seconds:
-                        start_status_time = time.time()            
-                        self._worker_get_all_status()
+                                   
+            with self.comm_lock:
+                
+                #if self.motors_on == True:
+                self._worker_set_all_targets()
+                                
+                self._worker_get_all_angles()  
+                                       
+                self._worker_get_all_status()
                     
                 #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")                    
-            else:
-                sleep(0.010)
-                                         
             
-
-
+                                 
     ###############################################################################
     # General 
     ###############################################################################  
-             
+           
+    @staticmethod
+    def is_angle_within_range(motor : Motor, tolerance: float) -> bool:        
+        def normalize(angle):
+            """Normalize the angle to be within the range of 0 to 360 degrees."""
+            return angle % 360   
+        difference = abs(normalize(motor.target_angle_degrees) - normalize(motor.angle_degrees))
+        return difference <= tolerance or difference >= (360 - tolerance)
+           
     def is_can_error(self):
         return self.can_interface.is_can_error()         
               

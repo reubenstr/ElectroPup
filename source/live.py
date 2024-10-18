@@ -35,8 +35,7 @@ class Live():
         motor_tags = ["FLA", "FLH", "FLK"]
         self.motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
         self.motor_interface_front.cmd_all_motors_off()
-        
-            
+                
         #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
         #motor_interface_back.cmd_all_motors_off()
@@ -95,6 +94,34 @@ class Live():
                     print(f"[{motor_tag}] {motor.reply_timeout_count}")
                     
                     # is_can_error """
+                    
+    def temp_standing_pose(self):    
+        """
+            TEMP TO TEST STANDING POST PRIOR TO PLACEMENT
+        """                
+        motion_parameters = MotionParameters("./quadruped/parameters/motion_parameters.yaml")
+        
+        error_state = self.body.set_body_pose_by_transform_inputs(
+            phi=0,
+            theta=0,
+            psi=0,
+            x=0,
+            y=(motion_parameters.height_translation_min + motion_parameters.height_translation_max)/2,
+            z=0,
+        )
+        if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
+            print(error_state.name)
+        elif error_state == Body.ErrorState.NONE:
+            joint_angles = self.body.get_joint_angles()
+
+            
+            fla=joint_angles['front_left']['abduction']  
+            flh=joint_angles['front_left']['hip']  
+            flk=joint_angles['front_left']['knee']                              
+            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=fla)   
+            self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=flh)  
+            self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=flk) 
+                     
                 
     ###############################################################################
     # Main Loop
@@ -127,16 +154,16 @@ class Live():
                     #self.motor_interface_back.cmd_all_motors_off()
                 
                 elif self.kinetic_state == KineticState.STAND: 
-                    self.speed = 20                         
+                    self.speed = 500                
+                    self.temp_standing_pose()                      
                     self.motor_interface_front.cmd_all_motors_on()
-                    #self.motor_interface_back.cmd_all_motors_on() 
-                    self.kinetic_state = KineticState.POSE                  
+                    #self.motor_interface_back.cmd_all_motors_on()                                    
+                    
                                 
                 elif self.kinetic_state == KineticState.POSE:
-                    self.speed = 2000
-                                 
+                    self.speed = 2500                      
                 elif self.kinetic_state == KineticState.MOTION:
-                    self.speed = 2000
+                    self.speed = 2500
                       
                 elif self.kinetic_state == KineticState.FLIP:
                     pass
@@ -149,11 +176,15 @@ class Live():
             elif self.kinetic_state == KineticState.HALT:
                 pass
             elif self.kinetic_state == KineticState.STAND:                       
-                pass
+                if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
+                    self.kinetic_state = KineticState.POSE
+                          
+            
             elif self.kinetic_state == KineticState.POSE:                
-                self.apply_controller_input()                
+                self.apply_controller_input()  
             elif self.kinetic_state == KineticState.MOTION:               
-                self.apply_controller_input()   
+                #self.apply_controller_input()   
+                pass
             elif self.kinetic_state == KineticState.FLIP:
                 pass
                    
@@ -163,13 +194,13 @@ class Live():
             
            
             
-                       
+            #sleep(0.200)      
             sleep(0.010)
     
     ###############################################################################
     # Helpers
     ###############################################################################   
-       
+                 
     def shutdown(self):
         self.motor_interface_front.shutdown()
         self.gamepad_interface.disconnect()
