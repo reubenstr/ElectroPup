@@ -219,7 +219,11 @@ class Motors(Thread):
         with self.lock:
             self.motors[motor_tag].angle_min = angle_min
             self.motors[motor_tag].angle_max = angle_max
-        
+            
+    def set_apply_negative_offset_angle_flag(self, motor_tag : str, value : bool):
+        with self.lock:
+            self.motors[motor_tag].apply_negative_angle_offset = value
+                   
     def set_motor_targets(self, motor_tag : str, speed : int, angle : float):              
         with self.lock:
             self.motors[motor_tag].target_speed = speed

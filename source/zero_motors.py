@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 
+"""
+    Utility to zero motors and verify motor layout.
+    
+    Not all motors are required to be attached.
+    
+    Motors require a power cycle for a new zero to take effect!
+"""
+
 import os
 import sys
-import tty
-import termios
-import threading
-import time
-import select
-import queue
-import traceback
 from time import sleep
 from collections import OrderedDict
 import curses
-from contextlib import redirect_stdout
-from math import degrees
 
 # Local:
 from motors.motors import Motors
@@ -61,7 +60,9 @@ def get_motor_angle_from_tag(motor_tag : str):
         angle = motor_interface.get_motor_angle(motor_tag=motor_tag)
         return angle
             
-def main(stdscr):        
+def main(stdscr):  
+    row = 0
+          
     curses.cbreak()
     curses.curs_set(0)
     stdscr.nodelay(True) 
@@ -72,8 +73,19 @@ def main(stdscr):
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)     
         curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)  
         curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_RED) 
-     
-    row = 0
+          
+    # Upon startup the motor driver reports angles 0 to 360
+    # To prevent issues of wrong initial directions, this library
+    # uses -180 to 180 conventions. Flag start up angles > 180 requiring
+    # an offset to match the desired convention.
+    for motor_tag in motor_tags_front:
+        angle = get_motor_angle_from_tag(motor_tag=motor_tag)
+        if angle and angle > 180:          
+            motor_interface_front.set_apply_negative_offset_angle_flag(motor_tag=motor_tag, value=True)
+    for motor_tag in motor_tags_back:
+        angle = get_motor_angle_from_tag(motor_tag=motor_tag)
+        if angle and angle > 180:
+            motor_interface_back.set_apply_negative_offset_angle_flag(motor_tag=motor_tag, value=True)
     
     while True:
         try: 
@@ -104,9 +116,7 @@ def main(stdscr):
             for index, motor_tag in enumerate(motor_info): 
                 angle = get_motor_angle_from_tag(motor_tag)
                 if angle:
-                    angle -= motor_info[motor_tag]['offset']
-                    if angle < 0:
-                        angle += 360
+                    angle -= motor_info[motor_tag]['offset']                   
                     angle = f'{angle:>6.2f}'
                 else:
                     angle = '  N/A '
