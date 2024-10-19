@@ -1,4 +1,4 @@
-23871018922280848
+23872749192475355
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -96809,6 +96809,13 @@ usb-PCB
 0
 4
 4
+mcus
+Blackpill WeAct
+Through hole headers for BluePill module. No SWD breakout. Fancy silkscreen.
+module BlluePill Blue Pill header SWD breakout
+0
+40
+40
 mcus
 KB2040
 

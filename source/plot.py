@@ -114,28 +114,30 @@ if __name__ == "__main__":
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
 
-    gamepad_interface = GamepadInterface(motion_parameters)
-    gamepad_interface.connect_gamepad()
-
+    gamepad_found = True
+    try:
+        gamepad_interface = GamepadInterface(motion_parameters)
+        gamepad_interface.connect_gamepad()
+    except:
+        gamepad_found = False
+   
     plot = Plot(frame_parameters)
     plot.create_plot()
 
     try:        
         
-        if gamepad_interface.is_connected():
+        if gamepad_found:
             """Use gamepad to update motion parameters"""
             while gamepad_interface.is_connected():               
                 gamepad_interface.tick()
-                motion_parameters = gamepad_interface.get_motion_parameters()
-                plot.update_plot(motion_parameters) 
+                new_motion_parameters = gamepad_interface.get_motion_parameters()
+                plot.update_plot(new_motion_parameters) 
                 sleep(0.010)
         else:
-            """Manually create motion parameters to generate a demo pose"""
-            motion_parameters = MotionParameters(motion_parameters_filepath)
+            """Manually create motion parameters to generate a demo pose"""            
             motion_parameters.height_translation = 0.200
-            plot.update_plot(motion_parameters)
-            while(True):
-                # Wait for user to exit via ctrl-c
+            while(True):                
+                plot.update_plot(motion_parameters) 
                 sleep(0.010)
             
     except Exception as e:

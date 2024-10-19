@@ -10196,7 +10196,7 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3.3V")
+		(lib_id "power:+5V")
 		(at 330.2 146.05 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10204,7 +10204,7 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "3e7a3459-d27f-424e-8057-9f08c29da816")
+		(uuid "3f5708ee-dd75-4332-9dc2-2d975a8bb396")
 		(property "Reference" "#PWR021"
 			(at 330.2 149.86 0)
 			(effects
@@ -10214,7 +10214,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+3.3V"
+		(property "Value" "+5V"
 			(at 330.2 140.97 0)
 			(effects
 				(font
@@ -10240,7 +10240,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
 			(at 330.2 146.05 0)
 			(effects
 				(font
@@ -10250,10 +10250,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "8ff513a2-b0dc-4181-b035-c86557583f44")
+			(uuid "6350a6e2-6f61-463f-a5a2-1238be9736c9")
 		)
 		(instances
-			(project "aux-board"
+			(project "auxiliary-pi-hat"
 				(path "/312efdca-dfe3-4c27-a2ae-6c196f0be09d"
 					(reference "#PWR021")
 					(unit 1)

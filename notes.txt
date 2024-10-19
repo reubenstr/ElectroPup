@@ -171,6 +171,23 @@ On Raspberry Pi (Raspberry Pi OS Lite, Bookworm 64-bit )
 sudo apt install python3-yaml
 
 
+###############################################################################
+# PS4 Controller
+###############################################################################
+
+Reset the controller (hole on back rightside is reset button)
+
+sudo bluetoothctl
+scan on
+press and hold PS and Share button until controller flashes
+wait for scan to show Wireless Controller, copy MAC
+stop scan
+connect 84:30:95:48:0F:3C
+devices 84:30:95:48:0F:3C
+power cycle controller
+
+Tool to check for events: evtest (sudo apt install evtest)
+Should show 3 Wireless Controller event types
 
 ###############################################################################
 # Serial 
