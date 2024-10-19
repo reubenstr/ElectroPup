@@ -3,7 +3,7 @@
 """
     Converts gamepad inputs into motion parameters ready to be consumed by kinematics.
 
-    Code assumes using a PS4 controller by default.
+    Assumes a PS4 controller is used by default; other controllers are possible with code changes.
 """
 
 import copy

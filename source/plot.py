@@ -59,7 +59,7 @@ class Plot:
             for line in plt.gca().lines:
                 line.remove()
 
-            # Set leg angles to zero degrees to determined zeroed position.
+            # Set leg angles to zero degrees to determine zeroed position.
             # a = ((0,0,0), (0,0,0), (0,0,0), (0,0,0))
             # body.set_leg_angles(a)
 
@@ -115,27 +115,30 @@ if __name__ == "__main__":
     motion_parameters = MotionParameters(motion_parameters_filepath)
 
     gamepad_interface = GamepadInterface(motion_parameters)
-    gamepad_connected = gamepad_interface.connect_gamepad()
+    gamepad_interface.connect_gamepad()
 
     plot = Plot(frame_parameters)
     plot.create_plot()
 
-    try:
-        while gamepad_interface.is_connected():
-
-            if gamepad_connected:
+    try:        
+        
+        if gamepad_interface.is_connected():
+            """Use gamepad to update motion parameters"""
+            while gamepad_interface.is_connected():               
+                gamepad_interface.tick()
                 motion_parameters = gamepad_interface.get_motion_parameters()
-            
-            else:
-                # Create an error free pose to show in case a gamepad is not connected.
-                motion_parameters.height_translation = 0.200
-
+                plot.update_plot(motion_parameters) 
+                sleep(0.010)
+        else:
+            """Manually create motion parameters to generate a demo pose"""
+            motion_parameters = MotionParameters(motion_parameters_filepath)
+            motion_parameters.height_translation = 0.200
             plot.update_plot(motion_parameters)
-
-            sleep(0.010)
-
+            while(True):
+                # Wait for user to exit via ctrl-c
+                sleep(0.010)
+            
     except Exception as e:
         print(str(e))
-          
-    
+              
     gamepad_interface.disconnect()

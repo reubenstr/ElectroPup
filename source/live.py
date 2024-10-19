@@ -122,7 +122,6 @@ class Live():
             print(error_state.name)
         elif error_state == Body.ErrorState.NONE:
             joint_angles = self.body.get_joint_angles()
-
             
             fla=joint_angles['front_left']['abduction']  
             flh=joint_angles['front_left']['hip']  
@@ -143,8 +142,8 @@ class Live():
                 return
             
             self.gamepad_interface.tick(self.kinetic_state)
-            
-            # Execute once after kinetic state change:            
+                        
+            # Execute once after kinetic state change:                      
             if self.previous_kinetic_state != self.kinetic_state:   
                 self.previous_kinetic_state = self.kinetic_state
                 print(f"[STATE] kinetic state changed to: {self.kinetic_state.name}")
@@ -167,8 +166,7 @@ class Live():
                     self.temp_standing_pose()                      
                     self.motor_interface_front.cmd_all_motors_on()
                     #self.motor_interface_back.cmd_all_motors_on()                                    
-                    
-                                
+                                                    
                 elif self.kinetic_state == KineticState.POSE:
                     self.speed = 2500                      
                 elif self.kinetic_state == KineticState.MOTION:
@@ -176,10 +174,9 @@ class Live():
                       
                 elif self.kinetic_state == KineticState.FLIP:
                     pass
-                
-                
+                                
             
-            # Kinetic state machine:
+            # Kinetic state machine:        
             if self.kinetic_state == KineticState.ERROR:
                 pass
             elif self.kinetic_state == KineticState.HALT:
@@ -187,7 +184,6 @@ class Live():
             elif self.kinetic_state == KineticState.STAND:                       
                 if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
                     self.kinetic_state = KineticState.POSE
-                          
             
             elif self.kinetic_state == KineticState.POSE:                
                 self.apply_controller_input()  
@@ -196,14 +192,11 @@ class Live():
                 pass
             elif self.kinetic_state == KineticState.FLIP:
                 pass
-                   
+
            
             if self.motor_interface_front.is_error(): # and self.motor_interface_back.is_error() == False 
                 self.kinetic_state = KineticState.ERROR
-            
-           
-            
-            #sleep(0.200)      
+              
             sleep(0.010)
     
     ###############################################################################
