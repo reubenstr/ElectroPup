@@ -4435,7 +4435,7 @@
 		)
 		(uuid "bf1ffc8a-c76f-4ea2-9214-99d329c96aa7")
 	)
-	(label "ISO 5vDC GND"
+	(label "ISO 5vDC+"
 		(at 167.64 53.34 0)
 		(fields_autoplaced yes)
 		(effects
@@ -4446,7 +4446,7 @@
 		)
 		(uuid "c931a224-4623-4614-8831-6146e9241347")
 	)
-	(label "ISO 5vDC+"
+	(label "ISO 5vDC GND"
 		(at 154.94 55.88 0)
 		(fields_autoplaced yes)
 		(effects
