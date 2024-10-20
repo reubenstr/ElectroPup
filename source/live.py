@@ -168,9 +168,9 @@ class Live():
                     #self.motor_interface_back.cmd_all_motors_on()                                    
                                                     
                 elif self.kinetic_state == KineticState.POSE:
-                    self.speed = 2500                      
+                    self.speed = 2000                        
                 elif self.kinetic_state == KineticState.MOTION:
-                    self.speed = 2500
+                    self.speed = 1500
                       
                 elif self.kinetic_state == KineticState.FLIP:
                     pass
