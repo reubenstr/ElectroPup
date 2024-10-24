@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-# coding: utf-8
 
 """
-    Gamepad provides buttons and axis inputs from a gamepad.
+    Gamepad provides buttons and axis inputs from a gamepad as events.
 
-
-    TODO:
-        Auto reconnect after disconnect or IOError
-
-    Original source and documentation: https://github.com/piborg/Gamepad
-
+    Original significantly modified from: https://github.com/piborg/Gamepad
+    Key changes:
+        Events only
+        Non-blocking connect
+        Auto reconnect
+        Removes exceptions for status bool to check connection state
 """
 
-import os
 import time
 import struct
 import threading
@@ -26,12 +24,9 @@ class Gamepad:
     MAX_AXIS = +32767.0
     EVENT_BUTTON = 'BUTTON'
     EVENT_AXIS = 'AXIS'
-    fullName = 'Generic (numbers only)'
 
     class UpdateThread(threading.Thread):
-        """Thread used to continually run the updateState function on a Gamepad in the background
-
-        One of these is created by the Gamepad startBackgroundUpdates function and closed by stopBackgroundUpdates"""
+        """Thread used to continually run the updateState function on a Gamepad in the background"""
         def __init__(self, gamepad):
             threading.Thread.__init__(self)
             if isinstance(gamepad, Gamepad):
@@ -50,62 +45,78 @@ class Gamepad:
                 self.gamepad = None
                 raise
 
-    def __init__(self, joystickNumber = 0):
+    def __init__(self, joystickNumber, axisNames, buttonNames):
         self.joystickNumber = str(joystickNumber)
-        self.joystickPath = '/dev/input/js' + self.joystickNumber       
-        retryCount = 5
-      
-        print(f"[Gamepad] attempting to connect to joystick at {self.joystickPath}")   
-        while True:
-            try:
-                self.joystickFile = open(self.joystickPath, 'rb')
-                break
-            except IOError as e:
-                retryCount -= 1               
-                if retryCount > 0:
-                    time.sleep(0.5)
-                else:
-                    print(f"[Gamepad] error, unable to connect to joystick at {self.joystickPath}")  
-                    break                 
-                    #raise IOError('[Gamepad] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
-        
-        print(f"[Gamepad] connected")         
+        self.axisNames = axisNames
+        self.buttonNames = buttonNames
 
         self.eventSize = struct.calcsize('IhBB')
         self.pressedMap = {}
         self.wasPressedMap = {}
         self.wasReleasedMap = {}
         self.axisMap = {}
-        self.buttonNames = {}
-        self.buttonIndex = {}
-        self.axisNames = {}
         self.axisIndex = {}
+        self.buttonIndex = {}  
         self.lastTimestamp = 0
-        self.updateThread = None
-        self.connected = True
+        self.updateThread = None        
         self.pressedEventMap = {}
         self.releasedEventMap = {}
         self.changedEventMap = {}
         self.movedEventMap = {}
+        self.connected = False 
+
+        for index in self.buttonNames:
+            self.buttonIndex[self.buttonNames[index]] = index
+        for index in self.axisNames:
+            self.axisIndex[self.axisNames[index]] = index
+
+        for index in range(len(self.axisNames)):
+            self.axisMap[index] = 0
+            self.movedEventMap[index] = []
+        
+        for index in range(len(self.buttonNames)):
+            self.pressedMap[index] = False
+            self.wasPressedMap[index] = False
+            self.wasReleasedMap[index] = False
+            self.pressedEventMap[index] = []
+            self.releasedEventMap[index] = []
+            self.changedEventMap[index] = []
+
+        self.updateThread = Gamepad.UpdateThread(self)
+        self.updateThread.start()        
+
+
+    def _connect(self):
+        self.joystickPath = '/dev/input/js' + self.joystickNumber       
+        retryCount = 5  
+        print(f"[Gamepad] attempting to connect to joystick at {self.joystickPath} ...")          
+        while True:
+            try:
+                self.joystickFile = open(self.joystickPath, 'rb')
+                self.connected = True
+                print(f"[Gamepad] connected")   
+                return
+            except IOError as e:
+                retryCount -= 1               
+                if retryCount > 0:
+                    time.sleep(0.5)
+                else:
+                    print(f"[Gamepad] error, unable to connect to joystick at {self.joystickPath}")  
+                    return                 
+                  
 
     def __del__(self):
         try:
             self.joystickFile.close()
         except AttributeError:
             pass
-
-    def _setupReverseMaps(self):
-        for index in self.buttonNames:
-            self.buttonIndex[self.buttonNames[index]] = index
-        for index in self.axisNames:
-            self.axisIndex[self.axisNames[index]] = index
-
+       
     def _getNextEventRaw(self):
-        """Returns the next raw event from the gamepad.
+        """Returns the next raw event from the gamepad."""
 
-        The return format is:
-            timestamp (ms), value, event type code, axis / button number
-        Throws an IOError if the gamepad is disconnected"""
+        if self.connected == False:
+            self._connect()
+      
         if self.connected:
             try:
                 rawEvent = self.joystickFile.read(self.eventSize)
@@ -113,151 +124,20 @@ class Gamepad:
                 return struct.unpack('IhBB', rawEvent)                 
             except Exception as e:
                 self.connected = False
-                print(f"[Gamepad] joystick {self.joystickNumber} disconnected with error {str(e)}")
-                raise IOError
-
-    def _rawEventToDescription(self, event):
-        """Decodes the raw event from getNextEventRaw into a formatted string."""
-        timestamp, value, eventType, index = event
-        if eventType == Gamepad.EVENT_CODE_BUTTON:
-            if index in self.buttonNames:
-                button = self.buttonNames[index]
-            else:
-                button = str(index)
-            if value == 0:
-                return '%010u: Button %s released' % (timestamp, button)
-            elif value == 1:
-                return '%010u: button %s pressed' % (timestamp, button)
-            else:
-                return '%010u: button %s state %i' % (timestamp, button, value)
-        elif eventType == Gamepad.EVENT_CODE_AXIS:
-            if index in self.axisNames:
-                axis = self.axisNames[index]
-            else:
-                axis = str(index)
-            position = value / Gamepad.MAX_AXIS
-            return '%010u: Axis %s at %+06.1f %%' % (timestamp, axis, position * 100)
-        elif eventType == Gamepad.EVENT_CODE_INIT_BUTTON:
-            if index in self.buttonNames:
-                button = self.buttonNames[index]
-            else:
-                button = str(index)
-            if value == 0:
-                return '%010u: Button %s initially released' % (timestamp, button)
-            elif value == 1:
-                return '%010u: button %s initially pressed' % (timestamp, button)
-            else:
-                return '%010u: button %s initially state %i' % (timestamp, button, value)
-        elif eventType == Gamepad.EVENT_CODE_INIT_AXIS:
-            if index in self.axisNames:
-                axis = self.axisNames[index]
-            else:
-                axis = str(index)
-            position = value / Gamepad.MAX_AXIS
-            return '%010u: Axis %s initially at %+06.1f %%' % (timestamp, axis, position * 100)
-        else:
-            return '%010u: Unknown event %u, Index %u, Value %i' % (timestamp, eventType, index, value)
-
-    def getNextEvent(self, skipInit = True):
-        """Returns the next event from the gamepad.
-
-        The return format is:
-            event name, entity name, value
-
-        For button events the event name is BUTTON and value is either True or False.
-        For axis events the event name is AXIS and value is between -1.0 and +1.0.
-
-        Names are string based when found in the button / axis decode map.
-        When not available the raw index is returned as an integer instead.
-
-        After each call the internal state used by getPressed and getAxis is updated.
-
-        Throws an IOError if the gamepad is disconnected"""
-        
-        try:
-            self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
-        except:
-            return
-        
-        skip = False
-        eventName = None
-        entityName = None
-        finalValue = None
-        if eventType == Gamepad.EVENT_CODE_BUTTON:
-            eventName = Gamepad.EVENT_BUTTON
-            if index in self.buttonNames:
-                entityName = self.buttonNames[index]
-            else:
-                entityName = index
-            if value == 0:
-                finalValue = False
-                self.wasReleasedMap[index] = True
-                for callback in self.releasedEventMap[index]:
-                    callback()
-            else:
-                finalValue = True
-                self.wasPressedMap[index] = True
-                for callback in self.pressedEventMap[index]:
-                    callback()
-            self.pressedMap[index] = finalValue
-            for callback in self.changedEventMap[index]:
-                callback(finalValue)
-        elif eventType == Gamepad.EVENT_CODE_AXIS:
-            eventName = Gamepad.EVENT_AXIS
-            if index in self.axisNames:
-                entityName = self.axisNames[index]
-            else:
-                entityName = index
-            finalValue = value / Gamepad.MAX_AXIS
-            self.axisMap[index] = finalValue
-            for callback in self.movedEventMap[index]:
-                callback(finalValue)
-        elif eventType == Gamepad.EVENT_CODE_INIT_BUTTON:
-            eventName = Gamepad.EVENT_BUTTON
-            if index in self.buttonNames:
-                entityName = self.buttonNames[index]
-            else:
-                entityName = index
-            if value == 0:
-                finalValue = False
-            else:
-                finalValue = True
-            self.pressedMap[index] = finalValue
-            self.wasPressedMap[index] = False
-            self.wasReleasedMap[index] = False
-            self.pressedEventMap[index] = []
-            self.releasedEventMap[index] = []
-            self.changedEventMap[index] = []
-            skip = skipInit
-        elif eventType == Gamepad.EVENT_CODE_INIT_AXIS:
-            eventName = Gamepad.EVENT_AXIS
-            if index in self.axisNames:
-                entityName = self.axisNames[index]
-            else:
-                entityName = index
-            finalValue = value / Gamepad.MAX_AXIS
-            self.axisMap[index] = finalValue
-            self.movedEventMap[index] = []
-            skip = skipInit
-        else:
-            skip = True
-
-        if skip:
-            return self.getNextEvent()
-        else:
-            return eventName, entityName, finalValue
+                print(f"[Gamepad] error, joystick {self.joystickNumber} disconnected. Error: {str(e)}")
+                self.connected = False
 
     def updateState(self):
         """Updates the internal button and axis states with the next pending event.
 
         This call waits for a new event if there are not any waiting to be processed."""
-        
+
         try:
             self.lastTimestamp, value, eventType, index = self._getNextEventRaw()
         except:
             return
-              
-        if eventType == Gamepad.EVENT_CODE_BUTTON:
+               
+        if eventType == Gamepad.EVENT_CODE_BUTTON:  
             if value == 0:
                 finalValue = False
                 self.wasReleasedMap[index] = True
@@ -276,56 +156,7 @@ class Gamepad:
             self.axisMap[index] = finalValue
             for callback in self.movedEventMap[index]:
                 callback(finalValue)
-        elif eventType == Gamepad.EVENT_CODE_INIT_BUTTON:
-            if value == 0:
-                finalValue = False
-            else:
-                finalValue = True
-            self.pressedMap[index] = finalValue
-            self.wasPressedMap[index] = False
-            self.wasReleasedMap[index] = False
-            self.pressedEventMap[index] = []
-            self.releasedEventMap[index] = []
-            self.changedEventMap[index] = []
-        elif eventType == Gamepad.EVENT_CODE_INIT_AXIS:
-            finalValue = value / Gamepad.MAX_AXIS
-            self.axisMap[index] = finalValue
-            self.movedEventMap[index] = []
-
-    def startBackgroundUpdates(self, waitForReady = True):
-        """Starts a background thread which keeps the gamepad state updated automatically.
-        This allows for asynchronous gamepad updates and event callback code.
-
-        Do not use with getNextEvent"""
-        if self.updateThread is not None:
-            if self.updateThread.running:
-                raise RuntimeError('Called startBackgroundUpdates when the update thread is already running')
-        self.updateThread = Gamepad.UpdateThread(self)
-        self.updateThread.start()
-        if waitForReady:
-            while not self.isReady() and self.connected:
-                time.sleep(1.0)
-
-    def stopBackgroundUpdates(self):
-        """Stops the background thread which keeps the gamepad state updated automatically.
-        This may be called even if the background thread was never started.
-
-        The thread will stop on the next event after this call was made."""
-        if self.updateThread is not None:
-            self.updateThread.running = False
-
-    def isReady(self):
-        """Used with updateState to indicate that the gamepad is now ready for use.
-
-        This is usually after the first button press or stick movement."""
-        return len(self.axisMap) + len(self.pressedMap) > 1
-
-    def waitReady(self):
-        """Convenience function which waits until the isReady call is True."""
-        self.updateState()
-        while not self.isReady() and self.connected:
-            time.sleep(1.0)
-            self.updateState()
+  
 
     def isPressed(self, buttonName):
         """Returns the last observed state of a gamepad button specified by name or index.
@@ -545,7 +376,7 @@ class Gamepad:
         """Cleanly disconnect and remove any threads and event handlers."""
         self.connected = False
         self.removeAllEventHandlers()
-        self.stopBackgroundUpdates()
+        self.updateThread.running = False
         self.updateThread.join()
         del self.joystickFile
 
@@ -559,7 +390,7 @@ class PS3(Gamepad):
 
     def __init__(self, joystickNumber = 0):
         Gamepad.__init__(self, joystickNumber)
-        self.axisNames = {
+        axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
             2: 'L2',
@@ -567,7 +398,7 @@ class PS3(Gamepad):
             4: 'RIGHT-Y',
             5: 'R2'
         }
-        self.buttonNames = {
+        buttonNames = {
             0:  'CROSS',
             1:  'CIRCLE',
             2:  'TRIANGLE',
@@ -586,14 +417,13 @@ class PS3(Gamepad):
             15: 'DPAD-LEFT',
             16: 'DPAD-RIGHT'
         }
-        self._setupReverseMaps()
+        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
 
 class PS4(Gamepad):
     fullName = 'PlayStation 4 controller'
 
-    def __init__(self, joystickNumber = 0):
-        Gamepad.__init__(self, joystickNumber)
-        self.axisNames = {
+    def __init__(self, joystickNumber = 0):        
+        axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
             2: 'L2',
@@ -603,7 +433,7 @@ class PS4(Gamepad):
             6: 'DPAD-X',
             7: 'DPAD-Y'
         }
-        self.buttonNames = {
+        buttonNames = {
             0:  'CROSS',
             1:  'CIRCLE',
             2:  'TRIANGLE',
@@ -618,14 +448,15 @@ class PS4(Gamepad):
             11: 'L3',
             12: 'R3'
         }
-        self._setupReverseMaps()
+        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
+      
 
 class PS5(Gamepad):
     fullName = 'PlayStation 5 controller'
 
     def __init__(self, joystickNumber = 0):
         Gamepad.__init__(self, joystickNumber)
-        self.axisNames = {
+        axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
             2: 'L2',
@@ -635,7 +466,7 @@ class PS5(Gamepad):
             6: 'DPAD-X',
             7: 'DPAD-Y'
         }
-        self.buttonNames = {
+        buttonNames = {
             0:  'CROSS',
             1:  'CIRCLE',
             2:  'TRIANGLE',
@@ -650,14 +481,14 @@ class PS5(Gamepad):
             11: 'L3',
             12: 'R3'
         }
-        self._setupReverseMaps()       
+        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)    
 
 class Xbox360(Gamepad):
     fullName = 'Xbox 360 controller'
 
     def __init__(self, joystickNumber = 0):
         Gamepad.__init__(self, joystickNumber)
-        self.axisNames = {
+        axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
             2: 'LT',
@@ -665,7 +496,7 @@ class Xbox360(Gamepad):
             4: 'RIGHT-Y',
             5: 'RT'
         }
-        self.buttonNames = {
+        buttonNames = {
             0:  'A',
             1:  'B',
             2:  'X',
@@ -678,7 +509,7 @@ class Xbox360(Gamepad):
             9:  'LA',
             10: 'RA'
         }
-        self._setupReverseMaps()
+        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
 
 
 class MMP1251(Gamepad):
@@ -686,7 +517,7 @@ class MMP1251(Gamepad):
 
     def __init__(self, joystickNumber = 0):
         Gamepad.__init__(self, joystickNumber)
-        self.axisNames = {
+        axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
             2: 'L2',
@@ -696,7 +527,7 @@ class MMP1251(Gamepad):
             6: 'DPAD-X',
             7: 'DPAD-Y'
         }
-        self.buttonNames = {
+        buttonNames = {
             0:  'A',
             1:  'B',
             2:  'X',
@@ -709,5 +540,4 @@ class MMP1251(Gamepad):
             9:  'L3',
             10: 'R3'
         }
-        self._setupReverseMaps()
-
+        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)

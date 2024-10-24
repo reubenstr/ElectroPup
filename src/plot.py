@@ -2,9 +2,13 @@
 
 """
     Creates a 3D wire plot of a quadruped body and legs.
-    Gamepad controls the quadruped for live rotation and translation updates.
-    
-    Used to validate body frame, inverse kinematics, and pose input (gaits) prior to applying code to physics simulations or physical system.
+    Gamepad controls the quadruped for live rotation and translation updates.    
+    Used to validate body frame, inverse kinematics, and pose input prior to applying code to physics simulations or physical system.
+
+    If a gamepad is not plugged in, a static pose will be generate and displayed.
+
+    TODO:
+        Apply locomotion (gaits).
 """
 
 import matplotlib.pyplot as plt
@@ -114,13 +118,10 @@ if __name__ == "__main__":
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
    
-    gamepad_interface = GamepadInterface(motion_parameters)      
+    gamepad_interface = GamepadInterface(motion_parameters)  
    
     plot = Plot(frame_parameters)
     plot.create_plot()
-
-    print(gamepad_interface)
-    print(gamepad_interface.is_connected())
 
     gamepad_interface.set_kinetic_state(KineticState.POSE)
 

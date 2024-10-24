@@ -24,15 +24,14 @@ class GamepadInterface:
          # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
         joystick_number = 0                   
         self.gamepad = PS4(joystick_number)              
-        self.gamepad.startBackgroundUpdates()
-
+      
+        #if self.gamepad.isConnected():
         self.gamepad.addButtonChangedHandler("TRIANGLE", self.btn_triangle_changed_callback)
         self.gamepad.addButtonChangedHandler("CIRCLE", self.btn_circle_changed_callback)
         self.gamepad.addButtonChangedHandler("CROSS", self.btn_cross_changed_callback)
         self.gamepad.addButtonChangedHandler("SQUARE", self.btn_square_changed_callback)
         self.gamepad.addButtonChangedHandler("L3", self.btn_l3_changed_callback)
-        self.gamepad.addButtonChangedHandler("R3", self.btn_r3_changed_callback)
-       
+        self.gamepad.addButtonChangedHandler("R3", self.btn_r3_changed_callback)       
         self.gamepad.addAxisMovedHandler("LEFT-X", self.axis_left_x_changed_callback)
         self.gamepad.addAxisMovedHandler("LEFT-Y", self.axis_left_y_changed_callback)
         self.gamepad.addAxisMovedHandler("RIGHT-X", self.axis_right_x_changed_callback)
@@ -55,29 +54,26 @@ class GamepadInterface:
     
     def btn_triangle_changed_callback(self, state):
         if state:
-            self.trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)
+            self._trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)
     
     def btn_circle_changed_callback(self, state):
-        print(state)
+        pass
 
-    def btn_cross_changed_callback(self, state):
+    def btn_cross_changed_callback(self, state):       
         if state:
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
 
     def btn_square_changed_callback(self, state):
-        print(state)
+        pass
 
     def btn_l3_changed_callback(self, state):
-        if state and self.gamepad.isPressed("R3"): 
-            print("MOTOR_POWER_TOGGLE")
+        if state and self.gamepad.isPressed("R3"):
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
 
     def btn_r3_changed_callback(self, state):
         if state and self.gamepad.isPressed("L3"): 
-            print("MOTOR_POWER_TOGGLE")
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
-                  
-    
+                      
     def axis_left_x_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE: 
             self.motion_parameters.roll = self._map(value, -1, 1, self.motion_parameters.roll_min, self.motion_parameters.roll_max)
@@ -137,7 +133,6 @@ if __name__ == '__main__':
          exit(1)
 
     gamepad_interface = GamepadInterface(motion_parameters)
-    gamepad_interface.connect_gamepad()
     
     try:  
         while(True):
