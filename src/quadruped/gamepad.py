@@ -61,11 +61,13 @@ class Gamepad:
                 self.joystickFile = open(self.joystickPath, 'rb')
                 break
             except IOError as e:
-                retryCount -= 1
+                retryCount -= 1               
                 if retryCount > 0:
                     time.sleep(0.5)
                 else:
-                    raise IOError('[Gamepad] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
+                    print(f"[Gamepad] error, unable to connect to joystick at {self.joystickPath}")  
+                    break                 
+                    #raise IOError('[Gamepad] unabled to open gamepad %s: %s' % (self.joystickNumber, str(e)))
         
         print(f"[Gamepad] connected")         
 

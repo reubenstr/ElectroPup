@@ -114,8 +114,11 @@ if __name__ == "__main__":
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
 
-    gamepad_interface = GamepadInterface(motion_parameters)
-    gamepad_connected = gamepad_interface.connect_gamepad()
+    #gamepad_interface = GamepadInterface(motion_parameters)
+    
+    print(gamepad_interface)
+    print("__")
+    print(gamepad_interface.is_connected())
 
     plot = Plot(frame_parameters)
     plot.create_plot()
@@ -123,7 +126,9 @@ if __name__ == "__main__":
     try:
         while True:
 
-            if gamepad_connected:
+            print(gamepad_interface.is_connected())
+
+            if gamepad_interface.is_connected():       
                 motion_parameters = gamepad_interface.get_motion_parameters()
             
             else:

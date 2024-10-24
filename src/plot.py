@@ -15,7 +15,7 @@ from time import sleep
 from quadruped.body import Body
 from quadruped.gamepad_interface import GamepadInterface
 from quadruped.parameters.frame_parameters import FrameParameters
-from quadruped.parameters.motion_parameters import MotionParameters
+from quadruped.parameters.motion_parameters import MotionParameters, KineticState
 
 
 class Plot:
@@ -113,23 +113,22 @@ if __name__ == "__main__":
 
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
-
-    gamepad_found = True
-    try:
-        gamepad_interface = GamepadInterface(motion_parameters)
-        gamepad_interface.connect_gamepad()
-    except:
-        gamepad_found = False
+   
+    gamepad_interface = GamepadInterface(motion_parameters)      
    
     plot = Plot(frame_parameters)
     plot.create_plot()
 
+    print(gamepad_interface)
+    print(gamepad_interface.is_connected())
+
+    gamepad_interface.set_kinetic_state(KineticState.POSE)
+
     try:        
         
-        if gamepad_found:
+        if gamepad_interface.is_connected(): 
             """Use gamepad to update motion parameters"""
-            while gamepad_interface.is_connected():               
-                gamepad_interface.tick()
+            while gamepad_interface.is_connected(): 
                 new_motion_parameters = gamepad_interface.get_motion_parameters()
                 plot.update_plot(new_motion_parameters) 
                 sleep(0.010)

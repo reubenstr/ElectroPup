@@ -19,79 +19,96 @@ class GamepadInterface:
                 
         self.controller_event_callback: Optional[Callable[[ControllerEvent], None]] = None   
         
-        self.triangle_button_release_flag = True
-        self.r3_button_release_flag = True
-        self.l3_button_release_flag = True
-        
-    def register_controller_event_callback(self, callback: Callable[[ControllerEvent], None]):
-        self.controller_event_callback = callback
-        
-    def trigger_controller_event(self, event: ControllerEvent):
-        if self.controller_event_callback:
-            self.controller_event_callback(event)
-              
-    def connect_gamepad(self):
-        # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
+        self.kinetic_state : KineticState =  KineticState.INIT
+
+         # Find the ID of the connected joystick (gamepad): "ls /dev/input/ | grep js"
         joystick_number = 0                   
         self.gamepad = PS4(joystick_number)              
         self.gamepad.startBackgroundUpdates()
-        return True
-    
-    def tick(self, motion_state: KineticState):
-        """Call frequently to capture events from the gamepad library.
 
-        Args:
-            motion_state (KineticState): _description_
-        """
-            
-        # BUTTONS:        
-        if self.gamepad.isPressed("TRIANGLE") == True and self.triangle_button_release_flag == True:
-            self.triangle_button_release_flag = False            
-            self.trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)            
-        elif self.gamepad.isPressed("TRIANGLE") == False:
-            self.triangle_button_release_flag = True
-            
-        if self.gamepad.isPressed("CROSS") == True and self.cross_button_release_flag == True:
-            self.cross_button_release_flag = False            
-            self.trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)            
-        elif self.gamepad.isPressed("CROSS") == False:
-            self.cross_button_release_flag = True
-            
-        if self.gamepad.isPressed("L3") == True and self.l3_button_release_flag == True and self.gamepad.isPressed("R3") == True and self.r3_button_release_flag == True:             
-            self.r3_button_release_flag = False  
-            self.l3_button_release_flag = False 
-            self.trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)             
-        elif self.gamepad.isPressed("L3")  and self.gamepad.isPressed("R3")== False:
-            self.r3_button_release_flag = True  
-            self.l3_button_release_flag = True  
-            
-            
-     
-                              
-        # AXES:    
-        # Joystick at up position generates negative values.
-        # Joystick at down position generates positive values.
-        # Some inputs reorientates some joysticks to match desired functionality.            
-        if motion_state == KineticState.POSE:                      
-            self.motion_parameters.roll = self.map(
-                self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.roll_min, self.motion_parameters.roll_max)
-            self.motion_parameters.pitch = self.map(
-             - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.pitch_min, self.motion_parameters.pitch_max)
-            self.motion_parameters.yaw = self.map(
-                self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters.yaw_min, self.motion_parameters.yaw_max)
-            self.motion_parameters.height_translation = self.map(
-            - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
-                      
-        elif motion_state == KineticState.MOTION:
-            self.motion_parameters.yaw_rate = self.map(
-                self.gamepad.axis('LEFT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)
-            self.motion_parameters.step_length = self.map(
-             - self.gamepad.axis('LEFT-Y'), -1, 1, self.motion_parameters.step_length_min, self.motion_parameters.step_length_max)          
-            self.motion_parameters.yaw_rate = self.map(
-              self.gamepad.axis('RIGHT-X'), -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)            
-            self.motion_parameters.height_translation = self.map(
-            - self.gamepad.axis('RIGHT-Y'), -1, 1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
-   
+        self.gamepad.addButtonChangedHandler("TRIANGLE", self.btn_triangle_changed_callback)
+        self.gamepad.addButtonChangedHandler("CIRCLE", self.btn_circle_changed_callback)
+        self.gamepad.addButtonChangedHandler("CROSS", self.btn_cross_changed_callback)
+        self.gamepad.addButtonChangedHandler("SQUARE", self.btn_square_changed_callback)
+        self.gamepad.addButtonChangedHandler("L3", self.btn_l3_changed_callback)
+        self.gamepad.addButtonChangedHandler("R3", self.btn_r3_changed_callback)
+       
+        self.gamepad.addAxisMovedHandler("LEFT-X", self.axis_left_x_changed_callback)
+        self.gamepad.addAxisMovedHandler("LEFT-Y", self.axis_left_y_changed_callback)
+        self.gamepad.addAxisMovedHandler("RIGHT-X", self.axis_right_x_changed_callback)
+        self.gamepad.addAxisMovedHandler("RIGHT-Y", self.axis_right_y_changed_callback)
+        
+    ############################################################################### 
+    # Events from Interface
+    ###############################################################################
+
+    def register_controller_event_callback(self, callback: Callable[[ControllerEvent], None]):
+        self.controller_event_callback = callback
+        
+    def _trigger_controller_event(self, event: ControllerEvent):
+        if self.controller_event_callback:
+            self.controller_event_callback(event)
+
+    ############################################################################### 
+    # Callback handlers from Gamepad
+    ###############################################################################
+    
+    def btn_triangle_changed_callback(self, state):
+        if state:
+            self.trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)
+    
+    def btn_circle_changed_callback(self, state):
+        print(state)
+
+    def btn_cross_changed_callback(self, state):
+        if state:
+            self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
+
+    def btn_square_changed_callback(self, state):
+        print(state)
+
+    def btn_l3_changed_callback(self, state):
+        if state and self.gamepad.isPressed("R3"): 
+            print("MOTOR_POWER_TOGGLE")
+            self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
+
+    def btn_r3_changed_callback(self, state):
+        if state and self.gamepad.isPressed("L3"): 
+            print("MOTOR_POWER_TOGGLE")
+            self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE) 
+                  
+    
+    def axis_left_x_changed_callback(self, value):
+        if self.kinetic_state == KineticState.POSE: 
+            self.motion_parameters.roll = self._map(value, -1, 1, self.motion_parameters.roll_min, self.motion_parameters.roll_max)
+        elif self.kinetic_state == KineticState.MOTION: 
+            self.motion_parameters.yaw_rate = self._map(value, -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)
+    
+    def axis_left_y_changed_callback(self, value):
+        if self.kinetic_state == KineticState.POSE: 
+            self.motion_parameters.pitch = self._map(value, -1, 1, self.motion_parameters.pitch_min, self.motion_parameters.pitch_max)
+        elif self.kinetic_state == KineticState.MOTION: 
+            self.motion_parameters.step_length = self._map(value, -1, 1, self.motion_parameters.step_length_min, self.motion_parameters.step_length_max)
+
+    def axis_right_x_changed_callback(self, value):
+        if self.kinetic_state == KineticState.POSE: 
+            self.motion_parameters.yaw = self._map(value, -1, 1, self.motion_parameters.yaw_min, self.motion_parameters.yaw_max)
+        elif self.kinetic_state == KineticState.MOTION: 
+            self.motion_parameters.yaw_rate = self._map(value, -1, 1, self.motion_parameters.yaw_rate_min, self.motion_parameters.yaw_rate_max)  
+
+    def axis_right_y_changed_callback(self, value):
+        if self.kinetic_state == KineticState.POSE: 
+            self.motion_parameters.height_translation = self._map(value, 1, -1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
+        elif self.kinetic_state == KineticState.MOTION: 
+            self.motion_parameters.height_translation = self._map(value, 1, -1, self.motion_parameters.height_translation_min, self.motion_parameters.height_translation_max)
+    
+    ############################################################################### 
+    # Methods
+    ###############################################################################
+    
+    def set_kinetic_state(self, kinetic_state : KineticState):
+        self.kinetic_state = kinetic_state
+    
     def get_motion_parameters(self):    
         return copy.deepcopy(self.motion_parameters)
 
@@ -101,10 +118,13 @@ class GamepadInterface:
     def disconnect(self):          
         self.gamepad.disconnect()    
   
-    def map(self, n, in_min, in_max, out_min, out_max):
+    ############################################################################### 
+    # Helpers
+    ###############################################################################
+
+    def _map(self, n, in_min, in_max, out_min, out_max):
         return (n - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
     
-
 ###############################################################################
 # Main - Run to test class.
 ###############################################################################
