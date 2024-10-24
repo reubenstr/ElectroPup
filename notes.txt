@@ -227,6 +227,18 @@ Splitloom:365mm
 Cable: 465mm
 
 ###############################################################################
+# Other quadripends
+###############################################################################
+https://github.com/Jerome-Graves/yertle
+https://grabcad.com/library/diy-quadruped-robot-1
+https://spotmicroai.readthedocs.io/en/latest/
+https://github.com/adham-elarabawy/open-quadruped
+https://github.com/chvmp/champ
+https://www.youtube.com/@Jorgefer88
+
+
+
+###############################################################################
 
 3450 * 3.7 = 12.7w/hr
 
