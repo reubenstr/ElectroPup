@@ -83,7 +83,7 @@ class Live():
         if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
             print(error_state.name)
         elif error_state == Body.ErrorState.NONE:
-            joint_angles = self.body.get_joint_angles()
+            joint_angles = self.body.get_joint_angles(units="DEGREES")
 
             #motors_front.set_motor_targets(motor_tag="FLA", speed=500, angle=joint_angles['front_left']['abduction'])   
             #motors_front.set_motor_targets(motor_tag="FLH", speed=500, angle=joint_angles['front_left']['hip'])  

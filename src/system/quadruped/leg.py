@@ -137,8 +137,8 @@ class Leg(object):
         return ht_foot[0:3,3]
     
     def get_leg_angles_in_radians(self):
-        '''Return leg angles as a tuple of 3 angles, (q1, q2, q3)'''
-        return (self._q1,self._q2,self._q3)
+        '''Return leg angles as a dictionary as q1, q2, q3'''
+        return {'abduction':self._q1, 'hip':self._q2, 'knee':self._q3}
     
     def get_leg_angles_in_degrees(self):
         '''Return leg angles in degrees as a dictionary as q1,q2,q3 ''' 

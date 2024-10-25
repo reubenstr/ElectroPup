@@ -55,6 +55,7 @@ class Gamepad:
 
     def _trigger_controller_event(self, event: ControllerEvent):
         if self.controller_event_callback:
+            print(f"[Gamepad] event trigger: {str(event)}")
             self.controller_event_callback(event)
 
     ###############################################################################
@@ -68,7 +69,7 @@ class Gamepad:
     def btn_circle_changed_callback(self, state):
         pass
 
-    def btn_cross_changed_callback(self, state):
+    def btn_cross_changed_callback(self, state):       
         if state:
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
 
@@ -137,7 +138,7 @@ class Gamepad:
                 self.motion_parameters.yaw_rate_max,
             )
 
-    def axis_right_y_changed_callback(self, value):
+    def axis_right_y_changed_callback(self, value):       
         if self.kinetic_state == KineticState.POSE:
             self.motion_parameters.height_translation = self._map(
                 value,
@@ -146,7 +147,7 @@ class Gamepad:
                 self.motion_parameters.height_translation_min,
                 self.motion_parameters.height_translation_max,
             )
-        elif self.kinetic_state == KineticState.MOTION:
+        elif self.kinetic_state == KineticState.MOTION:            
             self.motion_parameters.height_translation = self._map(
                 value,
                 1,
@@ -154,6 +155,7 @@ class Gamepad:
                 self.motion_parameters.height_translation_min,
                 self.motion_parameters.height_translation_max,
             )
+            
 
     ###############################################################################
     # Methods

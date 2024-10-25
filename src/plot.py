@@ -118,18 +118,19 @@ if __name__ == "__main__":
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
    
-    gamepad_interface = Gamepad(motion_parameters)  
+    gamepad = Gamepad(motion_parameters) 
+    gamepad.set_kinetic_state(KineticState.POSE) 
    
     plot = Plot(frame_parameters)
     plot.create_plot()
 
-    gamepad_interface.set_kinetic_state(KineticState.POSE)
+    
 
     try:   
-        if gamepad_interface.is_connected(): 
+        if gamepad.is_connected(): 
             """Use gamepad to update motion parameters"""
-            while gamepad_interface.is_connected(): 
-                new_motion_parameters = gamepad_interface.get_motion_parameters()
+            while gamepad.is_connected(): 
+                new_motion_parameters = gamepad.get_motion_parameters()
                 plot.update_plot(new_motion_parameters) 
                 sleep(0.010)
         else:
@@ -141,4 +142,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(str(e))
               
-    gamepad_interface.disconnect()
+    gamepad.disconnect()
