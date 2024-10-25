@@ -148,3 +148,9 @@ https://spotmicroai.readthedocs.io/en/latest/
 https://github.com/adham-elarabawy/open-quadruped
 https://github.com/chvmp/champ
 https://www.youtube.com/@Jorgefer88
+
+
+###############################################################################
+# Tools
+###############################################################################
+https://ezgif.com/
