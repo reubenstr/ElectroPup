@@ -1,4 +1,6 @@
 ###############################################################################
+# Main PC (Ubunutu)
+###############################################################################
 pip install mujoco
 python -m mujoco.viewer
 
@@ -9,17 +11,22 @@ https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 
 
 ###############################################################################
-Rasberry Pi
+Raspberry Pi
 ###############################################################################
+
+On Raspberry Pi (Raspberry Pi OS Lite, Bookworm 64-bit )
+
+sudo apt install python3-yaml
+sudo apt install python3-rich
 
 ssh pi@pidog.local
 user: pi
 pass: pi
 
 
-
 ###############################################################################
-aux-board
+# aux-board
+###############################################################################
 
 sudo nano /etc/udev/rules.d/99-dfu.rules
 SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666"
@@ -30,24 +37,7 @@ ls -l /dev/bus/usb/002/038  # Adjust the path based on your system's output
 https://github.com/VermontCoder/read_sbus
 https://www.digikey.com/en/products/detail/texas-instruments/SN74LVC1G14DBVT/1592006
 
-###############################################################################
-image converter
-
-
 https://github.com/riuson/lcd-image-converter
-
-Install dependancies:
-sudo apt-get update
-sudo apt-get install libqt5svg5-dev
-sudo apt-get install libqt5xmlpatterns5-dev
-sudo apt-get install qt5-qmake qtbase5-dev qttools5-dev-tools
-
-
-Make from source:
-git clone https://github.com/riuson/lcd-image-converter.git ~/lcd-image-converter
-cd ~/lcd-image-converter
-qmake
-make
 
 
 ###############################################################################
@@ -60,13 +50,6 @@ https://github.com/cguweb-com/Arduino-Projects/tree/main/Nova-SM3
 
 ###############################################################################
 https://hardwaretester.com/gamepad
-
-
-###############################################################################
-https://www.18650batterystore.com/collections/18650-batteries/products/sanyo-ncr18650ga
-
-
-sudo apt install python3-rich
 
 
 ###############################################################################
@@ -125,13 +108,6 @@ Loopback test, connect H to H, L to L:
 	cansend can1 141#8800000000000000
 	cansend can1 141#8000000000000000
 
-###############################################################################
-# Dependancies 
-###############################################################################
-
-On Raspberry Pi (Raspberry Pi OS Lite, Bookworm 64-bit )
-sudo apt install python3-yaml
-
 
 ###############################################################################
 # PS4 Controller
@@ -155,7 +131,6 @@ Should show 3 Wireless Controller event types
 # Serial 
 ###############################################################################
 
-
 sudo raspi-config
 3) Interface Options
 I6 Serial Port
@@ -165,7 +140,7 @@ reboot
 
 
 ###############################################################################
-# Other quadripends
+# Other quadrupends
 ###############################################################################
 https://github.com/Jerome-Graves/yertle
 https://grabcad.com/library/diy-quadruped-robot-1
@@ -173,63 +148,3 @@ https://spotmicroai.readthedocs.io/en/latest/
 https://github.com/adham-elarabawy/open-quadruped
 https://github.com/chvmp/champ
 https://www.youtube.com/@Jorgefer88
-
-
-
-###############################################################################
-
-3450 * 3.7 = 12.7w/hr
-
-198
-
-
-https://github.com/open-dynamic-robot-initiative/blmc_drivers?tab=readme-ov-file
-
-https://open-dynamic-robot-initiative.github.io/robot_interfaces/doc/real_time.html
-
-
-
-2.5 N-m
-25.49 kg-cm
-
-
-MIT Mini Cheetah
-
-Units: mm
-Frame width (side to side): 194
-Frame length (front motor plate to back motor plate): 304
-Frame thickness (top to bottom): 94
-
-Hip width (actuator center ot actuator center): 236.5
-Hip length (actuator center to actuator center): 392
-
-Hip center motor to upper leg (actuator center to actuator center): est. 82
-
-Foot width (ball to ball): 256
-
-Upper leg length: 212.4
-Lower leg length: 205
-392/
-
-
-body length to foot width === 392/256 = 1.53
-
-body length to total leg length === 392/417.4 = 0.94
-------------------
-
-ElectroPup
-
-347/249 = 1.39
-347/280 = 1.24
-
-------------------
-
-golden ratio (approximately 1.618
-
-###############################################################################
-###############################################################################
-
-https://hardwaretester.com/gamepad
-
-###############################################################################
-
