@@ -14,10 +14,10 @@ from ..parameters.frame_parameters import FrameParameters
 
 class Body(object):
     """
-    Encapsulates an 12 DOF quadruped stick figure  
+    Encapsulates a 12 DOF quadruped. 
 
     The 12 degrees of freedom represent the twelve joint angles. 
-    Contains inverse kinematic capabilities
+    Generates inverse kinematics to calculate joint angles.
     
     Attributes:
         hip_length: Length of the hip joint
@@ -107,7 +107,7 @@ class Body(object):
         try:
             ht_body = transformations.homog_transform(phi, psi, theta, x, y, z)
                         
-            legs = {}
+            legs : Dict[str, Leg] = {}
             legs['back_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_right(ht_body,self.body_length,self.body_width),leg12=True) 
             legs['front_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_right(ht_body,self.body_length,self.body_width),leg12=True)
             legs['front_left'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_left(ht_body,self.body_length,self.body_width),leg12=False)

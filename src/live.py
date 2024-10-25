@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 """
+
+    
    
 """
 import traceback
@@ -10,11 +12,11 @@ from rich import print # Overrides print and injects colors
 from math import degrees
 
 # Local source.
-from quadruped.body import Body
-from quadruped.gamepad_interface import GamepadInterface
-from quadruped.parameters.frame_parameters import FrameParameters
-from quadruped.parameters.motion_parameters import MotionParameters, KineticState, ControllerEvent
-from motors.motors import Motors
+from system.quadruped.body import Body
+from system.gamepad.gamepad import Gamepad
+from system.parameters.frame_parameters import FrameParameters
+from system.parameters.motion_parameters import MotionParameters, KineticState, ControllerEvent
+from system.motors.motors import Motors
 
 
 class Live():
@@ -25,25 +27,19 @@ class Live():
         frame_parameters = FrameParameters(frame_parameters_filepath)
         motion_parameters = MotionParameters(motion_parameters_filepath)
 
-        self.gamepad_interface = GamepadInterface(motion_parameters)
-        self.gamepad_interface.register_controller_event_callback(self.controller_event_callback)
-        self.gamepad_interface.connect_gamepad()
-        
-        
+        self.gamepad = Gamepad(motion_parameters)
+        self.gamepad.register_controller_event_callback(self.controller_event_callback)
+           
         self.body = Body(frame_parameters=frame_parameters)
 
         #motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]     
         motor_tags = ["FLA", "FLH", "FLK"]
         self.motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
         self.motor_interface_front.cmd_all_motors_off()
-        
-        
+                
         self.motor_interface_front.set_limits("FLA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_front.set_limits("FLH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_front.set_limits("FLK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))
-
-         
-        
                 
         #motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         # motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
@@ -70,7 +66,7 @@ class Live():
 
                     
     def apply_controller_input(self):                
-        motion_parameters = self.gamepad_interface.get_motion_parameters()
+        motion_parameters = self.gamepad.get_motion_parameters()
         
         error_state = self.body.set_body_pose_by_transform_inputs(
             phi=motion_parameters.roll,
@@ -138,10 +134,11 @@ class Live():
     def run(self):
         while True:
         
-            if not self.gamepad_interface.is_connected():  
-                return
+            if not self.gamepad.is_connected():  
+                sleep(0.100)
+                continue
             
-            self.gamepad_interface.tick(self.kinetic_state)
+          
                         
             # Execute once after kinetic state change:                      
             if self.previous_kinetic_state != self.kinetic_state:   
@@ -205,7 +202,7 @@ class Live():
                  
     def shutdown(self):
         self.motor_interface_front.shutdown()
-        self.gamepad_interface.disconnect()
+        self.gamepad.disconnect()
 
 ###############################################################################
 # Entry
