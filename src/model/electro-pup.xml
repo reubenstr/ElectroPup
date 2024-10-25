@@ -5,14 +5,13 @@
 
   <visual>
     <rgba contactpoint="1 0 0 1" />
-
   </visual>
 
   <!-- <statistic meansize="0.183574"/> -->
 
   <default>
     <geom type="mesh" />
-   
+
     <joint range="-180 180" armature="0.01" damping="1" frictionloss="1" />
     <!-- <joint range="-180 180" armature="0.01090125" damping="0.0239" frictionloss="0.1334"/>-->
 
@@ -39,7 +38,7 @@
       0 0" ctrlrange="-2 2"/> -->
     </default>
 
-   
+
     <default class="abduction">
       <geom rgba="1 1 0 1" />
     </default>
@@ -50,7 +49,7 @@
       <geom rgba="0 1 0 1" />
     </default>
     <default class="foot">
-      <geom rgba="0 0 0 1"  solimp="0.015 1 0.031" friction="0.8 0.02 0.01" />
+      <geom rgba="0 0 0 1" solimp="0.015 1 0.031" friction="0.8 0.02 0.01" />
     </default>
 
 
@@ -68,7 +67,8 @@
     <site name="origin" />
     <body name="chassis">
       <freejoint />
-      <camera name="track" pos="0.846 -1.465 0.916" xyaxes="0.866 0.500 0.000 -0.171 0.296 0.940"        mode="trackcom" />
+      <camera name="track" pos="0.846 -1.465 0.916" xyaxes="0.866 0.500 0.000 -0.171 0.296 0.940"
+        mode="trackcom" />
 
       <inertial pos="0 0.1315 0" mass="2.000" diaginertia="0.048 0.019 0.062" />
 
@@ -82,12 +82,12 @@
         <body name="front_left_leg_assembly" pos="0.0345 -0.041 0" quat="1 0 0 0">
           <inertial pos="0 0 0" quat="0 1 0 0" mass="0.500" diaginertia="0.003316 0.003316 0.0001" />
           <joint class="hip_front" name="front_left_hip" axis="1 0 0" />
-          <geom class="upper_leg" quat="-1 1 0 0" mesh="upper-leg"  />
+          <geom class="upper_leg" quat="-1 1 0 0" mesh="upper-leg" />
 
           <body name="front_left_lower_leg" pos="0 0 -0.140" quat="1 0 0 0">
-            <inertial pos="0 0 0" quat="1 0 0 0" mass="0.125" diaginertia="0.003316 0.003316 0.0001" />            
-            <joint class="knee" name="front_left_knee" axis="1 0 0" />            
-            <geom class="lower_leg" pos="0 0 0" quat="-1 1 0 0" mesh="lower-leg" />          
+            <inertial pos="0 0 0" quat="1 0 0 0" mass="0.125" diaginertia="0.003316 0.003316 0.0001" />
+            <joint class="knee" name="front_left_knee" axis="1 0 0" />
+            <geom class="lower_leg" pos="0 0 0" quat="-1 1 0 0" mesh="lower-leg" />
             <geom class="foot" pos="0.020 0 -0.130" mesh="foot" />
           </body>
 
@@ -163,18 +163,15 @@
     <general name="front_left_hip" class="multi_mode_controlled_actuator" joint="front_left_hip" />
     <general name="front_left_knee" class="multi_mode_controlled_actuator" joint="front_left_knee" />
 
-
     <general name="front_right_abduction" class="multi_mode_controlled_actuator"
       joint="front_right_abduction" />
     <general name="front_right_hip" class="multi_mode_controlled_actuator" joint="front_right_hip" />
     <general name="front_right_knee" class="multi_mode_controlled_actuator" joint="front_right_knee" />
 
-
     <general name="back_left_abduction" class="multi_mode_controlled_actuator"
       joint="back_left_abduction" />
     <general name="back_left_hip" class="multi_mode_controlled_actuator" joint="back_left_hip" />
     <general name="back_left_knee" class="multi_mode_controlled_actuator" joint="back_left_knee" />
-
 
     <general name="back_right_abduction" class="multi_mode_controlled_actuator"
       joint="back_right_abduction" />
@@ -199,7 +196,6 @@
     <jointpos joint="back_right_hip" name="back_right_hip_pos" />
     <jointpos joint="back_right_knee" name="back_right_knee_pos" />
 
-
     <jointvel joint="front_left_abduction" name="front_left_abduction_vel" />
     <jointvel joint="front_left_hip" name="front_left_hip_vel" />
     <jointvel joint="front_left_knee" name="front_left_knee_vel" />
@@ -222,7 +218,6 @@
   </sensor>
 
   <keyframe>
-
     <key name="standing"
       qpos="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
       ctrl="

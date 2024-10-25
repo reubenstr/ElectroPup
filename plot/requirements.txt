@@ -1,3 +1,0 @@
-matplotlib==3.9.2
-numpy==1.21.5
-PyYAML==6.0.2
