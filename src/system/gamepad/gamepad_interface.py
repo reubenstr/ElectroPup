@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 """
-    Gamepad provides buttons and axis inputs from a gamepad as events.
+    Gamepad Interface provides buttons and axis inputs from the gamepad driver as events.
 
     Original significantly modified from: https://github.com/piborg/Gamepad
     Key changes:
         Events only
-        Non-blocking connect
-        Auto reconnect
+        Non-blocking connections
+        Auto reconnections
         Removes exceptions for status bool to check connection state
 """
 
@@ -15,22 +15,20 @@ import time
 import struct
 import threading
 
-class Gamepad:
+class GamepadInterface:
     EVENT_CODE_BUTTON = 0x01
     EVENT_CODE_AXIS = 0x02
     EVENT_CODE_INIT_BUTTON = 0x80 | EVENT_CODE_BUTTON
     EVENT_CODE_INIT_AXIS = 0x80 | EVENT_CODE_AXIS
     MIN_AXIS = -32767.0
     MAX_AXIS = +32767.0
-    EVENT_BUTTON = 'BUTTON'
-    EVENT_AXIS = 'AXIS'
 
     class UpdateThread(threading.Thread):
         """Thread used to continually run the updateState function on a Gamepad in the background"""
-        def __init__(self, gamepad):
+        def __init__(self, gamepad_interface):
             threading.Thread.__init__(self)
-            if isinstance(gamepad, Gamepad):
-                self.gamepad = gamepad
+            if isinstance(gamepad_interface, GamepadInterface):
+                self.gamepad_interface = gamepad_interface
             else:
                 raise ValueError('Gamepad update thread was not created with a valid Gamepad object')
             self.running = True
@@ -38,11 +36,11 @@ class Gamepad:
         def run(self):
             try:
                 while self.running:
-                    self.gamepad.updateState()
-                self.gamepad = None
+                    self.gamepad_interface.updateState()
+                self.gamepad_interface = None
             except:
                 self.running = False
-                self.gamepad = None
+                self.gamepad_interface = None
                 raise
 
     def __init__(self, joystickNumber, axisNames, buttonNames):
@@ -82,7 +80,7 @@ class Gamepad:
             self.releasedEventMap[index] = []
             self.changedEventMap[index] = []
 
-        self.updateThread = Gamepad.UpdateThread(self)
+        self.updateThread = GamepadInterface.UpdateThread(self)
         self.updateThread.start()        
 
 
@@ -137,7 +135,7 @@ class Gamepad:
         except:
             return
                
-        if eventType == Gamepad.EVENT_CODE_BUTTON:  
+        if eventType == GamepadInterface.EVENT_CODE_BUTTON:  
             if value == 0:
                 finalValue = False
                 self.wasReleasedMap[index] = True
@@ -151,8 +149,8 @@ class Gamepad:
             self.pressedMap[index] = finalValue
             for callback in self.changedEventMap[index]:
                 callback(finalValue)
-        elif eventType == Gamepad.EVENT_CODE_AXIS:
-            finalValue = value / Gamepad.MAX_AXIS
+        elif eventType == GamepadInterface.EVENT_CODE_AXIS:
+            finalValue = value / GamepadInterface.MAX_AXIS
             self.axisMap[index] = finalValue
             for callback in self.movedEventMap[index]:
                 callback(finalValue)
@@ -385,11 +383,11 @@ class Gamepad:
 # Gamepad classes and mappings
 ###############################################################################
 
-class PS3(Gamepad):
+class PS3(GamepadInterface):
     fullName = 'PlayStation 3 controller'
 
     def __init__(self, joystickNumber = 0):
-        Gamepad.__init__(self, joystickNumber)
+        GamepadInterface.__init__(self, joystickNumber)
         axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
@@ -417,9 +415,9 @@ class PS3(Gamepad):
             15: 'DPAD-LEFT',
             16: 'DPAD-RIGHT'
         }
-        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
+        GamepadInterface.__init__(self, joystickNumber, axisNames, buttonNames)
 
-class PS4(Gamepad):
+class PS4(GamepadInterface):
     fullName = 'PlayStation 4 controller'
 
     def __init__(self, joystickNumber = 0):        
@@ -448,14 +446,14 @@ class PS4(Gamepad):
             11: 'L3',
             12: 'R3'
         }
-        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
+        GamepadInterface.__init__(self, joystickNumber, axisNames, buttonNames)
       
 
-class PS5(Gamepad):
+class PS5(GamepadInterface):
     fullName = 'PlayStation 5 controller'
 
     def __init__(self, joystickNumber = 0):
-        Gamepad.__init__(self, joystickNumber)
+        GamepadInterface.__init__(self, joystickNumber)
         axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
@@ -481,13 +479,13 @@ class PS5(Gamepad):
             11: 'L3',
             12: 'R3'
         }
-        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)    
+        GamepadInterface.__init__(self, joystickNumber, axisNames, buttonNames)    
 
-class Xbox360(Gamepad):
+class Xbox360(GamepadInterface):
     fullName = 'Xbox 360 controller'
 
     def __init__(self, joystickNumber = 0):
-        Gamepad.__init__(self, joystickNumber)
+        GamepadInterface.__init__(self, joystickNumber)
         axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
@@ -509,14 +507,14 @@ class Xbox360(Gamepad):
             9:  'LA',
             10: 'RA'
         }
-        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
+        GamepadInterface.__init__(self, joystickNumber, axisNames, buttonNames)
 
 
-class MMP1251(Gamepad):
+class MMP1251(GamepadInterface):
     fullName = "ModMyPi Raspberry Pi Wireless USB Gamepad"
 
     def __init__(self, joystickNumber = 0):
-        Gamepad.__init__(self, joystickNumber)
+        GamepadInterface.__init__(self, joystickNumber)
         axisNames = {
             0: 'LEFT-X',
             1: 'LEFT-Y',
@@ -540,4 +538,4 @@ class MMP1251(Gamepad):
             9:  'L3',
             10: 'R3'
         }
-        Gamepad.__init__(self, joystickNumber, axisNames, buttonNames)
+        GamepadInterface.__init__(self, joystickNumber, axisNames, buttonNames)

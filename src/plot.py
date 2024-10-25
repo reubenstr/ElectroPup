@@ -16,10 +16,10 @@ from math import pi
 from time import sleep
 
 # Local source.
-from quadruped.body import Body
-from quadruped.gamepad_interface import GamepadInterface
-from quadruped.parameters.frame_parameters import FrameParameters
-from quadruped.parameters.motion_parameters import MotionParameters, KineticState
+from system.quadruped.body import Body
+from system.gamepad.gamepad import Gamepad
+from system.parameters.frame_parameters import FrameParameters
+from system.parameters.motion_parameters import MotionParameters, KineticState
 
 
 class Plot:
@@ -112,21 +112,20 @@ class Plot:
 ###############################################################################
 if __name__ == "__main__":
 
-    motion_parameters_filepath = "./quadruped/parameters/motion_parameters.yaml"
-    frame_parameters_filepath = "./quadruped/parameters/frame_parameters.yaml"
+    motion_parameters_filepath = "./system/parameters/motion_parameters.yaml"
+    frame_parameters_filepath = "./system/parameters/frame_parameters.yaml"
 
     frame_parameters = FrameParameters(frame_parameters_filepath)
     motion_parameters = MotionParameters(motion_parameters_filepath)
    
-    gamepad_interface = GamepadInterface(motion_parameters)  
+    gamepad_interface = Gamepad(motion_parameters)  
    
     plot = Plot(frame_parameters)
     plot.create_plot()
 
     gamepad_interface.set_kinetic_state(KineticState.POSE)
 
-    try:        
-        
+    try:   
         if gamepad_interface.is_connected(): 
             """Use gamepad to update motion parameters"""
             while gamepad_interface.is_connected(): 
@@ -134,8 +133,7 @@ if __name__ == "__main__":
                 plot.update_plot(new_motion_parameters) 
                 sleep(0.010)
         else:
-            """Manually create motion parameters to generate a demo pose"""            
-            motion_parameters.height_translation = 0.200
+            """Use default motion parameters to generate a demo pose"""
             while(True):                
                 plot.update_plot(motion_parameters) 
                 sleep(0.010)
