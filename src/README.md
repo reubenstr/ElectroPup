@@ -1,14 +1,14 @@
 # plot.py
 
-Generates a wireframe 3D plot of a quadruped controlled by a gamepad to demonstrate and verify inverse kinematics and gaits.
+Generates a wireframe 3D plot of athe quadruped. Gamepad controls poses to demonstrate and verify inverse kinematics and gaits.
 
 # sim.py
 
-Starts the MuJoCu physics simulation of the quadruped. 
+Starts the MuJoCu physics simulation of the quadruped. Gamepad controls poses and motion.
 
 # live.py
 
-Executes on the quadruped's Raspberry Pi with a CAN shield to control quadrudped's motors based on gamepad inputs.
+Executes on the quadruped's Raspberry Pi with a CAN shield. Gamepad connects over Bluetooth to control the robot.
 
 # zero_motors.py
 

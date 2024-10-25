@@ -17,3 +17,5 @@ Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides fr
 [PCB](https://cad.onshape.com/documents/c8a855826c37bd92b89d9f0e)
 
 [Neopixels](https://cad.onshape.com/documents/567292ac55c75b2efa25b7d5)
+
+All parts have export permissions to allow printing and modification.

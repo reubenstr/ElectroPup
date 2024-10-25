@@ -1,43 +1,3 @@
-
-Hardware
-
-Motor bolt MAX depths:
-Front frame : M2.5 x 8.5mm, recommended max: 8mm
-Front motor wheel : M3 x 6mm, recommended max: 5.5mm
-Front motor wheel pin: M3 x 3mm, recommended max 2.5mm
-
-Per leg:
-    Hip:
-        motor front: 6x M2.5x12mm
-        motor wheel: 2x M3x14mm
-        motor wheel: 1x M3x25mm
-    Upper Leg:    
-        motor back: 6x M3x18mm
-        motor wheel: 1x M3x12mm (front)
-        motor wheel: 2x M3x20mm (front)
-        
-        
-          motor wheel: 3x M3x12mm (back)
-        
-        motor wheel pin: 3x M3 x 8mm
-        
-        wireclip lower side: M3x8mm (M3x10mm OK)
-    Lower Leg:    
-        motor front: 6  
-        motor wheel: 3x M3x20mm
-        
-8x M5*10mm brass insert (7mm dia)
-8x M5*15mm low-profile bolt
-
-8x M3x4 brass-insert (hip) 
-8x M3*8mm bolt - sacrifical (hip) 
-
-4x M3x4 brass-insert - PCB
-4x M3x16mm - PCB
-
-8x M3x4mm brass insert - hip plate wire clip
-8x M3x8mm bolt - hip plate wire clip
-
 ###############################################################################
 pip install mujoco
 python -m mujoco.viewer
@@ -45,13 +5,7 @@ python -m mujoco.viewer
 python3 -m mujoco.viewer --mjcf=./electropup.xml 
 python3 -m mujoco.viewer --mjcf=./scene.xml 
 
-
-
 https://mujoco.readthedocs.io/en/stable/APIreference/index.html
-
-
-###############################################################################
-Conformity
 
 
 ###############################################################################
@@ -94,7 +48,6 @@ git clone https://github.com/riuson/lcd-image-converter.git ~/lcd-image-converte
 cd ~/lcd-image-converter
 qmake
 make
-
 
 
 ###############################################################################
@@ -210,21 +163,6 @@ Would you like a login shell to be accessible over serial? No
 Would you like the serial port hardware to be enabled? Yes
 reboot
 
-###############################################################################
-# Wires 
-###############################################################################
-
-
-Short:
-Cable: 60mm
-
-Meduim:
-Splitloom: 155mm
-Cable: 235mm
-
-Long:
-Splitloom:365mm
-Cable: 465mm
 
 ###############################################################################
 # Other quadripends

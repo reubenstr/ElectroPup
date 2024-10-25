@@ -1,0 +1,44 @@
+###############################################################################
+# Design
+###############################################################################
+
+Notes taken during the design process.
+
+###############################################################################
+# MG4010E Motors
+###############################################################################
+
+Measured motor bolt MAX depths:
+Front frame: M2.5 x 8.5mm, recommended max: 8mm
+Front motor wheel: M3 x 6mm, recommended max: 5.5mm
+Front motor wheel pin: M3 x 3mm, recommended max 2.5mm
+
+###############################################################################
+# MIT Mini Cheetah
+###############################################################################
+
+The MIT Mini Cheetah was source of inspiration and it's dimensions are recorded as a sanity check to help ElectroPup's frame stays within common proportions.
+
+Units: mm
+Frame width (side to side): 194
+Frame length (front hip plate to back hip plate): 304
+Frame thickness (top to bottom): 94
+
+Hip width (actuator center ot actuator center): 236.5
+Hip length (actuator center to actuator center): 392
+
+Hip center motor to upper leg (actuator center to actuator center): est. 82
+
+Foot width (ball to ball): 256
+Foot length (ball to ball): 392
+
+Upper leg length: 212.4
+Lower leg length: 205
+
+###############################################################################
+# Other Motors and Interfaces
+###############################################################################
+
+
+https://github.com/open-dynamic-robot-initiative/blmc_drivers?tab=readme-ov-file
+https://open-dynamic-robot-initiative.github.io/robot_interfaces/doc/real_time.html
