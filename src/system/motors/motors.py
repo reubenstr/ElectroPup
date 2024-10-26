@@ -98,8 +98,7 @@ class Motors(Thread):
         '''
         
         self.exit_event = Event()   
-        self.lock = Lock()  
-        
+        self.lock = Lock()          
         self.comm_lock = Lock()  
         
         self.tag = can_bus_id.upper()

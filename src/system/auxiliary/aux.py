@@ -1,32 +1,71 @@
 #!/usr/bin/env python3
 import serial
+import struct
 import time
+from typing import List
 from time import sleep
 
 
+class MessageData:
+    def __init__(self):
+        self.jointAngleError : bool = False
+        self.inverseKinematicsError : bool = False
+        self.joystickError : bool = False
+        self.overCurrentError : bool = False
+        self.underVoltageError : bool = False
+        self.canError : bool = False
+        self.motorOns : List[bool] = [False] * 12
+        self.motorErrors : List[bool] = [False] * 12
+        self.batteryVoltage : bool = 0.0
+
+    def pack(self):        
+        bools = (self.jointAngleError,
+                self.inverseKinematicsError,
+                self.joystickError,
+                self.overCurrentError,
+                self.underVoltageError,
+                self.canError) + tuple(self.motorOns) + tuple(self.motorErrors)
+    
+        packed_bools = bytearray(int(b) for b in bools)   
+        packed_voltage = struct.pack('f', self.batteryVoltage)
+
+        return packed_bools + packed_voltage
+
+
 class Aux():
-    def __init__(self): 
-        self.ser = serial.Serial(port='/dev/ttyS0', baudrate=115200, timeout=0.25)
+    def __init__(self):         
+        self.port = '/dev/ttyS0'
+        self.baudrate = 115200
+        self.timeout = 0.25        
+        self.start_time : float = time.time()
+           
+           
+    def send_at_rate(self, data : bytes, rate : float):
+        """Sends data only when a specific amount of time has passed."""
+        if (time.time() - self.start_time > rate):
+            self.start_time = time.time()
+            self.send(data)
 
-    def send(self, data):  
-        if self.ser.is_open:     
-            
-            crc = self.crc32(b'test')
-            
-            
-            bytes_to_send = b'test' +  crc.to_bytes(4, byteorder='little')
-            
-            num_bytes = self.ser.write(bytes_to_send)
-            
-            decimal_values = [byte for byte in bytes_to_send]
-            #print(num_bytes, hex(crc), decimal_values)
-            
-            bytes_to_send = [0, 0, 0, 0]
-            byte_array = bytearray(bytes_to_send)
-            crc = self.crc32(bytes_to_send)            
-            decimal_values = [byte for byte in bytes_to_send]
-            print(hex(crc), decimal_values)
-
+           
+    def send(self, data : bytes):
+        start = time.time()
+        try:            
+            with serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout) as ser:                
+                if ser.is_open:               
+                                
+                    crc = self.crc32(data)                                        
+                    bytes_to_send = data +  crc.to_bytes(4, byteorder='little')                    
+                    num_bytes_written = ser.write(bytes_to_send)
+                     
+                    # Print data:                   
+                    # decimal_values = [byte for byte in bytes_to_send]
+                    # print(hex(crc), decimal_values)
+                    
+                    print(f"[AUX] message sent, num bytes written: {num_bytes_written}, time to send: {time.time() - start}")
+             
+        except Exception as e:
+            print(f"[AUX] error, unable to send message on serial port: {self.port}, exception: {e}")            
+      
 
     ###############################################################################
     # CRC
@@ -55,5 +94,15 @@ if __name__ == "__main__":
     aux = Aux()
     
     while(True):
-        aux.send("test")
-        sleep(1)
+        
+        message_data = MessageData()
+        data = message_data.pack()
+        
+        test = 1
+        if test == 0:            
+            aux.send(data)
+            sleep(1)
+        elif test == 1:
+            rate = 0.5
+            aux.send_at_rate(data, rate) 
+            sleep(0.010)
