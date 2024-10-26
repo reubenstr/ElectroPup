@@ -1,21 +1,30 @@
+
+/*
+
+
+
+
+
+
+TODO:
+  The way system errors bool and strings is magical and should be made it's own class
+  to better allow code changes without risk of memory issues.
+
+*/
+
 #include <Arduino.h>
 #include <math.h>
 #include <SPI.h>
 #include "TFT_eSPI.h"
-#include "CRC32.h"
 #include "main.h"
 
 TFT_eSPI tft = TFT_eSPI();
 
-// TODO: move pin to platformio.ini
-#define TFT_CS PIN_A4
-#define TFT_RST PIN_A2
-#define TFT_DC PIN_A3
+// TODO: move display pins to platformio.ini
 
 const int cornerRadiusPx{2};
 
 uint32_t lastMessageReceivedMillis;
-const uint32_t noCommsTimeoutMs{1000};
 
 Page page = Page::SYSTEM;
 
@@ -121,7 +130,8 @@ void DisplaySystemPage(bool forceRefresh = false)
 
   {
     // MOTORS
-    static bool previousMotorStatus[numMotors];
+    static bool previousMotorOns[numMotors];
+    static bool previousMotorErrors[numMotors];
     const int xOffset = 7;
     const int yOffset = 86;
     const int xMult = 29;
@@ -132,10 +142,15 @@ void DisplaySystemPage(bool forceRefresh = false)
     {
       for (int y = 0; y < 3; y++)
       {
-        if (previousMotorStatus[index] != motorErrors[index] || forceRefresh)
+        bool motorOn = motorOns[index];
+        bool hasError = motorErrors[index];
+
+        if (previousMotorOns[index] != motorOn || previousMotorErrors[index] != hasError || forceRefresh)
         {
-          previousMotorStatus[index] = motorErrors[index];
-          uint32_t color = motorErrors[index] ? TFT_RED : TFT_GREEN;
+          previousMotorOns[index] = hasError;
+          previousMotorErrors[index] = motorOn;
+          uint32_t color = hasError ? TFT_RED : motorOn ? TFT_GREEN
+                                                        : TFT_BLUE;
           tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
           tft.drawString(motorStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
         }
@@ -172,45 +187,32 @@ void CheckForMessage()
 {
   uint8_t data[256];
 
-  Message message;
+  StatusMessage message;
 
-  if (Serial1.readBytes((uint8_t *)&message, sizeof(Message)))
+  if (Serial1.readBytes((uint8_t *)&message, sizeof(StatusMessage)))
   {
-    CRC32 crc;
+    uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(StatusData));
 
-    uint8_t b[4];
-    b[0] = 0;
-    b[1] = 0;
-    b[2] = 0;
-    b[3] = 0;
-    crc.add(b, 4);
-    //crc.add((uint8_t *)&message, sizeof(MessageData));
-    uint32_t crc32Result = crc.calc();
-
-    crc32Result = crc32(b, 4);
-
-
-    uint8_t t[100];
-    memcpy(t, &message, 8);
-    for (int i = 0 ; i < 8; i++)
-    {
-      Serial.printf(" %u", t[i]);
-    }
-
-    if (crc.calc() == message.crc32)
+    if (crc32Result == message.crc32)
     {
       Serial.println("Message CRC32 is valid.");
       lastMessageReceivedMillis = millis();
 
-      /*systemErrors[0] = message.messageData.jointAngleError;
-      systemErrors[1] = message.messageData.inverseKinematicsError;
-      systemErrors[2] = message.messageData.joystickError;
-      systemErrors[3] = message.messageData.overCurrentError;
+      systemErrors[getIndexFromStatusString("RPI")] = false;
+      systemErrors[getIndexFromStatusString("JA")] = message.statusData.jointAngleError;
+      systemErrors[getIndexFromStatusString("IK")] = message.statusData.inverseKinematicsError;
+      systemErrors[getIndexFromStatusString("JOY")] = message.statusData.joystickError;
+      systemErrors[getIndexFromStatusString("OC")] = message.statusData.overCurrentError;
+      systemErrors[getIndexFromStatusString("UV")] = message.statusData.overCurrentError;
+      systemErrors[getIndexFromStatusString("CAN")] = message.statusData.canError;
 
       for (int i = 0; i < numMotors; i++)
-        motorErrors[i] = message.messageData.motorErrors[i];
+      {
+        motorOns[i] = message.statusData.motorOns[i];
+        motorErrors[i] = message.statusData.motorErrors[i];
+      }
 
-      batteryVoltage = message.messageData.batteryVoltage;*/
+      batteryVoltage = message.statusData.batteryVoltage;
     }
     else
     {
@@ -221,9 +223,13 @@ void CheckForMessage()
 
 void CheckCommsTimeout()
 {
-
   if (millis() - lastMessageReceivedMillis > noCommsTimeoutMs)
   {
+    systemErrors[getIndexFromStatusString("SFT")] = true;
+  }
+  else
+  {
+    systemErrors[getIndexFromStatusString("SFT")] = false;
   }
 }
 
@@ -239,7 +245,7 @@ float CalcBatteryPercent()
 
 bool IsLowBattery()
 {
-  return CalcBatteryPercent() < lowBatteryPercent;
+  return CalcBatteryPercent() < lowBatteryPercentThreashold;
 }
 
 bool IsError()
@@ -260,6 +266,27 @@ bool IsError()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Misc.
+///////////////////////////////////////////////////////////////////////////////
+
+void CheckRpiHeartbeat()
+{
+  static bool previousState{false};
+  static uint32_t start{0};
+
+  if (digitalRead(PIN_RPI_HEARTBEAT) != previousState)
+  {
+    previousState = digitalRead(PIN_RPI_HEARTBEAT);
+    start = millis();
+    systemErrors[getIndexFromStatusString("RPI")] = false;
+  }
+  else if (millis() - start > rpiHeartbeatTimeoutMs)
+  {
+    systemErrors[getIndexFromStatusString("RPI")] = true;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Entry
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -269,8 +296,8 @@ void setup()
   Serial.begin(115200);
 
   pinMode(LED_BUILTIN, OUTPUT);
-
   pinMode(USER_BTN, INPUT_PULLUP);
+  pinMode(PIN_RPI_HEARTBEAT, INPUT);
 
   InitMessageComms();
 
@@ -291,14 +318,12 @@ void loop()
 
   CheckCommsTimeout();
 
-  UpdateDisplay();  
+  CheckRpiHeartbeat();
+
+  UpdateDisplay();
 }
 
 /*
-
-
-
-
  if (display == Display::Splash)
   {
     tft.pushImage(0, 0, splashWidth, splashHeight, splash);
