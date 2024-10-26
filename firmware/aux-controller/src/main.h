@@ -2,8 +2,7 @@
 // Pins
 ///////////////////////////////////////////////////////////////////////////////
 
-#define PIN_RPI_HEARTBEAT PB12 
-
+#define PIN_RPI_HEARTBEAT PB12
 
 ///////////////////////////////////////////////////////////////////////////////
 // Timings
@@ -12,7 +11,6 @@
 const uint32_t heartbeatBlinkRateMs{250};
 const uint32_t noCommsTimeoutMs{1000};
 const uint32_t rpiHeartbeatTimeoutMs{100};
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // General
@@ -34,18 +32,6 @@ enum class Page
 const uint8_t numSystemStatusStrings{12};
 const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JA", "IK", "JOY", "UV", "OC", "CAN"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
-
-int getIndexFromStatusString(const char *status)
-{
-    for (int i = 0; i < numSystemStatusStrings; ++i)
-    {
-        if (strcmp(status, systemStatusStrings[i]) == 0)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message Structs and Data
@@ -95,8 +81,27 @@ bool IsLowBattery();
 bool IsError();
 
 ///////////////////////////////////////////////////////////////////////////////
-// Temp Helpers
+// Helpers
 ///////////////////////////////////////////////////////////////////////////////
+
+int getIndexFromStatusString(const char *status)
+{
+    for (int i = 0; i < numSystemStatusStrings; ++i)
+    {
+        if (strcmp(status, systemStatusStrings[i]) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int getValueFromStatusString(const char *status)
+{
+    int index = getIndexFromStatusString(status);
+
+    return systemErrors[index];
+}
 
 uint32_t crc32(uint8_t *data, int length)
 {

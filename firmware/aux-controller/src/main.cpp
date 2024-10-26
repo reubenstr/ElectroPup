@@ -34,7 +34,7 @@ float batteryVoltage{0};
 // Program
 ///////////////////////////////////////////////////////////////////////////////
 
-void HeartBeat()
+void HeartbeatLed()
 {
   static uint32_t start{0};
   static bool toggle{false};
@@ -73,6 +73,9 @@ void InitDisplay()
 
 void UpdateDisplay(bool forceRefresh = false)
 {
+
+  // TODO: force refresh on page change
+
   if (page == Page::SPLASH)
   {
     DisplaySplashPage();
@@ -93,15 +96,27 @@ void DisplaySplashPage()
 
 void DisplaySystemPage(bool forceRefresh = false)
 {
-  tft.setTextFont(2);
-  tft.setTextSize(1);
-  tft.setTextColor(TFT_GREEN);
-  tft.drawString("SYSTEM", 64, 11);
-  tft.drawString("MOTORS", 64, 76);
+  if (forceRefresh)
+  {
+    tft.setTextFont(2);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_GREEN);
+    tft.drawString("SYSTEM", 64, 11);
+    tft.drawString("MOTORS", 64, 76);
 
-  tft.setTextFont(1);
-  tft.setTextSize(1);
-  tft.setTextColor(TFT_BLACK);
+    tft.setTextFont(1);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_BLACK);
+  }
+
+  // SBC (RPI) errors take precedence of colors and requires refreshes.
+  bool isSbcError = getValueFromStatusString("RPI") || getValueFromStatusString("SFT");
+  static bool previousSbcStatus = isSbcError;
+  if (previousSbcStatus != isSbcError)
+  {
+    previousSbcStatus = isSbcError;
+    forceRefresh = true;
+  }
 
   {
     // SYSTEM
@@ -115,11 +130,22 @@ void DisplaySystemPage(bool forceRefresh = false)
     {
       for (int y = 0; y < 2; y++)
       {
-        if (previousSystemStatus[index] != systemErrors[index] || forceRefresh)
-        {
-          previousSystemStatus[index] = systemErrors[index];
+        bool hasError = systemErrors[index];
 
-          uint32_t color = systemErrors[index] ? TFT_RED : TFT_GREEN;
+        if (previousSystemStatus[index] != hasError || forceRefresh)
+        {
+          previousSystemStatus[index] = hasError;
+
+          uint32_t color = hasError ? TFT_RED : TFT_GREEN;
+
+          if (isSbcError)
+          {
+            if ((index != getValueFromStatusString("RPI") && !hasError) || (index != getValueFromStatusString("SFT") && !hasError))
+            {
+              color = TFT_DARKGREY;
+            }
+          }
+
           tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
           tft.drawString(systemStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
         }
@@ -151,6 +177,10 @@ void DisplaySystemPage(bool forceRefresh = false)
           previousMotorErrors[index] = motorOn;
           uint32_t color = hasError ? TFT_RED : motorOn ? TFT_GREEN
                                                         : TFT_BLUE;
+
+          if (isSbcError)
+            color = TFT_DARKGREY;
+
           tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
           tft.drawString(motorStatusStrings[index], x * xMult + xOffset + 13, y * yMult + 10 + yOffset);
         }
@@ -310,7 +340,7 @@ void setup()
 
 void loop()
 {
-  HeartBeat();
+  HeartbeatLed();
 
   CheckUserButton();
 
