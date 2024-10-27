@@ -70,8 +70,9 @@ class Gamepad:
         pass
 
     def btn_cross_changed_callback(self, state):       
-        if state == True:
-            self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
+        #if state == True:
+        #    self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
+        pass
 
     def btn_square_changed_callback(self, state):
         pass

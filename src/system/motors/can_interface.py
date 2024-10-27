@@ -92,7 +92,16 @@ class CanInterface():
         reply = self.op_wait_for_reply()
         return reply and motor_id == reply.arbitration_id - 0x140    
                               
-    def cmd_motor_multi_angle_2(self, motor_id : bool, speed : int, angle : float):    
+    def cmd_set_pid_to_ram(self, motor_id : int, angle_kp : int, angle_ki : int, speed_kp : int, speed_ki : int, iq_kp : int, iq_ki : int):    
+        '''        
+            Sets PID parameters to RAM; invalid upon power cycle.
+        ''' 
+        if not self.op_can_send_message(motor_id, [0x31, 0, angle_kp, angle_ki, speed_kp, speed_ki, iq_kp, iq_ki]):
+            return False
+        reply = self.op_wait_for_reply()                      
+        return reply and motor_id == reply.arbitration_id - 0x140      
+        
+    def cmd_motor_multi_angle_2(self, motor_id : int, speed : int, angle : float):    
         '''        
             Sets speed and angle of the motor.
         '''   
@@ -121,10 +130,33 @@ class CanInterface():
             return False
         reply = self.op_wait_for_reply()
         return reply and motor_id == reply.arbitration_id - 0x140      
-
+    
     ###############################################################################
     # Requests
     ###############################################################################
+
+    def req_pid(self, motor_id: int):          
+        if not self.op_can_send_message(motor_id, [0x30, 0, 0, 0, 0, 0, 0, 0]):
+            return None
+        reply = self.op_wait_for_reply()
+        if reply:
+             reply_motor_id = reply.arbitration_id - 0x140
+             if motor_id == reply_motor_id:                     
+                reply_data = reply.data  
+                angle_kp = reply_data[2] 
+                angle_ki = reply_data[3] 
+                speed_kp = reply_data[4] 
+                speed_ki = reply_data[5] 
+                iq_kp = reply_data[6] 
+                iq_ki = reply_data[7]                                     
+                if self.prints_enabled:
+                    print(f"[{self.tag }][M{reply_motor_id}]")
+                return {'angle_kp' : angle_kp, 
+                        'angle_ki' : angle_ki,
+                        'speed_kp' : speed_kp,
+                        'speed_ki' : speed_ki,
+                        'iq_kp' : iq_kp,
+                        'iq_ki' : iq_ki}
 
     def req_state_1(self, motor_id: int):          
         if not self.op_can_send_message(motor_id, [0x9A, 0, 0, 0, 0, 0, 0, 0])   :

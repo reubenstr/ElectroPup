@@ -217,7 +217,7 @@ class Live():
         if sleep_time > 0:    
             sleep(sleep_time)
         
-        print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")                            
+        #print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")                            
         self.loop_time = time.time()     
                  
     def shutdown(self):

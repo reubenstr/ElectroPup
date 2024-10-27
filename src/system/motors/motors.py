@@ -70,6 +70,14 @@ class Motor():
         
         # Misc.
         self.apply_negative_angle_offset : bool = False
+        
+        # Driver config:
+        self.angle_pid_kp : int = 10
+        self.angle_pid_ki : int = 10
+        self.speed_pid_kp : int = 10
+        self.speed_pid_ki : int = 10
+        self.iq_pid_kp : int = 40
+        self.iq_pid_ki : int = 40
 
 
 class MotorDirection(Enum):  
@@ -204,6 +212,17 @@ class Motors(Thread):
             print(f"[{self.tag}][ALL] command clear errors completed, success: {success}, time: {time.time() - start:0.3f}")
             return success
                  
+    def set_all_motors_pid(self):
+        with self.comm_lock:           
+            success = True
+            start = time.time()
+            for motor_tag, motor in self.motors.items():
+                success = self.can_interface.cmd_set_pid_to_ram(motor.motor_id, motor.angle_pid_kp, motor.angle_pid_ki, motor.speed_pid_kp, motor.speed_pid_ki, motor.iq_pid_kp, motor.iq_pid_ki) 
+                if not success:
+                    success = False       
+            print(f"[{self.tag}][ALL] set all motors PID completed, success: {success}, time: {time.time() - start:0.3f}")
+            return success            
+        
                 
     ###############################################################################
     # Protected Getters, Setters, and Operations
@@ -353,7 +372,13 @@ class Motors(Thread):
         else:    
             print(f"[{self.tag}] error, unable to set all motor target angles, exiting thread!")
             return
-                         
+        
+        # Set all PID values.
+        if not self.set_all_motors_pid():
+            print(f"[{self.tag}] error, unable to set all motor PID values, exiting thread!")
+            return    
+        
+                 
         while not self.exit_event.is_set():             
             start = time.time()        
             
@@ -367,8 +392,8 @@ class Motors(Thread):
                 self._worker_get_all_angles()                                        
                 self._worker_get_all_status()                
                 self._worker_check_all_angle_limits()                    
-                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")                    
-            
+                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")   
+                           
                                  
     ###############################################################################
     # General 
