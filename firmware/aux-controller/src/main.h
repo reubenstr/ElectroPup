@@ -2,7 +2,9 @@
 // Pins
 ///////////////////////////////////////////////////////////////////////////////
 
+#define PIN_BTN_1 PC14
 #define PIN_RPI_HEARTBEAT PB12
+#define PIN_MCU_BUZZER PB9
 
 ///////////////////////////////////////////////////////////////////////////////
 // Timings
@@ -60,12 +62,29 @@ struct StatusData
     float batteryVoltage;
 };
 
+enum class MessageType : uint8_t
+{
+    STATUS = 0,
+    PLAY_SOUND
+};
+
+
 #pragma pack(1)
 struct StatusMessage
 {
+    MessageType messageType;
     StatusData statusData;
+    uint32_t crc32;   
+};
+
+#pragma pack(1)
+struct PlaySoundMessage
+{
+    MessageType messageType;
+    uint8_t sequenceId;
     uint32_t crc32;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Prototypes

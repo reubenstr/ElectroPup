@@ -4,8 +4,6 @@
 
 
 
-
-
 TODO:
   The way system errors bool and strings is magical and should be made it's own class
   to better allow code changes without risk of memory issues.
@@ -16,9 +14,11 @@ TODO:
 #include <math.h>
 #include <SPI.h>
 #include "TFT_eSPI.h"
+#include "buzzer.h"
 #include "main.h"
 
 TFT_eSPI tft = TFT_eSPI();
+Buzzer buzzer(PIN_MCU_BUZZER);
 
 // TODO: move display pins to platformio.ini
 
@@ -215,38 +215,76 @@ void InitMessageComms()
 
 void CheckForMessage()
 {
-  uint8_t data[256];
+  uint8_t data[1024];
 
-  StatusMessage message;
-
-  if (Serial1.readBytes((uint8_t *)&message, sizeof(StatusMessage)))
+  size_t numBytes = Serial1.readBytes((uint8_t *)&data, sizeof(data));
+  if (numBytes)
   {
-    uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(StatusData));
 
-    if (crc32Result == message.crc32)
+    MessageType messageType = static_cast<MessageType>(data[0]);
+
+    if (messageType == MessageType::STATUS)
     {
-      Serial.println("Message CRC32 is valid.");
-      lastMessageReceivedMillis = millis();
-
-      systemErrors[getIndexFromStatusString("RPI")] = false;
-      systemErrors[getIndexFromStatusString("JA")] = message.statusData.jointAngleError;
-      systemErrors[getIndexFromStatusString("IK")] = message.statusData.inverseKinematicsError;
-      systemErrors[getIndexFromStatusString("JOY")] = message.statusData.joystickError;
-      systemErrors[getIndexFromStatusString("OC")] = message.statusData.overCurrentError;
-      systemErrors[getIndexFromStatusString("UV")] = message.statusData.overCurrentError;
-      systemErrors[getIndexFromStatusString("CAN")] = message.statusData.canError;
-
-      for (int i = 0; i < numMotors; i++)
+      if (numBytes != sizeof(StatusMessage))
       {
-        motorOns[i] = message.statusData.motorOns[i];
-        motorErrors[i] = message.statusData.motorErrors[i];
+        Serial.printf("[Comms] error, status message length does not match. Received: %u, expected: %u\n", numBytes, sizeof(StatusMessage));
+        return;
       }
 
-      batteryVoltage = message.statusData.batteryVoltage;
+      StatusMessage message;
+      memcpy(&message, data, sizeof(StatusMessage));
+      uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(StatusMessage) - sizeof(uint32_t));
+      if (crc32Result == message.crc32)
+      {
+        lastMessageReceivedMillis = millis();
+
+        systemErrors[getIndexFromStatusString("RPI")] = false;
+        systemErrors[getIndexFromStatusString("JA")] = message.statusData.jointAngleError;
+        systemErrors[getIndexFromStatusString("IK")] = message.statusData.inverseKinematicsError;
+        systemErrors[getIndexFromStatusString("JOY")] = message.statusData.joystickError;
+        systemErrors[getIndexFromStatusString("OC")] = message.statusData.overCurrentError;
+        systemErrors[getIndexFromStatusString("UV")] = message.statusData.overCurrentError;
+        systemErrors[getIndexFromStatusString("CAN")] = message.statusData.canError;
+
+        for (int i = 0; i < numMotors; i++)
+        {
+          motorOns[i] = message.statusData.motorOns[i];
+          motorErrors[i] = message.statusData.motorErrors[i];
+        }
+
+        batteryVoltage = message.statusData.batteryVoltage;
+      }
+      else
+      {
+        Serial.printf("Message CRC32 is invalid! Message CRC32: %X, calculated CRC32: %X \n", message.crc32, crc32Result);
+      }
+    }
+    else if (messageType == MessageType::PLAY_SOUND)
+    {
+      if (numBytes != sizeof(PlaySoundMessage))
+      {
+        Serial.printf("[Comms] error, play sound message length does not match. Received: %u, expected: %u\n", numBytes, sizeof(PlaySoundMessage));
+        return;
+      }
+
+      PlaySoundMessage message;
+      memcpy(&message, data, sizeof(PlaySoundMessage));
+      uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(PlaySoundMessage) - sizeof(uint32_t));
+      if (crc32Result == message.crc32)
+      {
+        if (message.sequenceId > (int)Sequence::NONE && message.sequenceId < (int)Sequence::NUM_SOUNDS)
+        {
+          buzzer.play((Sequence)message.sequenceId);
+        }
+      }
+      else
+      {
+        Serial.printf("Message CRC32 is invalid! Message CRC32: %X, calculated CRC32: %X \n", message.crc32, crc32Result);
+      }
     }
     else
     {
-      Serial.printf("Message CRC32 is invalid! Message CRC32: %X, calculated CRC32: %X \n", message.crc32, crc32Result);
+      Serial.printf("[Comms] error, received unknown message type: %u\n", (int)messageType);
     }
   }
 }
@@ -327,6 +365,7 @@ void setup()
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(USER_BTN, INPUT_PULLUP);
+  pinMode(PIN_BTN_1, INPUT_PULLUP);
   pinMode(PIN_RPI_HEARTBEAT, INPUT);
 
   InitMessageComms();
@@ -351,6 +390,16 @@ void loop()
   CheckRpiHeartbeat();
 
   UpdateDisplay();
+
+  buzzer.tick();
+
+  if (digitalRead(PIN_BTN_1) == LOW)
+  {
+    if (!buzzer.isPlaying())
+    {
+      buzzer.play(Sequence::RPI_READY);
+    }
+  }
 }
 
 /*
