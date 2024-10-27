@@ -13,6 +13,7 @@
 const uint32_t heartbeatBlinkRateMs{250};
 const uint32_t noCommsTimeoutMs{1000};
 const uint32_t rpiHeartbeatTimeoutMs{100};
+const uint32_t byteLongPressActivationMs{3000};
 
 ///////////////////////////////////////////////////////////////////////////////
 // General
@@ -65,7 +66,8 @@ struct StatusData
 enum class MessageType : uint8_t
 {
     STATUS = 0,
-    PLAY_SOUND
+    PLAY_SOUND,
+    SHUTDOWN_RPI
 };
 
 
@@ -83,6 +85,18 @@ struct PlaySoundMessage
     MessageType messageType;
     uint8_t sequenceId;
     uint32_t crc32;
+};
+
+#pragma pack(1)
+struct ShutDownMessage
+{
+    MessageType messageType;   
+    uint32_t crc32;
+
+    ShutDownMessage()
+    {
+        messageType = MessageType::SHUTDOWN_RPI;
+    }
 };
 
 
@@ -121,6 +135,14 @@ int getValueFromStatusString(const char *status)
 
     return systemErrors[index];
 }
+
+void setValueFromStatusString(const char *status, bool state)
+{
+    int index = getIndexFromStatusString(status);
+
+    systemErrors[index] = state;
+}
+
 
 uint32_t crc32(uint8_t *data, int length)
 {

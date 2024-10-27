@@ -5,9 +5,11 @@ enum class Sequence
 {
     NONE = -1,
     MCU_STARTUP,
-    RPI_READY,
+    RPI_ON,
+    RPI_OFF,
     MOTORS_ON,
     MOTORS_OFF,
+    LOW_BATTERY,
     ERROR,
     SHUTDOWN,
     NUM_SOUNDS
@@ -17,23 +19,27 @@ class Buzzer
 {
 public:
     Buzzer(int pin) : _buzzerPin(pin)
-    {               
+    {
         _frequencies = {
-            {262, 330, 392},                // MCU_STARTUP
-            {500, 0, 500},                  // RPI_READY
-            {250, 275, 300, 325, 500},      // MOTORS_ON
-            {500, 325, 300, 275, 250},      // MOTORS_OFF
-            {500, 250, 500, 250, 500, 250}, // ERROR
-            {250, 275, 300, 325, 500},      // SHUTDOWN
+            {250, 300, 350, 400, 450, 500}, // MCU_STARTUP
+            {250, 500, 0, 250, 500},                // RPI_ON
+            {500, 250, 0, 500, 250},                // RPI_OFF
+            {250, 275, 300, 325, 500},              // MOTORS_ON
+            {500, 325, 300, 275, 250},              // MOTORS_OFF
+            {500, 0, 500, 0, 500, 0, 500},          // LOW BATTERY
+            {500, 250, 500, 250, 500, 250},         // ERROR
+            {500, 200},                             // SHUTDOWN
         };
 
         _delays = {
-            {250, 250, 250},                // MCU_STARTUP
-            {100, 50, 100},                 // RPI_READY
-            {100, 100, 100, 100, 200},      // MOTORS_ON
-            {100, 100, 100, 100, 200},      // MOTORS_OFF
-            {125, 250, 125, 250, 125, 250}, // ERROR
-            {100, 100, 100, 100, 200},      // SHUTDOWN
+            {200, 100, 50, 200, 100, 500}, // MCU_STARTUP
+            {50, 100, 100, 50, 500},                // RPI_ON
+            {50, 100, 100, 50, 500},                // RPI_OFF
+            {100, 100, 100, 100, 200},              // MOTORS_ON
+            {100, 100, 100, 100, 200},              // MOTORS_OFF
+            {100, 50, 100, 50, 100, 50, 100},       // LOW BATTERY
+            {125, 250, 125, 250, 125, 250},         // ERROR
+            {100, 500},                             // SHUTDOWN
         };
     }
 

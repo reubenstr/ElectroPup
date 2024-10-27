@@ -14,6 +14,7 @@ TODO:
 #include <math.h>
 #include <SPI.h>
 #include "TFT_eSPI.h"
+#include "OneButton.h"
 #include "buzzer.h"
 #include "main.h"
 
@@ -29,6 +30,8 @@ uint32_t lastMessageReceivedMillis;
 Page page = Page::SYSTEM;
 
 float batteryVoltage{0};
+
+OneButton button(PIN_BTN_1, true);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Program
@@ -46,12 +49,13 @@ void HeartbeatLed()
   }
 }
 
+// Black Pill STM32 onboard button.
 void CheckUserButton()
 {
   if (digitalRead(USER_BTN) == LOW)
   {
     Serial.println("USER BTN TEST");
-    delay(100);
+    delay(250);
   }
 }
 
@@ -337,22 +341,59 @@ bool IsError()
 // Misc.
 ///////////////////////////////////////////////////////////////////////////////
 
+// Raspberry Pi sends a heartbeat as square wave changing state every 0.250 seconds.
 void CheckRpiHeartbeat()
 {
-  static bool previousState{false};
+  static bool previousHeartbeatState{true};
+  static bool newRpiHasError{true};
   static uint32_t start{0};
 
-  if (digitalRead(PIN_RPI_HEARTBEAT) != previousState)
+  if (digitalRead(PIN_RPI_HEARTBEAT) != previousHeartbeatState)
   {
-    previousState = digitalRead(PIN_RPI_HEARTBEAT);
+    previousHeartbeatState = digitalRead(PIN_RPI_HEARTBEAT);
     start = millis();
-    systemErrors[getIndexFromStatusString("RPI")] = false;
+    newRpiHasError = false;
   }
-  else if (millis() - start > rpiHeartbeatTimeoutMs)
+
+  if (millis() - start > rpiHeartbeatTimeoutMs)
   {
-    systemErrors[getIndexFromStatusString("RPI")] = true;
+    newRpiHasError = true;
+  }
+
+  if (getValueFromStatusString("RPI") != newRpiHasError)
+  {
+    setValueFromStatusString("RPI", newRpiHasError);
+
+    if (newRpiHasError)
+      buzzer.play(Sequence::RPI_OFF);
+    else
+      buzzer.play(Sequence::RPI_ON);
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Handle Button Inputs
+///////////////////////////////////////////////////////////////////////////////
+
+void btnClick(void *oneButton)
+{  
+  ShutDownMessage message;
+  uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(ShutDownMessage) - sizeof(uint32_t));
+  message.crc32 = crc32Result;
+  Serial1.write((uint8_t *)&message, sizeof(ShutDownMessage));
+}
+
+void btnDoubleClick(void *oneButton)
+{
+  Serial.println("btnDoubleClick");
+}
+
+void btnLongPressStart(void *oneButton)
+{
+Serial.println("btnLongPressStart");
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Entry
@@ -368,9 +409,20 @@ void setup()
   pinMode(PIN_BTN_1, INPUT_PULLUP);
   pinMode(PIN_RPI_HEARTBEAT, INPUT);
 
+  // Expected errors at startup; prevents sound from starting during init.
+  setValueFromStatusString("RPI", true);
+  setValueFromStatusString("SFT", true);
+
+  button.attachClick(btnClick, &button);
+  button.attachDoubleClick(btnDoubleClick, &button);
+  button.attachLongPressStart(btnLongPressStart, &button);
+  button.setPressMs(byteLongPressActivationMs);
+
   InitMessageComms();
 
   InitDisplay();
+
+  buzzer.play(Sequence::MCU_STARTUP);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -391,15 +443,9 @@ void loop()
 
   UpdateDisplay();
 
-  buzzer.tick();
+  buzzer.tick(); 
 
-  if (digitalRead(PIN_BTN_1) == LOW)
-  {
-    if (!buzzer.isPlaying())
-    {
-      buzzer.play(Sequence::RPI_READY);
-    }
-  }
+  button.tick();
 }
 
 /*
