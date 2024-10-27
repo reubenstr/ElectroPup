@@ -455,7 +455,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "auxiliary-pi-hat.kicad_pro",
+    "filename": "auxiliary-board.kicad_pro",
     "version": 1
   },
   "net_settings": {
