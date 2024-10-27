@@ -100,7 +100,7 @@ void DisplaySystemPage(bool forceRefresh = false)
   {
     tft.setTextFont(2);
     tft.setTextSize(1);
-    tft.setTextColor(TFT_GREEN);
+    tft.setTextColor(TFT_DARKGREY);
     tft.drawString("SYSTEM", 64, 11);
     tft.drawString("MOTORS", 64, 76);
 
@@ -189,14 +189,14 @@ void DisplaySystemPage(bool forceRefresh = false)
     }
   }
 
-  if (forceRefresh)
+  /* if (forceRefresh)
   {
     // tft.fillRect(79, 0, 2, tft.height(), TFT_GREEN);
     tft.drawLine(0, 0, tft.width() - 1, 0, TFT_GREEN);
     tft.drawLine(tft.width() - 1, 0, tft.width() - 1, tft.height() - 1, TFT_GREEN);
     tft.drawLine(tft.width() - 1, tft.height() - 1, 0, tft.height() - 1, TFT_GREEN);
     tft.drawLine(0, tft.height() - 1, 0, 0, TFT_GREEN);
-  }
+  } */
 }
 
 void DisplayBatteryPage(bool forceRefresh = false)
