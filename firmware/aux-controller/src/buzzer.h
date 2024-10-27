@@ -9,16 +9,15 @@ enum class Sequence
     MOTORS_ON,
     MOTORS_OFF,
     ERROR,
-    SHUTDOWN
+    SHUTDOWN,
+    NUM_SOUNDS
 };
 
 class Buzzer
 {
 public:
     Buzzer(int pin) : _buzzerPin(pin)
-    {
-        pinMode(_buzzerPin, OUTPUT);
-
+    {               
         _frequencies = {
             {262, 330, 392},                // MCU_STARTUP
             {500, 0, 500},                  // RPI_READY
@@ -40,6 +39,9 @@ public:
 
     void play(Sequence sequence)
     {
+        if (isPlaying())
+            return;
+
         Serial.printf("[BUZZER] playing sequence: %u\n", (int)sequence);
 
         _sequence = sequence;

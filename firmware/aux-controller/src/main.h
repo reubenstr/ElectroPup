@@ -62,12 +62,29 @@ struct StatusData
     float batteryVoltage;
 };
 
+enum class MessageType : uint8_t
+{
+    STATUS = 0,
+    PLAY_SOUND
+};
+
+
 #pragma pack(1)
 struct StatusMessage
 {
+    MessageType messageType;
     StatusData statusData;
+    uint32_t crc32;   
+};
+
+#pragma pack(1)
+struct PlaySoundMessage
+{
+    MessageType messageType;
+    uint8_t sequenceId;
     uint32_t crc32;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Prototypes
