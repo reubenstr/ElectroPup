@@ -4,8 +4,6 @@
 
 
 
-
-
 TODO:
   The way system errors bool and strings is magical and should be made it's own class
   to better allow code changes without risk of memory issues.
@@ -16,9 +14,11 @@ TODO:
 #include <math.h>
 #include <SPI.h>
 #include "TFT_eSPI.h"
+#include "buzzer.h"
 #include "main.h"
 
 TFT_eSPI tft = TFT_eSPI();
+Buzzer buzzer(PIN_MCU_BUZZER);
 
 // TODO: move display pins to platformio.ini
 
@@ -327,6 +327,7 @@ void setup()
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(USER_BTN, INPUT_PULLUP);
+  pinMode(PIN_BTN_1, INPUT_PULLUP);
   pinMode(PIN_RPI_HEARTBEAT, INPUT);
 
   InitMessageComms();
@@ -351,6 +352,17 @@ void loop()
   CheckRpiHeartbeat();
 
   UpdateDisplay();
+
+  buzzer.tick();
+
+  if (digitalRead(PIN_BTN_1) == LOW)
+  {    
+    if (!buzzer.isPlaying())
+    {
+      buzzer.play(Sequence::RPI_READY);
+    }
+      
+  }
 }
 
 /*
