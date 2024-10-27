@@ -5,6 +5,8 @@
     
    
 """
+
+import time
 import traceback
 from math import pi
 from time import sleep
@@ -21,8 +23,8 @@ from system.motors.motors import Motors
 
 class Live():
     def __init__(self):
-        motion_parameters_filepath = "./quadruped/parameters/motion_parameters.yaml"
-        frame_parameters_filepath = "./quadruped/parameters/frame_parameters.yaml"
+        motion_parameters_filepath = "./system/parameters/motion_parameters.yaml"
+        frame_parameters_filepath = "./system/parameters/frame_parameters.yaml"
 
         frame_parameters = FrameParameters(frame_parameters_filepath)
         motion_parameters = MotionParameters(motion_parameters_filepath)
@@ -49,6 +51,8 @@ class Live():
         self.kinetic_state : KineticState = KineticState.STARTUP
         self.previous_kinetic_state : KineticState = KineticState.INIT        
         self.speed : int = 0
+        
+        self.loop_time : float = 0
         
         
     def controller_event_callback(self, event : ControllerEvent):    
@@ -104,7 +108,7 @@ class Live():
         """
             TEMP TO TEST STANDING POST PRIOR TO PLACEMENT
         """                
-        motion_parameters = MotionParameters("./quadruped/parameters/motion_parameters.yaml")
+        motion_parameters = MotionParameters("./system/parameters/motion_parameters.yaml")
         
         error_state = self.body.set_body_pose_by_transform_inputs(
             phi=0,
@@ -117,7 +121,7 @@ class Live():
         if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
             print(error_state.name)
         elif error_state == Body.ErrorState.NONE:
-            joint_angles = self.body.get_joint_angles()
+            joint_angles = self.body.get_joint_angles("DEGREES")
             
             fla=joint_angles['front_left']['abduction']  
             flh=joint_angles['front_left']['hip']  
@@ -139,6 +143,7 @@ class Live():
                 continue
             
           
+            self.gamepad.set_kinetic_state(self.kinetic_state)    
                         
             # Execute once after kinetic state change:                      
             if self.previous_kinetic_state != self.kinetic_state:   
@@ -165,9 +170,9 @@ class Live():
                     #self.motor_interface_back.cmd_all_motors_on()                                    
                                                     
                 elif self.kinetic_state == KineticState.POSE:
-                    self.speed = 2000                        
+                    self.speed = 2000                       
                 elif self.kinetic_state == KineticState.MOTION:
-                    self.speed = 1500
+                    self.speed = 1000
                       
                 elif self.kinetic_state == KineticState.FLIP:
                     pass
@@ -194,11 +199,26 @@ class Live():
             if self.motor_interface_front.is_error(): # and self.motor_interface_back.is_error() == False 
                 self.kinetic_state = KineticState.ERROR
               
-            sleep(0.010)
+            self.sleep_loop()
+           
     
     ###############################################################################
     # Helpers
     ###############################################################################   
+    
+    def sleep_loop(self):
+        """
+        Keep a consistance loop rate by sleeping the delta of processing time.
+        Sleep required to share the CPU.
+        """
+        delta = time.time() - self.loop_time          
+          
+        sleep_time = 0.010 - delta
+        if sleep_time > 0:    
+            sleep(sleep_time)
+        
+        print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")                            
+        self.loop_time = time.time()     
                  
     def shutdown(self):
         self.motor_interface_front.shutdown()

@@ -63,25 +63,25 @@ class Gamepad:
     ###############################################################################
 
     def btn_triangle_changed_callback(self, state):
-        if state:
+        if state == True:
             self._trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)
 
     def btn_circle_changed_callback(self, state):
         pass
 
     def btn_cross_changed_callback(self, state):       
-        if state:
+        if state == True:
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
 
     def btn_square_changed_callback(self, state):
         pass
 
     def btn_l3_changed_callback(self, state):
-        if state and self.gamepad.isPressed("R3"):
+        if state == True and self.gamepad.isPressed("R3"):
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
 
     def btn_r3_changed_callback(self, state):
-        if state and self.gamepad.isPressed("L3"):
+        if state == True and self.gamepad.isPressed("L3"):
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
 
     def axis_left_x_changed_callback(self, value):

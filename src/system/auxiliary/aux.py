@@ -120,7 +120,7 @@ class Aux():
             if message_type == MessageType.SHUTDOWN_RPI:
                 print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
                 sleep(1)
-                os.system("shutdown now") 
+                os.system("sudo shutdown now") 
             
             
 ###############################################################################
@@ -129,10 +129,12 @@ class Aux():
 if __name__ == "__main__":
     aux = Aux()
     
+    test = 3
+    print(f"[Aux] running test: {test}")
+    
     # Run various tests / demos.
-    while(True):        
+    while(True): 
                 
-        test = 3
         if test == 0:    
             message_data = StatusMessage()
             data = message_data.pack()        

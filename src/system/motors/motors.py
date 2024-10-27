@@ -7,36 +7,29 @@
 
     Creates a constains stream of target (angle, speed) updates via a thread.
     
-    Application should poll for errors and take action such as shutting down the other motors.
+    Application should poll for errors and take action such as shutting down the motors.
 
     Actuator driver limitations:       
         - The driver does not have a min and max angle, therefore there is a higher risk of collision.
         - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
             of setting these parameters. The torque limit is used to create 'compliance'.  
-            
-            
+                        
     Motor startup angle reading is 0 to 360, but this library uses a -180 to 180 convention.
-    If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.
-          
+    If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.  
+    
+    TODO:
+        Add software angle limits.        
                
 """
 
-import os
-import can
 import sys
 import time
-import copy
 import traceback
 from time import sleep
-import numpy as np
-import random
 from rich import print # Overrides print and injects colors
 from threading import Thread, Event, Lock
-from queue import Queue, Empty
-from dataclasses import dataclass
 from typing import Dict
 from enum import Enum
-
 
 # Local
 from . can_interface import CanInterface
@@ -78,9 +71,11 @@ class Motor():
         # Misc.
         self.apply_negative_angle_offset : bool = False
 
+
 class MotorDirection(Enum):  
     COUNTER_CLOCKWISE = 0
     CLOCKWISE = 1
+    
 
 class Motors(Thread):
     
@@ -302,7 +297,7 @@ class Motors(Thread):
                                   
                         
     ###############################################################################
-    # Worker
+    # Worker (thread)
     ###############################################################################
         
     def _worker_set_all_targets(self):
@@ -348,18 +343,17 @@ class Motors(Thread):
         Main function that continously updates motor targets (speed, position) and checks for errors.
         """  
        
+        # Set target angles to current angle to prevent startup runaways
+        # Check started position and apply offset if required.
         if self._worker_get_all_angles():
-            self.op_set_all_target_angles_to_current_angles()
-                        
+            self.op_set_all_target_angles_to_current_angles()                        
             for motor_tag, motor in self.motors.items(): 
                 if self.motors[motor_tag].angle_degrees > 180.0:
-                    self.motors[motor_tag].apply_negative_angle_offset = True
-                
+                    self.motors[motor_tag].apply_negative_angle_offset = True                
         else:    
             print(f"[{self.tag}] error, unable to set all motor target angles, exiting thread!")
             return
-       
-                  
+                         
         while not self.exit_event.is_set():             
             start = time.time()        
             
@@ -368,17 +362,11 @@ class Motors(Thread):
                 self.cmd_all_motors_off()
                 break           
                                    
-            with self.comm_lock:
-                
-                #if self.motors_on == True:
-                self._worker_set_all_targets()
-                                
-                self._worker_get_all_angles()  
-                                       
-                self._worker_get_all_status()
-                
-                self._worker_check_all_angle_limits()
-                    
+            with self.comm_lock:                
+                self._worker_set_all_targets()                                
+                self._worker_get_all_angles()                                        
+                self._worker_get_all_status()                
+                self._worker_check_all_angle_limits()                    
                 #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")                    
             
                                  
