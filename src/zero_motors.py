@@ -15,7 +15,7 @@ from collections import OrderedDict
 import curses
 
 # Local:
-from motors.motors import Motors
+from system.motors.motors import Motors
 
 motor_model = "MG4010E-i10v3"
 
@@ -129,8 +129,8 @@ def main(stdscr):
                     state = ' STBY '
                     
                 motor_interface = get_motor_interface_from_tag(motor_tag)
-                if motor_interface.get_motor(motor_tag).reply_timeout_count  > 0:
-                    state = ' ERROR'
+                if motor_interface.get_motor(motor_tag).reply_timeout_count > 0:
+                    state = ' ERROR'                    
                                
                 description = motor_info[motor_tag]['description']
                 text = f'{state} | {angle} | {motor_tag} | {description}'

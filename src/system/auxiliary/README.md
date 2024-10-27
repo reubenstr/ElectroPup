@@ -10,9 +10,15 @@ if the Raspberry Pi has booted and is operational.
 
 Execute the install_heartbeat.sh on the Raspberry Pi to install and start the heartbeat service.
 
-Stop the service: sudo systemctl stop heartbeat.service 
+Check the service status:
+>sudo systemctl status heartbeat.service 
 
-Start the service: sudo systemctl start heartbeat.service 
+Stop the service:
+>sudo systemctl stop heartbeat.service 
+
+Start the service:
+
+>sudo systemctl start heartbeat.service 
 
 
 
