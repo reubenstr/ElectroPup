@@ -15,7 +15,9 @@ import time
 from typing import List
 from time import sleep
 from enum import Enum
-from crc32 import crc32
+
+# Local
+from .crc32 import crc32
 
 
 # Must match auxiliary board firmware's MessageType struct.
@@ -27,28 +29,27 @@ class MessageType(Enum):
 
 class StatusMessage:
     def __init__(self):
-        self.jointAngleError : bool = False
-        self.inverseKinematicsError : bool = False
-        self.joystickError : bool = False
-        self.overCurrentError : bool = False
-        self.underVoltageError : bool = False
-        self.canError : bool = False
-        self.motorOns : List[bool] = [False] * 12
-        self.motorErrors : List[bool] = [False] * 12
-        self.batteryVoltage : bool = 0.0
+        self.joint_angle_error : bool = False
+        self.inverse_kinematics_error : bool = False
+        self.joystick_error : bool = False
+        self.can_error : bool = False
+        self.over_temperature_error : bool = False
+        self.under_voltage_error : bool = False        
+        self.motor_ons : List[bool] = [False] * 12
+        self.motor_errors : List[bool] = [False] * 12
+        self.battery_voltage : float = 0.0
 
     def pack(self):        
-        bools = (self.jointAngleError,
-                self.inverseKinematicsError,
-                self.joystickError,
-                self.overCurrentError,
-                self.underVoltageError,
-                self.canError) + tuple(self.motorOns) + tuple(self.motorErrors)
+        bools = (self.joint_angle_error,
+                self.inverse_kinematics_error,
+                self.joystick_error,
+                self.over_temperature_error,
+                self.under_voltage_error,
+                self.can_error) + tuple(self.motor_ons) + tuple(self.motor_errors)
     
         packed_message_id = bytes([MessageType.STATUS.value])
-        packed_bools = bytearray(int(b) for b in bools)   
-        packed_voltage = struct.pack('f', self.batteryVoltage)
-       
+        packed_bools = bytearray(bool(b) for b in bools)   
+        packed_voltage = struct.pack('f', self.battery_voltage)                       
         packed_message = packed_message_id + packed_bools + packed_voltage                                      
         packed_crc = crc32(packed_message).to_bytes(4, byteorder='little')
         return packed_message + packed_crc
@@ -95,9 +96,8 @@ class Aux():
                          
             if self.ser.is_open:                                  
                 num_bytes_written = self.ser.write(data)
-                    
-                # Print data:                       
-                # print(hex(crc), [byte for byte in data])                
+                                                    
+                print([byte for byte in data])                
                 print(f"[AUX] message sent, num bytes written: {num_bytes_written}")
             
         except Exception as e:

@@ -55,7 +55,7 @@ class Gamepad:
 
     def _trigger_controller_event(self, event: ControllerEvent):
         if self.controller_event_callback:
-            print(f"[Gamepad] event trigger: {str(event)}")
+            print(f"[Gamepad] event trigger: {str(event.name)}")
             self.controller_event_callback(event)
 
     ###############################################################################

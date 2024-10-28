@@ -1,0 +1,31 @@
+
+###############################################################################
+# CAN Bus Communication
+###############################################################################
+
+Timing sample of processing 6 motors on a single CAN bus:
+    Performs: 
+        self._worker_set_all_targets()                                
+        self._worker_get_all_angles()                                        
+        self._worker_get_all_status()                
+        self._worker_check_all_angle_limits() 
+    Capture (milliseconds):
+        [Motors] processing time: 12.37
+        [Motors] processing time: 16.80
+        [Motors] processing time: 12.23
+        [Motors] processing time: 17.36
+        [Motors] processing time: 12.58
+        [Motors] processing time: 12.00
+        [Motors] processing time: 16.46
+        [Motors] processing time: 11.73
+        [Motors] processing time: 15.99
+        [Motors] processing time: 12.25
+        [Motors] processing time: 16.09
+        [Motors] processing time: 12.59
+        [Motors] processing time: 15.77
+        [Motors] processing time: 12.09
+        [Motors] processing time: 16.13
+        [Motors] processing time: 12.58
+        [Motors] processing time: 15.24
+        [Motors] processing time: 12.61
+        [Motors] processing time: 16.75

@@ -114,17 +114,14 @@ class Leg(object):
         # ht = ht_leg_start @ t01 @ t12 @ t23 @ t34 
         p1 = self._ht_leg_start[0:3,3]
 
-        # ht_buildup = self._ht_leg_start @ self._t01 @ self._t12
         ht_buildup = np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12)
 
         p2 = ht_buildup[0:3,3]
-
-        # ht_buildup = ht_buildup @ self._t23
+      
         ht_buildup = np.matmul(ht_buildup, self._t23)
         
         p3 = ht_buildup[0:3,3]
-
-        # ht_buildup = ht_buildup @ self._t34
+        
         ht_buildup = np.matmul(ht_buildup, self._t34)
 
         p4 = ht_buildup[0:3,3]

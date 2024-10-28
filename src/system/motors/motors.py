@@ -69,6 +69,7 @@ class Motor():
         self.angle_max : float = 0
         
         # Misc.
+        self.on : bool = False
         self.apply_negative_angle_offset : bool = False
         
         # Driver config:
@@ -78,6 +79,22 @@ class Motor():
         self.speed_pid_ki : int = 10
         self.iq_pid_kp : int = 40
         self.iq_pid_ki : int = 40
+        
+        # Other config:
+        self.max_reply_timeouts_allow : int = 3
+      
+    def is_on(self):
+        return self.on     
+               
+    def is_error(self):
+        error = False
+        if self.angle_limit_breached:
+                error = True                
+        if self.under_voltage_protection or self.over_voltage_protection or self.over_temperature_protection or self.lost_input_protection:                 
+                error = True
+        if self.reply_timeout_count > self.max_reply_timeouts_allow:
+                error = True
+        return error
 
 
 class MotorDirection(Enum):  
@@ -115,9 +132,7 @@ class Motors(Thread):
         
         # Timeouts and Timings:
         self.max_reply_timeouts_allow = 3
-      
-        # Control:
-        self.motors_on : bool = False       
+                   
                 
     ###############################################################################
     # Per Motor
@@ -130,6 +145,7 @@ class Motors(Thread):
         if success:
             print(f"[{self.tag}][{motor_tag}] command on completed, success: {success}, time: {time.time() - start:0.3f}")   
             self.motors[motor_tag].reply_timeout_count = 0 
+            self.motors[motor_tag].on = True
         else:
             self.motors[motor_tag].reply_timeout_count += 1 
         return success      
@@ -141,6 +157,7 @@ class Motors(Thread):
         if success:
             print(f"[{self.tag}][{motor_tag}] command off completed, success: {success}, time: {time.time() - start:0.3f}")   
             self.motors[motor_tag].reply_timeout_count = 0 
+            self.motors[motor_tag].on = False
         else:
             self.motors[motor_tag].reply_timeout_count += 1 
         return success    
@@ -177,13 +194,14 @@ class Motors(Thread):
     ###############################################################################      
                
     def cmd_all_motors_on(self):
-        with self.comm_lock:
-            self.motors_on = True
+        with self.comm_lock:          
             success = True
             start = time.time()
             for motor in self.motors.values():            
                 success = self.can_interface.cmd_motor_on(motor.motor_id)
-                if not success:
+                if success:
+                    motor.on = True
+                else:
                     success = False      
             print(f"[{self.tag}][ALL] command motors on completed, success: {success}, time: {time.time() - start:0.3f}")
             return success
@@ -195,7 +213,9 @@ class Motors(Thread):
             start = time.time()
             for motor in self.motors.values():
                 success = self.can_interface.cmd_motor_off(motor.motor_id)
-                if not success:
+                if success:
+                    motor.on = False
+                else:
                     success = False       
             print(f"[{self.tag}][ALL] command motors off completed, success: {success}, time: {time.time() - start:0.3f}")
             return success
@@ -306,11 +326,7 @@ class Motors(Thread):
         with self.lock: 
             error = False
             for motor_tag, motor in self.motors.items():
-                if motor.angle_limit_breached:
-                    error = True                
-                if motor.under_voltage_protection or motor.over_voltage_protection or motor.over_temperature_protection or motor.lost_input_protection:                 
-                    error = True
-                if motor.reply_timeout_count > self.max_reply_timeouts_allow:
+                if motor.is_error():
                     error = True
             return error      
                                   
@@ -333,7 +349,7 @@ class Motors(Thread):
         success = True  
         for motor_tag, motor in self.motors.items():
             if self.op_fetch_motor_angle(motor_tag) == False:
-                success = False    
+                success = False 
         return success        
     
     def _worker_get_all_status(self):
@@ -368,14 +384,17 @@ class Motors(Thread):
             self.op_set_all_target_angles_to_current_angles()                        
             for motor_tag, motor in self.motors.items(): 
                 if self.motors[motor_tag].angle_degrees > 180.0:
-                    self.motors[motor_tag].apply_negative_angle_offset = True                
+                    self.motors[motor_tag].apply_negative_angle_offset = True    
+            print(f"[{self.tag}][Run] all motor target angles set to physical angles")            
         else:    
-            print(f"[{self.tag}] error, unable to set all motor target angles, exiting thread!")
+            print(f"[{self.tag}][Run] error, unable to set all motor target angles, exiting thread!")
             return
         
         # Set all PID values.
-        if not self.set_all_motors_pid():
-            print(f"[{self.tag}] error, unable to set all motor PID values, exiting thread!")
+        if self.set_all_motors_pid():
+            print(f"[{self.tag}][Run] all motor PID values set")
+        else:
+            print(f"[{self.tag}][Run] error, unable to set all motor PID values, exiting thread!")
             return    
         
                  
@@ -391,8 +410,9 @@ class Motors(Thread):
                 self._worker_set_all_targets()                                
                 self._worker_get_all_angles()                                        
                 self._worker_get_all_status()                
-                self._worker_check_all_angle_limits()                    
-                #print(f"[Motors] processing time: {((time.time() - start) * 1000):0.2f}")   
+                self._worker_check_all_angle_limits() 
+                                   
+                #print(f"[{self.tag}][Motors] processing time: {((time.time() - start) * 1000):0.2f}")   
                            
                                  
     ###############################################################################

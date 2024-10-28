@@ -60,11 +60,11 @@ class Body(object):
         self.foot_length = frame_parameters.foot_length
         self.foot_width = frame_parameters.foot_width
     
-        self.legs : Dict[str, Leg] = {}
-        self.legs['back_right'] = None        
-        self.legs['front_right'] = None                                                  
-        self.legs['front_left'] = None
+        self.legs : Dict[str, Leg] = {}       
+        self.legs['front_left'] = None        
+        self.legs['front_right'] = None  
         self.legs['back_left'] = None
+        self.legs['back_right'] = None
 
     def create_default_global_foot_positions(self):
         ''' Creates a default global foot positions dict for reference and testing.      
@@ -147,7 +147,7 @@ class Body(object):
 
     def set_joint_angles(self,leg_angs):
         ''' Set the joint angles for all four legs
-            Purpose is model verification
+            Purpose is external wireframe and simulation verification only
 
         Args:
             leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
