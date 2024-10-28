@@ -14,6 +14,8 @@ All parts have export permissions to allow printing and modification.
 
 [Hips](https://cad.onshape.com/documents/428031d0c98bf15dcc9f5c8c)
 
+[Tools](https://cad.onshape.com/documents/3677b35bffbfedb5a3fd2b26)
+
 [Parts](https://cad.onshape.com/documents/6d4d4e21394ee725ee8ddb38)
 
 [PCB](https://cad.onshape.com/documents/c8a855826c37bd92b89d9f0e)

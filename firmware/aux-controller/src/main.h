@@ -12,7 +12,7 @@
 
 const uint32_t heartbeatBlinkRateMs{250};
 const uint32_t noCommsTimeoutMs{1000};
-const uint32_t rpiHeartbeatTimeoutMs{100};
+const uint32_t rpiHeartbeatTimeoutMs{250};
 const uint32_t byteLongPressActivationMs{3000};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ enum class Page
 };
 
 const uint8_t numSystemStatusStrings{12};
-const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JA", "IK", "JOY", "UV", "OC", "CAN"};
+const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JA", "IK", "JOY", "CAN", "UVo", "OTe"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,9 +53,10 @@ struct StatusData
     bool jointAngleError;
     bool inverseKinematicsError;
     bool joystickError;
-    bool overCurrentError;
-    bool underVoltageError;
     bool canError;
+    bool overTemperatureError;
+    bool underVoltageError;
+   
 
     bool motorOns[numMotors];
     bool motorErrors[numMotors];
@@ -70,13 +71,12 @@ enum class MessageType : uint8_t
     SHUTDOWN_RPI
 };
 
-
 #pragma pack(1)
 struct StatusMessage
 {
     MessageType messageType;
     StatusData statusData;
-    uint32_t crc32;   
+    uint32_t crc32;
 };
 
 #pragma pack(1)
@@ -90,7 +90,7 @@ struct PlaySoundMessage
 #pragma pack(1)
 struct ShutDownMessage
 {
-    MessageType messageType;   
+    MessageType messageType;
     uint32_t crc32;
 
     ShutDownMessage()
@@ -98,7 +98,6 @@ struct ShutDownMessage
         messageType = MessageType::SHUTDOWN_RPI;
     }
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Prototypes
@@ -143,6 +142,9 @@ void setValueFromStatusString(const char *status, bool state)
     systemErrors[index] = state;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// CRC
+///////////////////////////////////////////////////////////////////////////////
 
 uint32_t crc32(uint8_t *data, int length)
 {
