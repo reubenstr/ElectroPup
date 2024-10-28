@@ -33,7 +33,7 @@ class Live():
 
         self.gamepad = Gamepad(self.motion_parameters)
         self.gamepad.register_controller_event_callback(self.controller_event_callback)
-           
+
         self.body = Body(frame_parameters=frame_parameters)
 
         motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"] 
@@ -45,7 +45,7 @@ class Live():
         self.motor_interface_front.set_limits("FRA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_front.set_limits("FRH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_front.set_limits("FRK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))
-                               
+
         motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         self.motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
         self.motor_interface_back.cmd_all_motors_off()               
@@ -55,17 +55,18 @@ class Live():
         self.motor_interface_back.set_limits("BRA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_back.set_limits("BRH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_back.set_limits("BRK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))
-          
-                
+
         self.aux = Aux()        
-                
+
         self.kinetic_state : KineticState = KineticState.STARTUP
-        self.previous_kinetic_state : KineticState = KineticState.INIT  
-        self.body_error_state : Body.ErrorState = Body.ErrorState.NONE      
+        self.previous_kinetic_state : KineticState = KineticState.INIT 
+        self.body_error_state : Body.ErrorState = Body.ErrorState.NONE
         self.speed : int = 0
-        
         self.loop_time : float = 0
         
+    ###############################################################################
+    # Methods
+    ###############################################################################   
         
     def controller_event_callback(self, event : ControllerEvent):    
         print(f"[EVENT] controller event received: {event.name}")
@@ -80,9 +81,6 @@ class Live():
                 self.kinetic_state = KineticState.STAND 
             elif self.kinetic_state != KineticState.ERROR: 
                 self.kinetic_state = KineticState.HALT                    
-
-                    
-                    
                     
                     
     def apply_controller_input(self, motion_parameters : MotionParameters):                
@@ -113,137 +111,98 @@ class Live():
         self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=-joint_angles['back_left']['abduction'])   
         self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=joint_angles['back_right']['hip'])  
         self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=joint_angles['back_right']['knee']) 
-            
-     
-                    
-    def temp_standing_pose(self):    
-        """
-            TEMP TO TEST STANDING POST PRIOR TO PLACEMENT
-        """                
-        motion_parameters = MotionParameters("./system/parameters/motion_parameters.yaml")
-        
-        error_state = self.body.set_body_pose_by_transform_inputs(
-            phi=0,
-            theta=0,
-            psi=0,
-            x=0,
-            y=(motion_parameters.height_translation_min + motion_parameters.height_translation_max)/2,
-            z=0,
-        )
-        if error_state == Body.ErrorState.IK or error_state == Body.ErrorState.JOINT:
-            print(error_state.name)
-        elif error_state == Body.ErrorState.NONE:
-            joint_angles = self.body.get_joint_angles("DEGREES")
-            
-            fla=joint_angles['front_left']['abduction']  
-            flh=joint_angles['front_left']['hip']  
-            flk=joint_angles['front_left']['knee'] 
-            fra=joint_angles['front_right']['abduction']  
-            frh=joint_angles['front_right']['hip']  
-            frk=joint_angles['front_right']['knee']     
-            bla=joint_angles['back_right']['abduction']  
-            blh=joint_angles['back_left']['hip']  
-            blk=joint_angles['back_left']['knee'] 
-            bra=joint_angles['back_left']['abduction']  
-            brh=joint_angles['back_right']['hip']  
-            brk=joint_angles['back_right']['knee']                              
-            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=fla)   
-            self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=flh)  
-            self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=flk) 
-            self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=fra)   
-            self.motor_interface_front.set_motor_targets(motor_tag="FRH", speed=self.speed, angle=frh)  
-            self.motor_interface_front.set_motor_targets(motor_tag="FRK", speed=self.speed, angle=frk) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=bla)   
-            self.motor_interface_back.set_motor_targets(motor_tag="BLH", speed=self.speed, angle=blh)  
-            self.motor_interface_back.set_motor_targets(motor_tag="BLK", speed=self.speed, angle=blk) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=bra)   
-            self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=brh)  
-            self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=brk) 
-                     
+                          
                 
     ###############################################################################
     # Main Loop
     ###############################################################################       
         
     def run(self):
-        while True:
-        
-            if not self.gamepad.is_connected():  
-                sleep(0.100)
-                continue
-                      
-            self.gamepad.set_kinetic_state(self.kinetic_state)    
-                        
-            # Execute once after kinetic state change:                      
-            if self.previous_kinetic_state != self.kinetic_state:   
-                self.previous_kinetic_state = self.kinetic_state
-                print(f"[STATE] kinetic state changed to: {self.kinetic_state.name}")
-                             
-                if self.kinetic_state == KineticState.ERROR:
-                    self.motor_interface_front.cmd_all_motors_off()
-                    self.motor_interface_back.cmd_all_motors_off()    
-                
-                elif self.kinetic_state == KineticState.STARTUP:              
-                    self.motor_interface_front.start()
-                    self.motor_interface_back.start()                    
-                
-                elif self.kinetic_state == KineticState.HALT:
-                    self.motor_interface_front.cmd_all_motors_off()
-                    self.motor_interface_back.cmd_all_motors_off()
-                
-                elif self.kinetic_state == KineticState.STAND: 
-                    self.speed = 500   
-                    self.apply_controller_input(self.motion_parameters)                      
-                    self.motor_interface_front.cmd_all_motors_on()
-                    self.motor_interface_back.cmd_all_motors_on()                                    
-                                                    
-                elif self.kinetic_state == KineticState.POSE:
-                    self.speed = 2000                       
-                elif self.kinetic_state == KineticState.MOTION:
-                    self.speed = 1000
-                      
-                elif self.kinetic_state == KineticState.FLIP:
-                    pass
-                                
+        while True:        
             
-            # Kinetic state machine:        
-            if self.kinetic_state == KineticState.ERROR:
-                pass
-           
-            elif self.kinetic_state == KineticState.HALT:
-                pass
+            self.process_state_changes()
             
-            elif self.kinetic_state == KineticState.STAND:                       
-                if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
-                    self.kinetic_state = KineticState.POSE
+            self.process_states()
             
-            elif self.kinetic_state == KineticState.POSE:    
-                motion_parameters = self.gamepad.get_motion_parameters()            
-                self.apply_controller_input(motion_parameters)  
-            
-            elif self.kinetic_state == KineticState.MOTION:               
-                motion_parameters = self.gamepad.get_motion_parameters()            
-                self.apply_controller_input(motion_parameters)              
-           
-            elif self.kinetic_state == KineticState.FLIP:
-                pass
-
-           
+            self.check_motor_errors()
+                    
             self.process_aux()
             
-            if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
-                self.kinetic_state = KineticState.ERROR
-              
-            self.sleep_loop()
-       
-       
-   
-       
+            self.check_game_pad()                        
+
+            self.sleep_loop()           
+            
     ###############################################################################
-    # Auxiliary
-    ###############################################################################        
+    # Loop Methods
+    ###############################################################################   
+       
+    def process_state_changes(self):                                
+        """Execute once after kinetic state change""" 
+                           
+        if self.previous_kinetic_state != self.kinetic_state:   
+            self.previous_kinetic_state = self.kinetic_state
+            print(f"[STATE] kinetic state changed to: {self.kinetic_state.name}")
+            
+            self.gamepad.set_kinetic_state(self.kinetic_state)  
+                            
+            if self.kinetic_state == KineticState.ERROR:
+                self.motor_interface_front.cmd_all_motors_off()
+                self.motor_interface_back.cmd_all_motors_off()    
+            
+            elif self.kinetic_state == KineticState.STARTUP:              
+                self.motor_interface_front.start()
+                self.motor_interface_back.start()                    
+            
+            elif self.kinetic_state == KineticState.HALT:
+                self.motor_interface_front.cmd_all_motors_off()
+                self.motor_interface_back.cmd_all_motors_off()
+            
+            elif self.kinetic_state == KineticState.STAND: 
+                self.speed = 500   
+                self.apply_controller_input(self.motion_parameters)                      
+                self.motor_interface_front.cmd_all_motors_on()
+                self.motor_interface_back.cmd_all_motors_on()                                    
+                                                
+            elif self.kinetic_state == KineticState.POSE:
+                self.speed = 2000                       
+            elif self.kinetic_state == KineticState.MOTION:
+                self.speed = 1000
+                    
+            elif self.kinetic_state == KineticState.FLIP:
+                    pass  
     
+    def process_states(self):
+        """Kinetic state machine"""      
+        if self.kinetic_state == KineticState.ERROR:
+            pass
+        
+        elif self.kinetic_state == KineticState.HALT:
+            pass
+        
+        elif self.kinetic_state == KineticState.STAND:                       
+            if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
+                self.kinetic_state = KineticState.POSE
+        
+        elif self.kinetic_state == KineticState.POSE:    
+            motion_parameters = self.gamepad.get_motion_parameters()            
+            self.apply_controller_input(motion_parameters)  
+        
+        elif self.kinetic_state == KineticState.MOTION:               
+            motion_parameters = self.gamepad.get_motion_parameters()            
+            self.apply_controller_input(motion_parameters)              
+        
+        elif self.kinetic_state == KineticState.FLIP:
+            pass   
+        
+        
+    def check_motor_errors(self):
+        if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
+            self.kinetic_state = KineticState.ERROR    
+       
     def process_aux(self):
+        
+        self.aux.tick()
+        
         message = StatusMessage()  
         
         self.joint_angle_error  = False
@@ -266,10 +225,14 @@ class Live():
                  
         self.aux.send_at_rate(message.pack(), 1) 
         
-            
-    ###############################################################################
-    # Helpers
-    ###############################################################################   
+    
+    def check_game_pad(self):
+        if self.gamepad.is_connected():
+            return True
+        else:        
+            # TODO: create a timer to shutdown the motors if disconnected too long
+            return False
+  
     
     def sleep_loop(self):
         """
@@ -284,6 +247,10 @@ class Live():
         
         #print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")                            
         self.loop_time = time.time()     
+        
+    ###############################################################################
+    # Helpers
+    ###############################################################################  
                  
     def shutdown(self):
         self.motor_interface_front.shutdown()
@@ -293,19 +260,14 @@ class Live():
 # Entry
 ###############################################################################
 if __name__ == "__main__":
-
     live = Live()
       
-    try:
-        
-        live.run()
-            
+    try:        
+        live.run()            
     except KeyboardInterrupt:
-        print ('Keyboard interrupt, exiting')
-        
+        print ('Keyboard interrupt, exiting')        
     except Exception as e:
         print(str(e))
-        print(traceback.format_exc())
-        
+        print(traceback.format_exc())        
     finally:          
-        live.shutdown()        
+        live.shutdown()

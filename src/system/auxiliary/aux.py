@@ -97,8 +97,8 @@ class Aux():
             if self.ser.is_open:                                  
                 num_bytes_written = self.ser.write(data)
                                                     
-                print([byte for byte in data])                
-                print(f"[AUX] message sent, num bytes written: {num_bytes_written}")
+                # print([byte for byte in data])                
+                # print(f"[AUX] message sent, num bytes written: {num_bytes_written}")
             
         except Exception as e:
             print(f"[AUX] error, unable to send message on serial port: {self.port}, exception: {e}")            
