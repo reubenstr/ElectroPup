@@ -4,7 +4,7 @@
 enum class Sequence
 {
     NONE = -1,
-    MCU_STARTUP,
+    MCU_STARTUP = 0,
     RPI_ON,
     RPI_OFF,
     MOTORS_ON,
@@ -21,25 +21,25 @@ public:
     Buzzer(int pin) : _buzzerPin(pin)
     {
         _frequencies = {
-            {250, 300, 350, 400, 450, 500}, // MCU_STARTUP
-            {250, 500, 0, 250, 500},                // RPI_ON
-            {500, 250, 0, 500, 250},                // RPI_OFF
-            {250, 275, 300, 325, 500},              // MOTORS_ON
-            {500, 325, 300, 275, 250},              // MOTORS_OFF
-            {500, 0, 500, 0, 500, 0, 500},          // LOW BATTERY
-            {500, 250, 500, 250, 500, 250},         // ERROR
-            {500, 200},                             // SHUTDOWN
+            {250, 300, 350, 500},           // MCU_STARTUP
+            {250, 500, 0, 250, 500},        // RPI_ON
+            {500, 250, 0, 500, 250},        // RPI_OFF
+            {250, 275, 300, 325, 500},      // MOTORS_ON
+            {500, 325, 300, 275, 250},      // MOTORS_OFF
+            {500, 0, 500, 0, 500, 0, 500},  // LOW BATTERY
+            {500, 250, 500, 250, 500, 250}, // ERROR
+            {500, 200},                     // SHUTDOWN
         };
 
         _delays = {
-            {200, 100, 50, 200, 100, 500}, // MCU_STARTUP
-            {50, 100, 100, 50, 500},                // RPI_ON
-            {50, 100, 100, 50, 500},                // RPI_OFF
-            {100, 100, 100, 100, 200},              // MOTORS_ON
-            {100, 100, 100, 100, 200},              // MOTORS_OFF
-            {100, 50, 100, 50, 100, 50, 100},       // LOW BATTERY
-            {125, 250, 125, 250, 125, 250},         // ERROR
-            {100, 500},                             // SHUTDOWN
+            {200, 100, 50, 500},              // MCU_STARTUP
+            {50, 100, 100, 50, 500},          // RPI_ON
+            {50, 100, 100, 50, 500},          // RPI_OFF
+            {100, 100, 100, 100, 200},        // MOTORS_ON
+            {100, 100, 100, 100, 200},        // MOTORS_OFF
+            {100, 50, 100, 50, 100, 50, 100}, // LOW BATTERY
+            {125, 250, 125, 250, 125, 250},   // ERROR
+            {100, 500},                       // SHUTDOWN
         };
     }
 
@@ -76,9 +76,7 @@ public:
         {
             if (millis() - _start > _delay)
             {
-                _start = millis();
-
-                Serial.println(_index);
+                _start = millis();               
 
                 if (_index < _delays[(int)_sequence].size() - 1)
                 {

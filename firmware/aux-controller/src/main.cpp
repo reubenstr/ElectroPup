@@ -1,14 +1,34 @@
 
 /*
+  Project:
+    Auxiliary Board for ElectroPup quadruped.
+    Drives LCD display, Neopixels, RC servo, and more.
 
+  MCU:
+    STM32F401CC
+  
+  Dev. Board:
+    WeAct Black Pill:
+      https://stm32-base.org/boards/STM32F401CCU6-WeAct-Black-Pill-V1.2.html
+      https://www.aliexpress.us/item/3256801269871873.html
+      https://www.amazon.com/dp/B09MLHYF89/
 
+    Alternatives (Blue Pill and other Black Pill):
+      STM32F103C8T6 
+      STM32F411CEU6
+      
+  Display:
+    The TFT_eSPI library (LCD driver) configuration is located in platformio.ini
+    ST7735 128*160 1.8"
+    https://www.aliexpress.us/item/3256806134563059.html
 
-
-TODO:
-  The way system errors bool and strings is magical and should be made it's own class
-  to better allow code changes without risk of memory issues.
-
-*/
+  PCB/Schematics:
+    See PCBs directory in the the ElectroPup repo for schematics: 
+      https://github.com/reubenstr/ElectroPup
+      
+  TODO:
+    System error bools and strings are magical; should they be made into their own class?
+ */
 
 #include <Arduino.h>
 #include <math.h>
@@ -20,18 +40,13 @@ TODO:
 
 TFT_eSPI tft = TFT_eSPI();
 Buzzer buzzer(PIN_MCU_BUZZER);
+OneButton button(PIN_BTN_1, true);
 
-// TODO: move display pins to platformio.ini
-
+Page page = Page::SYSTEM;
 const int cornerRadiusPx{2};
 
 uint32_t lastMessageReceivedMillis;
-
-Page page = Page::SYSTEM;
-
 float batteryVoltage{0};
-
-OneButton button(PIN_BTN_1, true);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Program
@@ -115,7 +130,7 @@ void DisplaySystemPage(bool forceRefresh = false)
 
   // SBC (RPI) errors take precedence of colors and requires refreshes.
   bool isSbcError = getValueFromStatusString("RPI") || getValueFromStatusString("SFT");
-  static bool previousSbcStatus = isSbcError;
+  static bool previousSbcStatus;
   if (previousSbcStatus != isSbcError)
   {
     previousSbcStatus = isSbcError;
@@ -177,8 +192,8 @@ void DisplaySystemPage(bool forceRefresh = false)
 
         if (previousMotorOns[index] != motorOn || previousMotorErrors[index] != hasError || forceRefresh)
         {
-          previousMotorOns[index] = hasError;
-          previousMotorErrors[index] = motorOn;
+          previousMotorOns[index] = motorOn;          
+          previousMotorErrors[index] = hasError;
           uint32_t color = hasError ? TFT_RED : motorOn ? TFT_GREEN
                                                         : TFT_BLUE;
 
@@ -235,7 +250,7 @@ void CheckForMessage()
         return;
       }
 
-      StatusMessage message;
+      StatusMessage message; 
       memcpy(&message, data, sizeof(StatusMessage));
       uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(StatusMessage) - sizeof(uint32_t));
       if (crc32Result == message.crc32)
@@ -246,8 +261,8 @@ void CheckForMessage()
         systemErrors[getIndexFromStatusString("JA")] = message.statusData.jointAngleError;
         systemErrors[getIndexFromStatusString("IK")] = message.statusData.inverseKinematicsError;
         systemErrors[getIndexFromStatusString("JOY")] = message.statusData.joystickError;
-        systemErrors[getIndexFromStatusString("OC")] = message.statusData.overCurrentError;
-        systemErrors[getIndexFromStatusString("UV")] = message.statusData.overCurrentError;
+        systemErrors[getIndexFromStatusString("OTe")] = message.statusData.overTemperatureError;
+        systemErrors[getIndexFromStatusString("UVo")] = message.statusData.underVoltageError;
         systemErrors[getIndexFromStatusString("CAN")] = message.statusData.canError;
 
         for (int i = 0; i < numMotors; i++)
@@ -377,10 +392,7 @@ void CheckRpiHeartbeat()
 
 void btnClick(void *oneButton)
 {  
-  ShutDownMessage message;
-  uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(ShutDownMessage) - sizeof(uint32_t));
-  message.crc32 = crc32Result;
-  Serial1.write((uint8_t *)&message, sizeof(ShutDownMessage));
+ Serial.println("btnClick");
 }
 
 void btnDoubleClick(void *oneButton)
@@ -390,10 +402,11 @@ void btnDoubleClick(void *oneButton)
 
 void btnLongPressStart(void *oneButton)
 {
-Serial.println("btnLongPressStart");
+  ShutDownMessage message;
+  uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(ShutDownMessage) - sizeof(uint32_t));
+  message.crc32 = crc32Result;
+  Serial1.write((uint8_t *)&message, sizeof(ShutDownMessage));
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Entry
@@ -401,7 +414,6 @@ Serial.println("btnLongPressStart");
 
 void setup()
 {
-
   Serial.begin(115200);
 
   pinMode(LED_BUILTIN, OUTPUT);
