@@ -3,6 +3,7 @@
 """
 
 import os
+import copy
 import yaml
 import math
 import numpy as np
@@ -23,6 +24,7 @@ class KineticState(Enum):
 class ControllerEvent(Enum):
     KINETIC_STATE_TOGGLE = 1
     MOTOR_POWER_TOGGLE = 2
+    MOTOR_CLEAR_ERRORS = 3
 
 
 class MotionParameters:
@@ -76,13 +78,31 @@ class MotionParameters:
         self.yaw: float = 0
         self.side_translation: float = 0
         self.forward_translation: float = 0
-        self.height_translation: float = (self.height_translation_min + self.height_translation_max) / 2
+        self.height_translation: float = 0
         self.step_length: float = 0
         self.yaw_rate: float = 0
+        
+    def get_pose_standing(self):
+        motion_parameters = copy.deepcopy(self)
+        motion_parameters.roll = 0
+        motion_parameters.pitch= 0
+        motion_parameters.yaw = 0
+        motion_parameters.side_translation = 0
+        motion_parameters.forward_translation = 0
+        motion_parameters.height_translation= (self.height_translation_min + self.height_translation_max) / 2
+        motion_parameters.step_length = 0
+        motion_parameters.yaw_rate = 0
+        return motion_parameters
+        
+        
+    
 
     ###############################################################################
     # Helpers
     ###############################################################################
+
+    def __repr__(self):
+        return f"MyClass(value={self.value})"
 
     def print(self):
         print(
