@@ -376,7 +376,8 @@ class GamepadInterface:
         self.removeAllEventHandlers()
         self.updateThread.running = False
         self.updateThread.join()
-        del self.joystickFile
+        if self.joystickFile:
+            del self.joystickFile
 
 
 ###############################################################################

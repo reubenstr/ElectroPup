@@ -15,11 +15,7 @@
             of setting these parameters. The torque limit is used to create 'compliance'.  
                         
     Motor startup angle reading is 0 to 360, but this library uses a -180 to 180 convention.
-    If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.  
-    
-    TODO:
-        Add software angle limits.        
-               
+    If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.                   
 """
 
 import sys
@@ -84,6 +80,10 @@ class Motor():
         # Other config:
         self.max_reply_timeouts_allow : int = 3
       
+    ###############################################################################
+    # Methods
+    ###############################################################################  
+      
     def is_on(self):
         return self.on     
                
@@ -93,9 +93,12 @@ class Motor():
                 error = True                
         if self.under_voltage_protection or self.over_voltage_protection or self.over_temperature_protection or self.lost_input_protection:                 
                 error = True
-        if self.reply_timeout_count > self.max_reply_timeouts_allow:
+        if self.is_comms_error():
                 error = True
         return error
+    
+    def is_comms_error(self):
+        return self.reply_timeout_count > self.max_reply_timeouts_allow
     
     def clear_all_errors(self):
         self.under_voltage_protection = False
@@ -105,8 +108,7 @@ class Motor():
         self.angle_limit_breached = False
         self.reply_timeout_count = 0
     
-
-
+    
 class MotorDirection(Enum):  
     COUNTER_CLOCKWISE = 0
     CLOCKWISE = 1
@@ -119,11 +121,11 @@ class Motors():
     ###############################################################################
     
     def __init__(self, can_bus_id : str, motor_tags : list):                
-        '''
+        """
         Parameters:
-        - can_bus_id (str): the ID of the CAN bus, example CAN0, CAN1
-        - motor_tags (str): list of tags as keys to access motor objects                      
-        '''
+        - can_bus_id (str): the ID of the CAN bus, example: "CAN0"
+        - motor_tags (str): list of tags as keys to access motor objects, example: ["FLA", "FLH", "FLK"]                     
+        """
         
         self.thread_handle = None        
         self.exit_event = Event()   
@@ -138,10 +140,7 @@ class Motors():
     
         self.can_interface = CanInterface(can_bus_id)
         self.can_interface.op_can_init()
-        
-        # Timeouts and Timings:
-        self.max_reply_timeouts_allow = 3
-                   
+                           
                 
     ###############################################################################
     # Per Motor

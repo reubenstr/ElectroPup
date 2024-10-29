@@ -84,11 +84,8 @@ class Live():
         elif event == ControllerEvent.MOTOR_CLEAR_ERRORS:
             self.clear_all_errors()
             
-          
-            
-                    
-    def apply_controller_input(self, motion_parameters : MotionParameters):                
-              
+                              
+    def apply_controller_input(self, motion_parameters : MotionParameters):  
         self.body_error_state = self.body.set_body_pose_by_transform_inputs(
             phi=motion_parameters.roll,
             theta=motion_parameters.pitch,
@@ -96,25 +93,26 @@ class Live():
             x=motion_parameters.side_translation,
             y=motion_parameters.height_translation,
             z=motion_parameters.forward_translation,
-        )
+        ) 
+               
+        if self.body_error_state == Body.ErrorState.NONE:  
+            joint_angles = self.body.get_joint_angles(units="DEGREES") 
+            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=joint_angles['front_left']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=joint_angles['front_left']['hip'])  
+            self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=joint_angles['front_left']['knee']) 
+            self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=-joint_angles['front_right']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_tag="FRH", speed=self.speed, angle=joint_angles['front_right']['hip'])  
+            self.motor_interface_front.set_motor_targets(motor_tag="FRK", speed=self.speed, angle=joint_angles['front_right']['knee']) 
+            self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=joint_angles['back_right']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_tag="BLH", speed=self.speed, angle=joint_angles['back_left']['hip'])  
+            self.motor_interface_back.set_motor_targets(motor_tag="BLK", speed=self.speed, angle=joint_angles['back_left']['knee']) 
+            self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=-joint_angles['back_left']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=joint_angles['back_right']['hip'])  
+            self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=joint_angles['back_right']['knee']) 
         
-        if self.body_error_state == Body.ErrorState.KINEMATICS or self.body_error_state == Body.ErrorState.JOINT:
+        elif self.body_error_state == Body.ErrorState.KINEMATICS or self.body_error_state == Body.ErrorState.JOINT:
             print(f"[Body] error, {self.body_error_state.name}")
-            return
-              
-        joint_angles = self.body.get_joint_angles(units="DEGREES") 
-        self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=joint_angles['front_left']['abduction'])   
-        self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=joint_angles['front_left']['hip'])  
-        self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=joint_angles['front_left']['knee']) 
-        self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=-joint_angles['front_right']['abduction'])   
-        self.motor_interface_front.set_motor_targets(motor_tag="FRH", speed=self.speed, angle=joint_angles['front_right']['hip'])  
-        self.motor_interface_front.set_motor_targets(motor_tag="FRK", speed=self.speed, angle=joint_angles['front_right']['knee']) 
-        self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=joint_angles['back_right']['abduction'])   
-        self.motor_interface_back.set_motor_targets(motor_tag="BLH", speed=self.speed, angle=joint_angles['back_left']['hip'])  
-        self.motor_interface_back.set_motor_targets(motor_tag="BLK", speed=self.speed, angle=joint_angles['back_left']['knee']) 
-        self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=-joint_angles['back_left']['abduction'])   
-        self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=joint_angles['back_right']['hip'])  
-        self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=joint_angles['back_right']['knee']) 
+                  
                           
                 
     ###############################################################################
@@ -208,7 +206,6 @@ class Live():
         Tick auxilary (checks for comma)
         """
         
-        
         self.aux.check_for_commands()
         
         message = StatusMessage()  
@@ -217,21 +214,27 @@ class Live():
         message.inverse_kinematics_error = self.body_error_state ==  Body.ErrorState.KINEMATICS
         message.joystick_error = self.gamepad.is_connected() == False
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
+        message.imuError = False
         
         voltage_accumulator : float = 0.0
         motors : Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
             message.motor_ons[index] = motor.is_on()
             message.motor_errors[index] = motor.is_error()  
-            if motor.under_voltage_protection == True:
-                message.under_voltage_error = True
+            if motor.angle_limit_breached == True:
+                message.physical_limit_error = True
             if motor.over_temperature_protection == True:
                 message.over_temperature_error = True
+            if motor.under_voltage_protection == True:
+                message.under_voltage_error = True            
+            if motor.is_comms_error() == True:
+                message.motor_communication_error = True                
             voltage_accumulator += motor.voltage
                                                     
         message.battery_voltage = voltage_accumulator / len(motors)
-                 
-        self.aux.send_at_rate(message.pack(), 1) 
+                
+        send_rate_seconds = 0.500         
+        self.aux.send_at_rate(message.pack(), send_rate_seconds) 
         
     
     def check_game_pad(self):
