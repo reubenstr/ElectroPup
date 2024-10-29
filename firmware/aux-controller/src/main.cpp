@@ -6,7 +6,7 @@
 
   MCU:
     STM32F401CC
-  
+
   Dev. Board:
     WeAct Black Pill:
       https://stm32-base.org/boards/STM32F401CCU6-WeAct-Black-Pill-V1.2.html
@@ -14,18 +14,18 @@
       https://www.amazon.com/dp/B09MLHYF89/
 
     Alternatives (Blue Pill and other Black Pill):
-      STM32F103C8T6 
+      STM32F103C8T6
       STM32F411CEU6
-      
+
   Display:
     The TFT_eSPI library (LCD driver) configuration is located in platformio.ini
     ST7735 128*160 1.8"
     https://www.aliexpress.us/item/3256806134563059.html
 
   PCB/Schematics:
-    See PCBs directory in the the ElectroPup repo for schematics: 
+    See PCBs directory in the the ElectroPup repo for schematics:
       https://github.com/reubenstr/ElectroPup
-      
+
   TODO:
     System error bools and strings are magical; should they be made into their own class?
  */
@@ -117,12 +117,6 @@ void DisplaySystemPage(bool forceRefresh = false)
 {
   if (forceRefresh)
   {
-    tft.setTextFont(2);
-    tft.setTextSize(1);
-    tft.setTextColor(TFT_DARKGREY);
-    tft.drawString("SYSTEM", 64, 11);
-    tft.drawString("MOTORS", 64, 76);
-
     tft.setTextFont(1);
     tft.setTextSize(1);
     tft.setTextColor(TFT_BLACK);
@@ -141,13 +135,13 @@ void DisplaySystemPage(bool forceRefresh = false)
     // SYSTEM
     static bool previousSystemStatus[numSystemStatus];
     const int xOffset = 7;
-    const int yOffset = 20;
+    const int yOffset = 5;
     const int xMult = 29;
     const int yMult = 24;
     int index = 0;
     for (int x = 0; x < 4; x++)
     {
-      for (int y = 0; y < 2; y++)
+      for (int y = 0; y < 3; y++)
       {
         bool hasError = systemErrors[index];
 
@@ -192,7 +186,7 @@ void DisplaySystemPage(bool forceRefresh = false)
 
         if (previousMotorOns[index] != motorOn || previousMotorErrors[index] != hasError || forceRefresh)
         {
-          previousMotorOns[index] = motorOn;          
+          previousMotorOns[index] = motorOn;
           previousMotorErrors[index] = hasError;
           uint32_t color = hasError ? TFT_RED : motorOn ? TFT_GREEN
                                                         : TFT_BLUE;
@@ -207,15 +201,6 @@ void DisplaySystemPage(bool forceRefresh = false)
       }
     }
   }
-
-  /* if (forceRefresh)
-  {
-    // tft.fillRect(79, 0, 2, tft.height(), TFT_GREEN);
-    tft.drawLine(0, 0, tft.width() - 1, 0, TFT_GREEN);
-    tft.drawLine(tft.width() - 1, 0, tft.width() - 1, tft.height() - 1, TFT_GREEN);
-    tft.drawLine(tft.width() - 1, tft.height() - 1, 0, tft.height() - 1, TFT_GREEN);
-    tft.drawLine(0, tft.height() - 1, 0, 0, TFT_GREEN);
-  } */
 }
 
 void DisplayBatteryPage(bool forceRefresh = false)
@@ -250,20 +235,23 @@ void CheckForMessage()
         return;
       }
 
-      StatusMessage message; 
+      StatusMessage message;
       memcpy(&message, data, sizeof(StatusMessage));
       uint32_t crc32Result = crc32((uint8_t *)&message, sizeof(StatusMessage) - sizeof(uint32_t));
       if (crc32Result == message.crc32)
       {
         lastMessageReceivedMillis = millis();
 
-        systemErrors[getIndexFromStatusString("RPI")] = false;
-        systemErrors[getIndexFromStatusString("JA")] = message.statusData.jointAngleError;
-        systemErrors[getIndexFromStatusString("IK")] = message.statusData.inverseKinematicsError;
-        systemErrors[getIndexFromStatusString("JOY")] = message.statusData.joystickError;
-        systemErrors[getIndexFromStatusString("OTe")] = message.statusData.overTemperatureError;
-        systemErrors[getIndexFromStatusString("UVo")] = message.statusData.underVoltageError;
-        systemErrors[getIndexFromStatusString("CAN")] = message.statusData.canError;
+        setValueFromStatusString("JOY", message.statusData.joystickError);      
+        setValueFromStatusString("LIM", message.statusData.physicalLimitError);
+        setValueFromStatusString("JA", message.statusData.jointAngleError);
+        setValueFromStatusString("IK", message.statusData.inverseKinematicsError);
+        setValueFromStatusString("CAN", message.statusData.canError);
+        setValueFromStatusString("OTe", message.statusData.overTemperatureError);
+        setValueFromStatusString("UVo", message.statusData.underVoltageError);
+        setValueFromStatusString("MCo", message.statusData.sensorError);
+        setValueFromStatusString("SEN", message.statusData.sensorError);
+        setValueFromStatusString("---", false);
 
         for (int i = 0; i < numMotors; i++)
         {
@@ -312,11 +300,11 @@ void CheckCommsTimeout()
 {
   if (millis() - lastMessageReceivedMillis > noCommsTimeoutMs)
   {
-    systemErrors[getIndexFromStatusString("SFT")] = true;
+    setValueFromStatusString("SFT", true);
   }
   else
   {
-    systemErrors[getIndexFromStatusString("SFT")] = false;
+    setValueFromStatusString("SFT", false);
   }
 }
 
@@ -391,8 +379,8 @@ void CheckRpiHeartbeat()
 ///////////////////////////////////////////////////////////////////////////////
 
 void btnClick(void *oneButton)
-{  
- Serial.println("btnClick");
+{
+  Serial.println("btnDoubleClick");
 }
 
 void btnDoubleClick(void *oneButton)
@@ -455,7 +443,7 @@ void loop()
 
   UpdateDisplay();
 
-  buzzer.tick(); 
+  buzzer.tick();
 
   button.tick();
 }

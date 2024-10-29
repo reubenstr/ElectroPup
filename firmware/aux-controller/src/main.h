@@ -32,8 +32,8 @@ enum class Page
     BATTERY
 };
 
-const uint8_t numSystemStatusStrings{12};
-const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JA", "IK", "JOY", "CAN", "UVo", "OTe"};
+const uint8_t numSystemStatusStrings{16};
+const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "SEN", "---"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -50,13 +50,18 @@ bool motorErrors[numMotors];
 #pragma pack(1)
 struct StatusData
 {
+    bool joystickError;
+
+    bool physicalLimitError;
     bool jointAngleError;
     bool inverseKinematicsError;
-    bool joystickError;
+
     bool canError;
     bool overTemperatureError;
     bool underVoltageError;
-   
+    bool motorCommunicationError;
+
+    bool sensorError;
 
     bool motorOns[numMotors];
     bool motorErrors[numMotors];
@@ -116,6 +121,8 @@ bool IsError();
 // Helpers
 ///////////////////////////////////////////////////////////////////////////////
 
+// TODO: an assert of other warning should be applied of the string is not found.
+
 int getIndexFromStatusString(const char *status)
 {
     for (int i = 0; i < numSystemStatusStrings; ++i)
@@ -132,14 +139,18 @@ int getValueFromStatusString(const char *status)
 {
     int index = getIndexFromStatusString(status);
 
-    return systemErrors[index];
+    if (index > 0)
+        return systemErrors[index];
+    else
+        return false;
 }
 
 void setValueFromStatusString(const char *status, bool state)
 {
     int index = getIndexFromStatusString(status);
 
-    systemErrors[index] = state;
+    if (index > 0)
+        systemErrors[index] = state;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
