@@ -44,7 +44,7 @@ class Body(object):
     
     class ErrorState(Enum):
         NONE = 1
-        IK = 2
+        KINEMATICS = 2
         JOINT = 3
 
     def __init__(self, frame_parameters: FrameParameters):   
@@ -131,7 +131,7 @@ class Body(object):
 
         except DomainBreach as error:
             print(error) 
-            return Body.ErrorState.IK      
+            return Body.ErrorState.KINEMATICS      
       
         return Body.ErrorState.NONE
         

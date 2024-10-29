@@ -82,7 +82,7 @@ class Live():
             elif self.kinetic_state != KineticState.ERROR: 
                 self.kinetic_state = KineticState.HALT                    
         elif event == ControllerEvent.MOTOR_CLEAR_ERRORS:
-            self.clear_motor_errors()
+            self.clear_all_errors()
             
           
             
@@ -98,7 +98,7 @@ class Live():
             z=motion_parameters.forward_translation,
         )
         
-        if self.body_error_state == Body.ErrorState.IK or self.body_error_state == Body.ErrorState.JOINT:
+        if self.body_error_state == Body.ErrorState.KINEMATICS or self.body_error_state == Body.ErrorState.JOINT:
             print(f"[Body] error, {self.body_error_state.name}")
             return
               
@@ -199,20 +199,9 @@ class Live():
             pass   
         
         
-    def check_motor_errors(self):
-        error = self.motor_interface_front.is_error()
-        if error:
-            print(error)
-            self.kinetic_state = KineticState.ERROR   
-            
-        error = self.motor_interface_back.is_error()
-        if error:
-            print(error)
-            self.kinetic_state = KineticState.ERROR   
-        
-        
-        #if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
-        #    self.kinetic_state = KineticState.ERROR    
+    def check_motor_errors(self): 
+        if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
+            self.kinetic_state = KineticState.ERROR    
        
     def process_aux(self):
         """
@@ -224,8 +213,8 @@ class Live():
         
         message = StatusMessage()  
         
-        self.joint_angle_error  = False
-        self.inverse_kinematics_error = False
+        message.joint_angle_error = self.body_error_state ==  Body.ErrorState.JOINT
+        message.inverse_kinematics_error = self.body_error_state ==  Body.ErrorState.KINEMATICS
         message.joystick_error = self.gamepad.is_connected() == False
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
         
@@ -271,12 +260,12 @@ class Live():
     # Helpers
     ###############################################################################  
                 
-    def clear_motor_errors(self):
-        print("[Live] clearing motor error states")
+    def clear_all_errors(self):    
+        self.body_error_state = Body.ErrorState.NONE
         self.motor_interface_front.cmd_all_motors_clear_errors()           
         self.motor_interface_back.cmd_all_motors_clear_errors() 
         self.kinetic_state = KineticState.STARTUP
-                                
+                                        
     def shutdown(self):
         self.motor_interface_front.shutdown()
         self.gamepad.disconnect()

@@ -96,6 +96,15 @@ class Motor():
         if self.reply_timeout_count > self.max_reply_timeouts_allow:
                 error = True
         return error
+    
+    def clear_all_errors(self):
+        self.under_voltage_protection = False
+        self.over_voltage_protection = False
+        self.over_temperature_protection = False
+        self.lost_input_protection = False
+        self.angle_limit_breached = False
+        self.reply_timeout_count = 0
+    
 
 
 class MotorDirection(Enum):  
@@ -227,7 +236,9 @@ class Motors():
             for motor_tag, motor in self.motors.items():
                 self.motors[motor_tag].reply_timeout_count = 0
                 success = self.can_interface.cmd_clear_motor_errors(motor.motor_id)
-                if not success:
+                if success:
+                    self.motors[motor_tag].clear_all_errors()
+                else:
                     success = False       
             print(f"[{self.tag}][ALL] command clear errors completed, success: {success}, time: {time.time() - start:0.3f}")
             return success

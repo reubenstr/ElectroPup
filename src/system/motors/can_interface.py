@@ -2,6 +2,9 @@
     Interfaces with MG4010E-i10v3 actuators over CAN bus.
 
     Not all possible commands and requests are implemeted.
+    
+    TODO:
+        Add reset method for CAN socket.
 """
 
 import os
@@ -32,6 +35,7 @@ class CanInterface():
     ###############################################################################
 
     def op_can_init(self):
+        self.error = False
         if self.prints_enabled:
             print(f"[{self.tag}] initializing")
         os.system(f'sudo ip link set {self.can_bus_id} type can bitrate 1000000') 
