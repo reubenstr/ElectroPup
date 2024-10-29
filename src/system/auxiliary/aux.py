@@ -29,22 +29,29 @@ class MessageType(Enum):
 
 class StatusMessage:
     def __init__(self):
-        self.joint_angle_error : bool = False
-        self.inverse_kinematics_error : bool = False
         self.joystick_error : bool = False
+        self.physical_limit_error : bool = False
+        self.joint_angle_error : bool = False
+        self.inverse_kinematics_error : bool = False        
         self.can_error : bool = False
         self.over_temperature_error : bool = False
-        self.under_voltage_error : bool = False        
+        self.under_voltage_error : bool = False  
+        self.motor_communication_error : bool = False 
+        self.imuError : bool = False       
         self.motor_ons : List[bool] = [False] * 12
         self.motor_errors : List[bool] = [False] * 12
         self.battery_voltage : float = 0.0
 
     def pack(self):        
-        bools = (self.joint_angle_error,
-                self.inverse_kinematics_error,
-                self.joystick_error,
+        bools = (
+            self.joystick_error,
+            self.physical_limit_error,
+            self.joint_angle_error,
+                self.inverse_kinematics_error,                
                 self.over_temperature_error,
                 self.under_voltage_error,
+                self.motor_communication_error,
+                self.imuError,
                 self.can_error) + tuple(self.motor_ons) + tuple(self.motor_errors)
     
         packed_message_id = bytes([MessageType.STATUS.value])

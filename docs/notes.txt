@@ -41,6 +41,16 @@ https://github.com/riuson/lcd-image-converter
 
 
 ###############################################################################
+# IMU
+###############################################################################
+
+The Raspberry Pi enable I2C using:
+sudo raspi-config
+
+Install dependancies:
+sudo apt-get install python3-smbus
+
+###############################################################################
 Gaits / pregenators
 
 https://github.com/mike4192/spotMicro
