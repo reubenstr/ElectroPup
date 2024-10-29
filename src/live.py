@@ -81,7 +81,11 @@ class Live():
                 self.kinetic_state = KineticState.STAND 
             elif self.kinetic_state != KineticState.ERROR: 
                 self.kinetic_state = KineticState.HALT                    
-                    
+        elif event == ControllerEvent.MOTOR_CLEAR_ERRORS:
+            self.clear_motor_errors()
+            
+          
+            
                     
     def apply_controller_input(self, motion_parameters : MotionParameters):                
               
@@ -159,7 +163,7 @@ class Live():
             
             elif self.kinetic_state == KineticState.STAND: 
                 self.speed = 500   
-                self.apply_controller_input(self.motion_parameters)                      
+                self.apply_controller_input(self.motion_parameters.get_pose_standing())                      
                 self.motor_interface_front.cmd_all_motors_on()
                 self.motor_interface_back.cmd_all_motors_on()                                    
                                                 
@@ -196,12 +200,27 @@ class Live():
         
         
     def check_motor_errors(self):
-        if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
-            self.kinetic_state = KineticState.ERROR    
+        error = self.motor_interface_front.is_error()
+        if error:
+            print(error)
+            self.kinetic_state = KineticState.ERROR   
+            
+        error = self.motor_interface_back.is_error()
+        if error:
+            print(error)
+            self.kinetic_state = KineticState.ERROR   
+        
+        
+        #if self.motor_interface_front.is_error() or self.motor_interface_back.is_error(): 
+        #    self.kinetic_state = KineticState.ERROR    
        
     def process_aux(self):
+        """
+        Tick auxilary (checks for comma)
+        """
         
-        self.aux.tick()
+        
+        self.aux.check_for_commands()
         
         message = StatusMessage()  
         
@@ -220,7 +239,7 @@ class Live():
             if motor.over_temperature_protection == True:
                 message.over_temperature_error = True
             voltage_accumulator += motor.voltage
-                                                   
+                                                    
         message.battery_voltage = voltage_accumulator / len(motors)
                  
         self.aux.send_at_rate(message.pack(), 1) 
@@ -251,7 +270,13 @@ class Live():
     ###############################################################################
     # Helpers
     ###############################################################################  
-                 
+                
+    def clear_motor_errors(self):
+        print("[Live] clearing motor error states")
+        self.motor_interface_front.cmd_all_motors_clear_errors()           
+        self.motor_interface_back.cmd_all_motors_clear_errors() 
+        self.kinetic_state = KineticState.STARTUP
+                                
     def shutdown(self):
         self.motor_interface_front.shutdown()
         self.gamepad.disconnect()

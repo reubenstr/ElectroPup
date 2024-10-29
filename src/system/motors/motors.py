@@ -25,6 +25,7 @@
 import sys
 import time
 import traceback
+import threading
 from time import sleep
 from rich import print # Overrides print and injects colors
 from threading import Thread, Event, Lock
@@ -102,21 +103,20 @@ class MotorDirection(Enum):
     CLOCKWISE = 1
     
 
-class Motors(Thread):
+class Motors():
     
     ###############################################################################
     # Class Initialization
     ###############################################################################
     
-    def __init__(self, can_bus_id : str, motor_tags : list):
-        Thread.__init__(self) 
-        
+    def __init__(self, can_bus_id : str, motor_tags : list):                
         '''
         Parameters:
         - can_bus_id (str): the ID of the CAN bus, example CAN0, CAN1
         - motor_tags (str): list of tags as keys to access motor objects                      
         '''
         
+        self.thread_handle = None        
         self.exit_event = Event()   
         self.lock = Lock()          
         self.comm_lock = Lock()  
@@ -317,17 +317,18 @@ class Motors(Thread):
         Returns:
             bool: True if motor contains a fault state or comms error
         """
-        if self.can_interface.is_can_error():
+        if self.is_can_error():
             return True
         
-        if not self.is_alive():
-            return True    
+        if self.thread_handle:             
+            if not self.thread_handle.is_alive():
+                return True
         
         with self.lock: 
             error = False
             for motor_tag, motor in self.motors.items():
                 if motor.is_error():
-                    error = True
+                    error = motor_tag
             return error      
                                   
                         
@@ -373,10 +374,12 @@ class Motors(Thread):
                     print(f"[{motor_tag}] error, breach! angle: {motor.angle_degrees}, min: {motor.angle_min}, max: {motor.angle_max}")
 
     
-    def run(self):      
+    def worker(self):      
         """
         Main function that continously updates motor targets (speed, position) and checks for errors.
         """  
+       
+        print(f"[{self.tag}][Worker] starting") 
        
         # Set target angles to current angle to prevent startup runaways
         # Check started position and apply offset if required.
@@ -397,7 +400,7 @@ class Motors(Thread):
             print(f"[{self.tag}][Run] error, unable to set all motor PID values, exiting thread!")
             return    
         
-                 
+        self.exit_event.clear()          
         while not self.exit_event.is_set():             
             start = time.time()        
             
@@ -428,12 +431,17 @@ class Motors(Thread):
         return difference <= tolerance or difference >= (360 - tolerance)
            
     def is_can_error(self):
-        return self.can_interface.is_can_error()         
+        return self.can_interface.is_can_error()   
+    
+    def start(self):       
+        if not self.thread_handle or not self.thread_handle.is_alive():
+            self.thread_handle = threading.Thread(target=self.worker)
+            self.thread_handle.start()
               
     def shutdown(self):
-        if self.is_alive():
+        if self.thread_handle and self.thread_handle.is_alive():
             self.exit_event.set()   
-            self.join()    
+            self.thread_handle.join()    
         self.cmd_all_motors_off()
         self.can_interface.op_can_deinit()    
     

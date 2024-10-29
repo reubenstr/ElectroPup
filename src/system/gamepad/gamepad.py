@@ -32,17 +32,34 @@ class Gamepad:
         joystick_number = 0
         self.gamepad = PS4(joystick_number)
 
-        # if self.gamepad.isConnected():
+        # if self.gamepad.isConnected():    
         self.gamepad.addButtonChangedHandler("TRIANGLE", self.btn_triangle_changed_callback)
         self.gamepad.addButtonChangedHandler("CIRCLE", self.btn_circle_changed_callback)
         self.gamepad.addButtonChangedHandler("CROSS", self.btn_cross_changed_callback)
         self.gamepad.addButtonChangedHandler("SQUARE", self.btn_square_changed_callback)
+        #self.gamepad.addButtonChangedHandler("L1", self.btn_l1_changed_callback)
+        #self.gamepad.addButtonChangedHandler("R1", self.btn_r1_changed_callback) 
+        #self.gamepad.addButtonChangedHandler("L2", self.btn_l2_changed_callback)
+        #self.gamepad.addButtonChangedHandler("R2", self.btn_r2_changed_callback) 
         self.gamepad.addButtonChangedHandler("L3", self.btn_l3_changed_callback)
-        self.gamepad.addButtonChangedHandler("R3", self.btn_r3_changed_callback)
+        self.gamepad.addButtonChangedHandler("R3", self.btn_r3_changed_callback)          
+        self.gamepad.addButtonChangedHandler("SHARE", self.btn_share_changed_callback) 
+        self.gamepad.addButtonChangedHandler("OPTIONS", self.btn_options_changed_callback) 
+        #self.gamepad.addButtonChangedHandler("PS", self.btn_ps_changed_callback) 
+        
         self.gamepad.addAxisMovedHandler("LEFT-X", self.axis_left_x_changed_callback)
         self.gamepad.addAxisMovedHandler("LEFT-Y", self.axis_left_y_changed_callback)
+        #self.gamepad.addAxisMovedHandler("L2", self.axis_left_l2_changed_callback)
         self.gamepad.addAxisMovedHandler("RIGHT-X", self.axis_right_x_changed_callback)
         self.gamepad.addAxisMovedHandler("RIGHT-Y", self.axis_right_y_changed_callback)
+        #self.gamepad.addAxisMovedHandler("R2", self.axis_left_r2_changed_callback)
+        self.gamepad.addAxisMovedHandler("DPAD-X", self.axis_dpad_x_changed_callback)
+        self.gamepad.addAxisMovedHandler("DPAD-Y", self.axis_dpad_y_changed_callback)            
+                
+      
+        
+        
+        
 
     ###############################################################################
     # Events from Interface
@@ -62,6 +79,8 @@ class Gamepad:
     # Callback handlers from Gamepad
     ###############################################################################
 
+
+    
     def btn_triangle_changed_callback(self, state):
         if state == True:
             self._trigger_controller_event(ControllerEvent.KINETIC_STATE_TOGGLE)
@@ -85,6 +104,21 @@ class Gamepad:
         if state == True and self.gamepad.isPressed("L3"):
             self._trigger_controller_event(ControllerEvent.MOTOR_POWER_TOGGLE)
 
+    def btn_share_changed_callback(self, state):
+       pass
+
+    def btn_options_changed_callback(self, state):
+        if state == True:
+            self._trigger_controller_event(ControllerEvent.MOTOR_CLEAR_ERRORS)
+
+
+    def axis_dpad_x_changed_callback(self, state):
+        print(f"DPAD-X: {state}")
+        
+    def axis_dpad_y_changed_callback(self, state):
+        print(f"DPAD-Y: {state}")    
+    
+    
     def axis_left_x_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE:
             self.motion_parameters.roll = self._map(

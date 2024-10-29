@@ -54,6 +54,7 @@ class CanInterface():
             #print(f"[{self.tag}] sending message, bus={can_bus_id}, motor_id={motor_id}, arbitration_id={identifier}, data={data}")
             msg = can.Message(is_extended_id=False, arbitration_id=identifier, data=data)
             self.canbus.send(msg)
+            self.error = False 
             return True
         except Exception as e:  
             self.error = True         

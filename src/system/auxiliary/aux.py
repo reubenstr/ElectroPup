@@ -73,8 +73,7 @@ class Aux():
         self.port = '/dev/ttyS0'
         self.baudrate = 115200
         self.timeout = 0.25        
-        self.start_time : float = time.time()
-        
+        self.start_time : float = time.time()        
         self._open()
         
     def _open(self): 
@@ -89,7 +88,8 @@ class Aux():
             self.start_time = time.time()
             self.send(data)
            
-    def send(self, data : bytes):     
+    def send(self, data : bytes):  
+        """Send data to the Auxiliary Board"""   
         try:      
             if not self.ser.is_open: 
                 self._open()
@@ -104,9 +104,9 @@ class Aux():
             print(f"[AUX] error, unable to send message on serial port: {self.port}, exception: {e}")            
       
       
-    def tick(self):
-        
-        # Check for commands from Auxilary Board
+    def check_for_commands(self):        
+        """Check for commands from Auxilary Board"""
+         
         if self.ser.in_waiting > 0: 
             data = self.ser.read(self.ser.in_waiting) 
                 
@@ -121,6 +121,7 @@ class Aux():
                 print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
                 sleep(1)
                 os.system("sudo shutdown now") 
+            
             
             
 ###############################################################################
@@ -156,6 +157,6 @@ if __name__ == "__main__":
             sleep(3)
             
         elif test == 3:
-            aux.tick()
+            aux.check_for_commands()
             sleep(0.010)
             
