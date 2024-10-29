@@ -32,15 +32,15 @@ enum class Page
     BATTERY
 };
 
-const uint8_t numSystemStatusStrings{16};
-const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "SEN", "---"};
+const int numSystemStatus{12};
+const char *systemStatusStrings[numSystemStatus] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "SEN", "---"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message Structs and Data
 ///////////////////////////////////////////////////////////////////////////////
 
-const int numSystemStatus{8};
+
 bool systemErrors[numSystemStatus];
 
 const int numMotors{12};
@@ -125,7 +125,7 @@ bool IsError();
 
 int getIndexFromStatusString(const char *status)
 {
-    for (int i = 0; i < numSystemStatusStrings; ++i)
+    for (int i = 0; i < numSystemStatus; ++i)
     {
         if (strcmp(status, systemStatusStrings[i]) == 0)
         {
