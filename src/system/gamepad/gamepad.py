@@ -4,6 +4,8 @@
     Converts gamepad inputs into motion parameters ready to be consumed by kinematics calculations.
 
     Assumes a PS4 controller is used by default; other controllers are possible with code changes.
+    
+    Received inputs from gamepad_inferface via callbacks.
 """
 
 import copy
@@ -80,8 +82,6 @@ class Gamepad:
     ###############################################################################
     # Callback handlers from Gamepad
     ###############################################################################
-
-
     
     def btn_triangle_changed_callback(self, state):
         if state == True:
@@ -128,8 +128,7 @@ class Gamepad:
             pass
         elif state == DPAD_DIRECTION_DOWN:
             self._trigger_controller_event(ControllerEvent.LIE_DOWN_AND_MOTORS_OFF)
-    
-    
+        
     def axis_left_x_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE:
             self.motion_parameters.roll = self._map(
@@ -201,7 +200,6 @@ class Gamepad:
                 self.motion_parameters.height_translation_min,
                 self.motion_parameters.height_translation_max,
             )
-            
 
     ###############################################################################
     # Methods
@@ -234,15 +232,12 @@ if __name__ == "__main__":
 
     motion_parameters_filepath = "./parameters/motion_parameters.yaml"
     motion_parameters = MotionParameters(motion_parameters_filepath)
-    if motion_parameters.is_error():
-        print(f"[SYSTEM] parameter file not found! {motion_parameters_filepath}")
-        exit(1)
 
-    gamepad_interface = GamepadInterface(motion_parameters)
+    gamepad = Gamepad(motion_parameters)
 
     try:
         while True:
-            motion_parameters = gamepad_interface.get_motion_parameters()
+            motion_parameters = gamepad.get_motion_parameters()
             motion_parameters.print()
             sleep(0.100)
 
@@ -250,4 +245,4 @@ if __name__ == "__main__":
         pass
 
     finally:
-        gamepad_interface.disconnect()
+        gamepad.disconnect()

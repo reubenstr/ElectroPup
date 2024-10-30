@@ -82,7 +82,11 @@ class MotionParameters:
         self.height_translation: float = 0
         self.step_length: float = 0
         self.yaw_rate: float = 0
-        
+      
+    ###############################################################################
+    # Premade Positions
+    ############################################################################### 
+              
     def get_pose_standing(self):
         motion_parameters = copy.deepcopy(self)
         motion_parameters.roll = 0
@@ -106,17 +110,11 @@ class MotionParameters:
         motion_parameters.step_length = 0
         motion_parameters.yaw_rate = 0
         return motion_parameters
-        
-        
-    
-
+           
     ###############################################################################
     # Helpers
     ###############################################################################
-
-    def __repr__(self):
-        return f"MyClass(value={self.value})"
-
+  
     def print(self):
         print(
             self.roll,

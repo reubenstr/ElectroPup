@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 
 """
-
-    
-   
+    ElectroPup main application to control the physical quadruped with live input from the gamepad.
 """
 
 import time
@@ -31,8 +29,12 @@ class Live():
         frame_parameters = FrameParameters(frame_parameters_filepath)
         self.motion_parameters = MotionParameters(motion_parameters_filepath)
 
+        self.aux = Aux() 
+
         self.gamepad = Gamepad(self.motion_parameters)
         self.gamepad.register_controller_event_callback(self.controller_event_callback)
+        self.gamepad_last_connected_time : float = 0
+        self.gamepad_no_comms_timeout_seconds : float = 5
 
         self.body = Body(frame_parameters=frame_parameters)
 
@@ -55,9 +57,7 @@ class Live():
         self.motor_interface_back.set_limits("BRA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_back.set_limits("BRH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_back.set_limits("BRK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))
-
-        self.aux = Aux()        
-
+            
         self.kinetic_state : KineticState = KineticState.STARTUP
         self.previous_kinetic_state : KineticState = KineticState.INIT 
         self.body_error_state : Body.ErrorState = Body.ErrorState.NONE
@@ -84,7 +84,8 @@ class Live():
         elif event == ControllerEvent.MOTOR_CLEAR_ERRORS:
             self.clear_all_errors()
         elif event == ControllerEvent.LIE_DOWN_AND_MOTORS_OFF:
-            self.kinetic_state = KineticState.LIE_DOWN
+            if self.kinetic_state == KineticState.POSE or self.kinetic_state == KineticState.MOTION:
+                self.kinetic_state = KineticState.LIE_DOWN
             
                               
     def apply_controller_input(self, motion_parameters : MotionParameters):  
@@ -114,7 +115,6 @@ class Live():
         
         elif self.body_error_state == Body.ErrorState.KINEMATICS or self.body_error_state == Body.ErrorState.JOINT:
             print(f"[Body] error, {self.body_error_state.name}")
-                  
                           
                 
     ###############################################################################
@@ -170,11 +170,10 @@ class Live():
             elif self.kinetic_state == KineticState.LIE_DOWN: 
                 self.speed = 500   
                 self.apply_controller_input(self.motion_parameters.get_pose_lie_down())                      
-                self.motor_interface_front.cmd_all_motors_on()
-                self.motor_interface_back.cmd_all_motors_on()                                   
                                                 
             elif self.kinetic_state == KineticState.POSE:
-                self.speed = 2000                       
+                self.speed = 2000   
+                                    
             elif self.kinetic_state == KineticState.MOTION:
                 self.speed = 1000
                     
@@ -215,7 +214,7 @@ class Live():
        
     def process_aux(self):
         """
-        Tick auxilary (checks for comma)
+        Check for commands and send latest status data to Auxiliary Board.
         """
         
         self.aux.check_for_commands()
@@ -251,10 +250,11 @@ class Live():
     
     def check_game_pad(self):
         if self.gamepad.is_connected():
-            return True
+            self.gamepad_last_connected_time = time.time()           
         else:        
-            # TODO: create a timer to shutdown the motors if disconnected too long
-            return False
+            if time.time() - self.gamepad_last_connected_time > self.gamepad_no_comms_timeout_seconds:
+                if self.kinetic_state == KineticState.POSE or self.kinetic_state == KineticState.MOTION:
+                    self.kinetic_state = KineticState.LIE_DOWN
   
     
     def sleep_loop(self):
