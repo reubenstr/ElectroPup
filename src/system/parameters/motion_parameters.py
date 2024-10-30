@@ -16,16 +16,17 @@ class KineticState(Enum):
     STARTUP = 1
     HALT = 2
     STAND = 3
-    POSE = 4
-    MOTION = 5
-    FLIP = 6
+    LIE_DOWN = 4
+    POSE = 5
+    MOTION = 6
+    FLIP = 7
 
 
 class ControllerEvent(Enum):
     KINETIC_STATE_TOGGLE = 1
     MOTOR_POWER_TOGGLE = 2
     MOTOR_CLEAR_ERRORS = 3
-
+    LIE_DOWN_AND_MOTORS_OFF = 4
 
 class MotionParameters:
     def __init__(self, motion_parameters_filepath: str):
@@ -90,6 +91,18 @@ class MotionParameters:
         motion_parameters.side_translation = 0
         motion_parameters.forward_translation = 0
         motion_parameters.height_translation= (self.height_translation_min + self.height_translation_max) / 2
+        motion_parameters.step_length = 0
+        motion_parameters.yaw_rate = 0
+        return motion_parameters
+    
+    def get_pose_lie_down(self):
+        motion_parameters = copy.deepcopy(self)
+        motion_parameters.roll = 0
+        motion_parameters.pitch= 0
+        motion_parameters.yaw = 0
+        motion_parameters.side_translation = 0
+        motion_parameters.forward_translation = 0
+        motion_parameters.height_translation= self.height_translation_min
         motion_parameters.step_length = 0
         motion_parameters.yaw_rate = 0
         return motion_parameters

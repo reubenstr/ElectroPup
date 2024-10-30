@@ -83,6 +83,8 @@ class Live():
                 self.kinetic_state = KineticState.HALT                    
         elif event == ControllerEvent.MOTOR_CLEAR_ERRORS:
             self.clear_all_errors()
+        elif event == ControllerEvent.LIE_DOWN_AND_MOTORS_OFF:
+            self.kinetic_state = KineticState.LIE_DOWN
             
                               
     def apply_controller_input(self, motion_parameters : MotionParameters):  
@@ -163,7 +165,13 @@ class Live():
                 self.speed = 500   
                 self.apply_controller_input(self.motion_parameters.get_pose_standing())                      
                 self.motor_interface_front.cmd_all_motors_on()
-                self.motor_interface_back.cmd_all_motors_on()                                    
+                self.motor_interface_back.cmd_all_motors_on()   
+                
+            elif self.kinetic_state == KineticState.LIE_DOWN: 
+                self.speed = 500   
+                self.apply_controller_input(self.motion_parameters.get_pose_lie_down())                      
+                self.motor_interface_front.cmd_all_motors_on()
+                self.motor_interface_back.cmd_all_motors_on()                                   
                                                 
             elif self.kinetic_state == KineticState.POSE:
                 self.speed = 2000                       
@@ -184,6 +192,10 @@ class Live():
         elif self.kinetic_state == KineticState.STAND:                       
             if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
                 self.kinetic_state = KineticState.POSE
+                
+        elif self.kinetic_state == KineticState.LIE_DOWN:                       
+            if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
+                self.kinetic_state = KineticState.HALT        
         
         elif self.kinetic_state == KineticState.POSE:    
             motion_parameters = self.gamepad.get_motion_parameters()            

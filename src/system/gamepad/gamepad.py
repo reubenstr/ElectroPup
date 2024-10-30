@@ -18,6 +18,12 @@ from ..parameters.motion_parameters import (
 )
 
 
+DPAD_DIRECTION_UP = -1
+DPAD_DIRECTION_LEFT = -1
+DPAD_DIRECTION_CENTER = 0
+DPAD_DIRECTION_DOWN = 1
+DPAD_DIRECTION_RIGHT = 1
+
 class Gamepad:
     def __init__(self, motion_parameters: MotionParameters):
         self.motion_parameters = motion_parameters
@@ -55,11 +61,7 @@ class Gamepad:
         #self.gamepad.addAxisMovedHandler("R2", self.axis_left_r2_changed_callback)
         self.gamepad.addAxisMovedHandler("DPAD-X", self.axis_dpad_x_changed_callback)
         self.gamepad.addAxisMovedHandler("DPAD-Y", self.axis_dpad_y_changed_callback)            
-                
-      
-        
-        
-        
+                       
 
     ###############################################################################
     # Events from Interface
@@ -111,12 +113,21 @@ class Gamepad:
         if state == True:
             self._trigger_controller_event(ControllerEvent.MOTOR_CLEAR_ERRORS)
 
-
     def axis_dpad_x_changed_callback(self, state):
-        print(f"DPAD-X: {state}")
+        if state == DPAD_DIRECTION_LEFT: 
+            pass
+        elif state == DPAD_DIRECTION_CENTER: 
+            pass
+        elif state == DPAD_DIRECTION_RIGHT:
+            pass
         
     def axis_dpad_y_changed_callback(self, state):
-        print(f"DPAD-Y: {state}")    
+        if state == DPAD_DIRECTION_UP: 
+            pass
+        elif state == DPAD_DIRECTION_CENTER: 
+            pass
+        elif state == DPAD_DIRECTION_DOWN:
+            self._trigger_controller_event(ControllerEvent.LIE_DOWN_AND_MOTORS_OFF)
     
     
     def axis_left_x_changed_callback(self, value):
