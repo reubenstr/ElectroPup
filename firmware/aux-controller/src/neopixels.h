@@ -1,3 +1,14 @@
+/*
+    NeoPixels controls ElectroPup's NeoPixel strips.
+
+    There are two strips and the colors duplicated between strips.
+
+    TODO:
+        If complexity grows, consider creating a master pixel array that
+        is copied into neopixels strips contained in an array to simplify the code.
+*/
+
+
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
 
@@ -8,6 +19,17 @@ enum class PixelMode
     RIDER,
     SPARKLE,
     ERROR
+};
+
+enum class PixelColor
+{
+    RED,
+    GREEN,
+    BLUE,
+    YELLOW,
+    MAGENTA,
+    CYAN,
+    RANDOM
 };
 
 class Neopixels
@@ -27,9 +49,20 @@ public:
         _neo0->setBrightness(_neopixelBrightness);
     }
 
+    void setMode(PixelMode pixelMode, PixelColor pixelColor)
+    {
+        _pixelMode = pixelMode;
+        _pixelColor = pixelColor;
+    }
+
     void setMode(PixelMode pixelMode)
     {
         _pixelMode = pixelMode;
+    }
+
+    void setPixelColor(PixelColor pixelColor)
+    {
+        _pixelColor = pixelColor;
     }
 
     void tick()
@@ -122,9 +155,9 @@ private:
             else if (index == _numNeopixelsPerStrip - 1)
             {
                 direction = -1;
-            }
-            _neo0->setPixelColor(index, _color(255, 0, 0));
-            _neo1->setPixelColor(index, _color(255, 0, 0));
+            }          
+            _neo0->setPixelColor(index, _getColor());
+            _neo1->setPixelColor(index, _getColor());
             _neo0->show();
             _neo1->show();
         }
@@ -156,11 +189,8 @@ private:
                 index = random(0, _numNeopixelsPerStrip);
             } while (_neo0->getPixelColor(index) > 0);
 
-            // uint32_t color = _randomColor();
-            uint32_t color = _color(0, 0, 255);
-
-            _neo0->setPixelColor(index, color);
-            _neo1->setPixelColor(index, color);
+                _neo0->setPixelColor(index, _getColor());
+            _neo1->setPixelColor(index, _getColor());
             _neo0->show();
             _neo1->show();
         }
@@ -186,9 +216,9 @@ private:
         {
             start = millis();
             for (uint16_t i = 0; i < _numNeopixelsPerStrip; i++)
-            {
-                _neo0->setPixelColor(i, _color(255, 0, 0));
-                _neo1->setPixelColor(i, _color(255, 0, 0));
+            {             
+                _neo0->setPixelColor(i, _getColor());
+                _neo1->setPixelColor(i, _getColor());
             }
             _neo0->show();
             _neo1->show();
@@ -202,22 +232,6 @@ private:
             _neo0->show();
             _neo1->show();
         }
-    }
-
-    uint32_t _randomColor()
-    {
-        uint32_t colors[] = {
-            _color(255, 0, 0),   // Red
-            _color(0, 255, 0),   // Green
-            _color(0, 0, 255),   // Blue
-            _color(255, 255, 0), // Yellow
-            _color(0, 255, 255), // Cyan
-            _color(255, 0, 255)  // Magenta
-        };
-
-        int randomIndex = random(0, 3);
-
-        return colors[randomIndex];
     }
 
     void _fade(Adafruit_NeoPixel *neo)
@@ -237,6 +251,19 @@ private:
                 b--;
 
             neo->setPixelColor(i, _color(r, g, b));
+        }
+    }
+
+    uint32_t _getColor()
+    {
+        if (_pixelColor == PixelColor::RANDOM)
+        {
+            int randomIndex = random(0, 3);
+            return _colors[randomIndex];
+        }
+        else
+        {
+            _colors[(uint8_t)_pixelColor];
         }
     }
 
@@ -268,7 +295,17 @@ private:
     Adafruit_NeoPixel *_neo1;
 
     PixelMode _pixelMode{PixelMode::OFF};
+    PixelColor _pixelColor{PixelColor::RED};
 
     const uint8_t _numNeopixelsPerStrip{9};
     const uint8_t _neopixelBrightness{50};
+
+    uint32_t _colors[6] = {
+        _color(255, 0, 0),   // Red
+        _color(0, 255, 0),   // Green
+        _color(0, 0, 255),   // Blue
+        _color(255, 255, 0), // Yellow
+        _color(0, 255, 255), // Cyan
+        _color(255, 0, 255)  // Magenta
+    };
 };

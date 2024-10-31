@@ -2,7 +2,7 @@
 /*
   Project:
     Auxiliary Board for ElectroPup quadruped.
-    Drives LCD display, Neopixels, RC servo, and more.
+    Drives a LCD display, buzzer, Neopixels strips, RC servo, and more.
 
   MCU:
     STM32F401CC
@@ -27,7 +27,7 @@
       https://github.com/reubenstr/ElectroPup
 
   TODO:
-    System error bools and strings are magical; should they be made into their own class?
+    System error bools and strings are magical; should they be made into their own enum and/or class?
  */
 
 #include <Arduino.h>
@@ -43,7 +43,6 @@ TFT_eSPI tft = TFT_eSPI();
 Buzzer buzzer(PIN_MCU_BUZZER);
 OneButton button(PIN_BTN_1, true);
 Neopixels neopixels(PIN_NEO_0, PIN_NEO_1);
-
 
 Page page = Page::SYSTEM;
 const int cornerRadiusPx{2};
@@ -72,12 +71,10 @@ void CheckUserButton()
 {
   if (digitalRead(USER_BTN) == LOW)
   {
-    Serial.println("USER BTN TEST");
-    delay(250);
+    Serial.println("Blackpill onboard button is pressed.");
+    delay(500);
   }
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Display
@@ -222,6 +219,7 @@ void InitMessageComms()
   Serial1.setTimeout(10);
 }
 
+// TODO: DRY crc error message.
 void CheckForMessage()
 {
   uint8_t data[1024];
@@ -328,23 +326,6 @@ bool IsLowBattery()
   return CalcBatteryPercent() < lowBatteryPercentThreashold;
 }
 
-bool IsError()
-{
-  for (int i = 0; i < numSystemStatus; i++)
-  {
-    if (systemErrors[i])
-      return true;
-  }
-
-  for (int i = 0; i < numMotors; i++)
-  {
-    if (motorErrors[i])
-      return true;
-  }
-
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Misc.
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,14 +346,14 @@ void CheckRpiHeartbeat()
   }
 
   if (millis() - start > rpiHeartbeatTimeoutMs)
-  {    
+  {
     rpiHasError = true;
   }
 
   if (previousRpiHasError != rpiHasError)
   {
     previousRpiHasError = rpiHasError;
-    
+
     setValueFromStatusString("RPI", rpiHasError);
 
     if (rpiHasError)
@@ -380,6 +361,52 @@ void CheckRpiHeartbeat()
     else
       buzzer.play(Sequence::RPI_ON);
   }
+}
+
+void ProcessNeopixels()
+{
+  static bool inStartState{true};
+
+  bool error = false;
+  for (int i = 0; i < numSystemStatus; i++)
+  {
+    if (systemErrors[i])
+      error = true;
+  }
+
+  // Don't change starting pattern until all errors are clear,
+  // which means the RPI has booted and is ready.
+  if (!error)
+  {
+    inStartState = false;
+  }
+
+  if (inStartState)
+  {
+    neopixels.setMode(PixelMode::SPARKLE, PixelColor::RANDOM);
+  }
+  else
+  {
+    if (error)
+    {
+      neopixels.setMode(PixelMode::ERROR, PixelColor::RED);
+    }
+    else
+    {
+      bool allMotorsOn = false;
+      for (int i = 0; i < numMotors; i++)
+      {
+        if (!motorOns[i])
+          allMotorsOn = false;
+      }
+      if (allMotorsOn)
+        neopixels.setMode(PixelMode::RIDER, PixelColor::RED);
+      else
+        neopixels.setMode(PixelMode::RIDER, PixelColor::BLUE);
+    }
+  }
+
+  neopixels.tick();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -427,7 +454,6 @@ void setup()
   button.setPressMs(byteLongPressActivationMs);
 
   neopixels.init();
-  neopixels.setMode(PixelMode::ERROR);
 
   InitMessageComms();
 
@@ -458,7 +484,7 @@ void loop()
 
   button.tick();
 
-  neopixels.tick();
+  ProcessNeopixels();
 }
 
 /*
