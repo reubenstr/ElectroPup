@@ -4,6 +4,8 @@
     Converts gamepad inputs into motion parameters ready to be consumed by kinematics calculations.
 
     Assumes a PS4 controller is used by default; other controllers are possible with code changes.
+    
+    Received inputs from gamepad_inferface via callbacks.
 """
 
 import copy
@@ -17,6 +19,12 @@ from ..parameters.motion_parameters import (
     ControllerEvent,
 )
 
+
+DPAD_DIRECTION_UP = -1
+DPAD_DIRECTION_LEFT = -1
+DPAD_DIRECTION_CENTER = 0
+DPAD_DIRECTION_DOWN = 1
+DPAD_DIRECTION_RIGHT = 1
 
 class Gamepad:
     def __init__(self, motion_parameters: MotionParameters):
@@ -55,11 +63,7 @@ class Gamepad:
         #self.gamepad.addAxisMovedHandler("R2", self.axis_left_r2_changed_callback)
         self.gamepad.addAxisMovedHandler("DPAD-X", self.axis_dpad_x_changed_callback)
         self.gamepad.addAxisMovedHandler("DPAD-Y", self.axis_dpad_y_changed_callback)            
-                
-      
-        
-        
-        
+                       
 
     ###############################################################################
     # Events from Interface
@@ -78,8 +82,6 @@ class Gamepad:
     ###############################################################################
     # Callback handlers from Gamepad
     ###############################################################################
-
-
     
     def btn_triangle_changed_callback(self, state):
         if state == True:
@@ -111,14 +113,22 @@ class Gamepad:
         if state == True:
             self._trigger_controller_event(ControllerEvent.MOTOR_CLEAR_ERRORS)
 
-
     def axis_dpad_x_changed_callback(self, state):
-        print(f"DPAD-X: {state}")
+        if state == DPAD_DIRECTION_LEFT: 
+            pass
+        elif state == DPAD_DIRECTION_CENTER: 
+            pass
+        elif state == DPAD_DIRECTION_RIGHT:
+            pass
         
     def axis_dpad_y_changed_callback(self, state):
-        print(f"DPAD-Y: {state}")    
-    
-    
+        if state == DPAD_DIRECTION_UP: 
+            pass
+        elif state == DPAD_DIRECTION_CENTER: 
+            pass
+        elif state == DPAD_DIRECTION_DOWN:
+            self._trigger_controller_event(ControllerEvent.LIE_DOWN_AND_MOTORS_OFF)
+        
     def axis_left_x_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE:
             self.motion_parameters.roll = self._map(
@@ -190,7 +200,6 @@ class Gamepad:
                 self.motion_parameters.height_translation_min,
                 self.motion_parameters.height_translation_max,
             )
-            
 
     ###############################################################################
     # Methods
@@ -223,15 +232,12 @@ if __name__ == "__main__":
 
     motion_parameters_filepath = "./parameters/motion_parameters.yaml"
     motion_parameters = MotionParameters(motion_parameters_filepath)
-    if motion_parameters.is_error():
-        print(f"[SYSTEM] parameter file not found! {motion_parameters_filepath}")
-        exit(1)
 
-    gamepad_interface = GamepadInterface(motion_parameters)
+    gamepad = Gamepad(motion_parameters)
 
     try:
         while True:
-            motion_parameters = gamepad_interface.get_motion_parameters()
+            motion_parameters = gamepad.get_motion_parameters()
             motion_parameters.print()
             sleep(0.100)
 
@@ -239,4 +245,4 @@ if __name__ == "__main__":
         pass
 
     finally:
-        gamepad_interface.disconnect()
+        gamepad.disconnect()
