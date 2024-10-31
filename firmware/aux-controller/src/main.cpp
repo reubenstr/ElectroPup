@@ -36,11 +36,14 @@
 #include "TFT_eSPI.h"
 #include "OneButton.h"
 #include "buzzer.h"
+#include "neopixels.h"
 #include "main.h"
 
 TFT_eSPI tft = TFT_eSPI();
 Buzzer buzzer(PIN_MCU_BUZZER);
 OneButton button(PIN_BTN_1, true);
+Neopixels neopixels(PIN_NEO_0, PIN_NEO_1);
+
 
 Page page = Page::SYSTEM;
 const int cornerRadiusPx{2};
@@ -73,6 +76,8 @@ void CheckUserButton()
     delay(250);
   }
 }
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Display
@@ -242,15 +247,15 @@ void CheckForMessage()
       {
         lastMessageReceivedMillis = millis();
 
-        setValueFromStatusString("JOY", message.statusData.joystickError);      
+        setValueFromStatusString("JOY", message.statusData.joystickError);
         setValueFromStatusString("LIM", message.statusData.physicalLimitError);
         setValueFromStatusString("JA", message.statusData.jointAngleError);
         setValueFromStatusString("IK", message.statusData.inverseKinematicsError);
         setValueFromStatusString("CAN", message.statusData.canError);
         setValueFromStatusString("OTe", message.statusData.overTemperatureError);
         setValueFromStatusString("UVo", message.statusData.underVoltageError);
-        setValueFromStatusString("MCo", message.statusData.sensorError);
-        setValueFromStatusString("SEN", message.statusData.sensorError);
+        setValueFromStatusString("MCo", message.statusData.physicalLimitError);
+        setValueFromStatusString("IMU", message.statusData.imuError);
         setValueFromStatusString("---", false);
 
         for (int i = 0; i < numMotors; i++)
@@ -348,26 +353,29 @@ bool IsError()
 void CheckRpiHeartbeat()
 {
   static bool previousHeartbeatState{true};
-  static bool newRpiHasError{true};
+  static bool rpiHasError{true};
+  static bool previousRpiHasError{true};
   static uint32_t start{0};
 
   if (digitalRead(PIN_RPI_HEARTBEAT) != previousHeartbeatState)
   {
     previousHeartbeatState = digitalRead(PIN_RPI_HEARTBEAT);
     start = millis();
-    newRpiHasError = false;
+    rpiHasError = false;
   }
 
   if (millis() - start > rpiHeartbeatTimeoutMs)
-  {
-    newRpiHasError = true;
+  {    
+    rpiHasError = true;
   }
 
-  if (getValueFromStatusString("RPI") != newRpiHasError)
+  if (previousRpiHasError != rpiHasError)
   {
-    setValueFromStatusString("RPI", newRpiHasError);
+    previousRpiHasError = rpiHasError;
+    
+    setValueFromStatusString("RPI", rpiHasError);
 
-    if (newRpiHasError)
+    if (rpiHasError)
       buzzer.play(Sequence::RPI_OFF);
     else
       buzzer.play(Sequence::RPI_ON);
@@ -418,6 +426,9 @@ void setup()
   button.attachLongPressStart(btnLongPressStart, &button);
   button.setPressMs(byteLongPressActivationMs);
 
+  neopixels.init();
+  neopixels.setMode(PixelMode::ERROR);
+
   InitMessageComms();
 
   InitDisplay();
@@ -446,6 +457,8 @@ void loop()
   buzzer.tick();
 
   button.tick();
+
+  neopixels.tick();
 }
 
 /*
