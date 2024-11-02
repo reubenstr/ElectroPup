@@ -69,6 +69,9 @@ class Live():
         self.speed : int = 0
         self.loop_time : float = 0
         
+        #self.pose_start_time : float = 0
+        #self.pose_timeout_seconds : float = 0
+        
     ###############################################################################
     # Methods
     ###############################################################################   
@@ -231,9 +234,7 @@ class Live():
         message.joystick_error = self.gamepad.is_connected() == False
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
         message.imuError = False
-        
-       
-        
+              
         voltage_accumulator : float = 0.0
         motors : Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
