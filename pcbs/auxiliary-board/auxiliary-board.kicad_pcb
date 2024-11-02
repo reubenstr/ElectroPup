@@ -381,7 +381,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R2"
-			(at -0.0375 2 360)
+			(at -0.0375 2 0)
 			(layer "F.SilkS")
 			(uuid "ef4eec69-af52-468e-8ce5-2bd12f16f916")
 			(effects
@@ -392,7 +392,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 0 1.82 360)
+			(at 0 1.82 0)
 			(layer "F.Fab")
 			(uuid "950e4b9c-3f3b-4b9c-affb-9e5c50275798")
 			(effects
@@ -547,7 +547,7 @@
 			(uuid "6378b562-3696-4c04-9f7c-2f5a703e35f7")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "81780bfe-a374-4247-9f2e-a3cd4a544eac")
 			(effects
@@ -1298,7 +1298,7 @@
 			)
 		)
 		(property "Value" "YAAJ_WeAct_BlackPill_Part_Like"
-			(at 20.32 24.765 360)
+			(at 20.32 24.765 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9f9fc4b5-19cf-42b4-922d-b293e416dd84")
@@ -1802,7 +1802,7 @@
 			)
 		)
 		(fp_text user "REF**"
-			(at 7.62 24.13 360)
+			(at 7.62 24.13 0)
 			(layer "F.Fab")
 			(uuid "2e4155bb-e2d3-4991-ae7e-4475c1cf755c")
 			(effects
@@ -2252,70 +2252,15 @@
 			(pintype "power_in")
 			(uuid "a27b5358-ca64-421b-a7d0-c6847a3a206e")
 		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinHeaders_H_SWD_cp.wrl"
+		(model "/home/pc/Desktop/projects/kicad-libraries/mcus/mcus.pretty/3dmodels/blackpill v2.0.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 7.6 -25 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinHeaders_No_SWD_cp.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinHeaders_V_SWD_cp.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinSockets_H_SWD_cp.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinSockets_No_SWD_cp.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
-			)
-		)
-		(model "D:/Users/admin/Documents/KiCad/Libraries/packages3d/Modules/STM32_Blue_Pill/YAAJ_BluePill_PinSockets_V_SWD_cp.wrl"
-			(offset
-				(xyz 0 0 0)
-			)
-			(scale
-				(xyz 1 1 1)
-			)
-			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 90)
 			)
 		)
 	)
@@ -4201,7 +4146,7 @@
 		(descr "JST ZH series connector, B3B-ZR (http://www.jst-mfg.com/product/pdf/eng/eZH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST ZH vertical")
 		(property "Reference" "J11"
-			(at 1.5 -2.5 360)
+			(at 1.5 -2.5 0)
 			(layer "F.SilkS")
 			(uuid "1dc85762-7225-4011-af34-5bddab6bfcc8")
 			(effects
@@ -4212,7 +4157,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03"
-			(at 1.5 3.4 360)
+			(at 1.5 3.4 0)
 			(layer "F.Fab")
 			(uuid "fc215930-4b75-48c8-bf09-749d5d2a2930")
 			(effects
@@ -4223,7 +4168,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_ZH_B3B-ZR_1x03_P1.50mm_Vertical"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ed6c44b7-64c7-4dfd-97d1-5c217d97f121")
@@ -4235,7 +4180,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d4e72074-6645-4b00-bfa1-744436664b77")
@@ -4247,7 +4192,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5b692616-0f8e-4369-be01-cbe5491b1474")
@@ -4624,7 +4569,7 @@
 			(uuid "e21d5eca-b7b4-4a44-9a54-f67d219a32b7")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1.5 1.5 360)
+			(at 1.5 1.5 0)
 			(layer "F.Fab")
 			(uuid "ec04607c-3cf6-45bb-bc5e-e44483afba0b")
 			(effects
@@ -5934,7 +5879,7 @@
 		(descr "tactile push button, 6x6mm e.g. PHAP33xx series, height=4.3mm")
 		(tags "tact sw push 6mm")
 		(property "Reference" "SW1"
-			(at 3.25 2.25 360)
+			(at 3.25 2.25 0)
 			(layer "F.SilkS")
 			(uuid "28162389-b484-41ea-aafc-cabce607a5fc")
 			(effects
@@ -6782,7 +6727,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor")
 		(property "Reference" "R1"
-			(at 1.25 1.75 360)
+			(at 1.25 1.75 0)
 			(layer "F.SilkS")
 			(uuid "fc501228-e63e-4c07-8048-36574466f9a3")
 			(effects
@@ -6793,7 +6738,7 @@
 			)
 		)
 		(property "Value" "R_Small_US"
-			(at 0 1.82 360)
+			(at 0 1.82 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5eb38dd3-1f21-447c-b0e4-68e28a1e68b6")
@@ -6949,7 +6894,7 @@
 			(uuid "fc1f1346-7253-46ae-a242-451cb63493a1")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "F.Fab")
 			(uuid "81b876c3-4021-4294-80b0-90f18b04749d")
 			(effects
@@ -7930,7 +7875,7 @@
 			(uuid "b870d132-b5cf-4f87-8567-8c3c67ffc9fa")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1.27 3.81 360)
+			(at 1.27 3.81 0)
 			(layer "F.Fab")
 			(uuid "c0439a71-637f-42b7-8f26-584b0ff15ce5")
 			(effects
@@ -11626,7 +11571,7 @@
 		(uuid "45c165e4-9d9b-4fa8-bc39-7b568b640db8")
 		(at 97.25 75.5 180)
 		(property "Reference" "G***"
-			(at 3.5 7.25 360)
+			(at 3.5 7.25 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "0496766c-fcb9-4370-b4a0-a87f42df0c91")
@@ -11639,7 +11584,7 @@
 			)
 		)
 		(property "Value" "LOGO"
-			(at -1.5 8 360)
+			(at -1.5 8 0)
 			(layer "B.SilkS")
 			(hide yes)
 			(uuid "7858e738-610f-4153-9277-0df92672c8c9")
@@ -11652,7 +11597,7 @@
 			)
 		)
 		(property "Footprint" "graphics:electroPup-graphic-20mm"
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "dacdef19-ae84-468f-815d-4f135dec47dc")
@@ -11665,7 +11610,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "753cdd1f-f2dc-4797-8e65-d5b50db529e4")
@@ -11678,7 +11623,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 0 0 360)
+			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "d58d3b48-3810-45f5-b876-80e800315f7a")
@@ -13004,7 +12949,7 @@
 			(uuid "a978af2c-296f-4753-ad9d-d3fe5651a660")
 		)
 	)
-	(gr_text "ElectroPup\nAuxiliary Pi Hat\nmetaphasiclabs.com\n10/2024"
+	(gr_text "ElectroPup\nAuxiliary Pi Hat\nmetaphasiclabs.com\nv1.0 : 10/2024"
 		(at 133.5 80.25 0)
 		(layer "B.SilkS")
 		(uuid "4a657216-ea7e-4ee5-9dd4-7fe4da2cda7b")
