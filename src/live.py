@@ -5,7 +5,9 @@
 """
 
 import time
+import argparse
 import traceback
+import subprocess
 from math import pi
 from time import sleep
 from rich import print # Overrides print and injects colors
@@ -289,6 +291,31 @@ class Live():
 # Entry
 ###############################################################################
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the physical quadruped live on the Raspberry Pi")
+    parser.add_argument('-r', '--reset', action='store_true', help='Restart the live.service')
+    
+    args = parser.parse_args()
+    
+    ###############################################################################
+    # Process Arguments
+    ###############################################################################
+    
+    if args.reset:
+        try:
+            subprocess.run(['sudo', 'systemctl', 'restart', 'live.service'], check=True)
+            print("[System] live.service has been restarted.")
+        except subprocess.CalledProcessError as e:
+            print(f"[System] error, failed to restart live.service: {str(e)}")
+        except Exception as e:
+            print(str(e))
+            print(traceback.format_exc())
+        finally:
+            exit(1)
+    
+    ###############################################################################
+    # Run Main Program
+    ###############################################################################
+    
     live = Live()
       
     try:        
