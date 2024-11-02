@@ -169,16 +169,16 @@ class Gamepad:
         if self.kinetic_state == KineticState.POSE:
             self.motion_parameters.yaw = self._map(
                 value,
-                -1,
                 1,
+                -1,
                 self.motion_parameters.yaw_min,
                 self.motion_parameters.yaw_max,
             )
         elif self.kinetic_state == KineticState.MOTION:
             self.motion_parameters.yaw_rate = self._map(
                 value,
-                -1,
                 1,
+                -1,
                 self.motion_parameters.yaw_rate_min,
                 self.motion_parameters.yaw_rate_max,
             )

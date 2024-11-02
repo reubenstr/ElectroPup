@@ -147,9 +147,10 @@ def homog_transform(x_ang, y_ang, z_ang, x_t, y_t, z_t):
     """
     # Rolling the quadruped caused leaning instead, reversing the order fixed the issue.
     # Orginal below:
-    # return np.matmul(homog_rotxyz(x_ang,y_ang,z_ang), homog_transxyz(x_t,y_t,z_t))
+    return np.matmul(homog_rotxyz(x_ang,y_ang,z_ang), homog_transxyz(x_t,y_t,z_t))
 
-    return np.matmul(homog_transxyz(x_t, y_t, z_t), homog_rotxyz(x_ang, y_ang, z_ang))
+    # NON ORIGNAL
+    #return np.matmul(homog_transxyz(x_t, y_t, z_t), homog_rotxyz(x_ang, y_ang, z_ang))
 
 
 def ht_inverse(ht):

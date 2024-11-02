@@ -105,7 +105,7 @@ class Body(object):
         '''
      
         try:
-            ht_body = transformations.homog_transform(phi, psi, theta, x, y, z)
+            ht_body = np.matmul(transformations.homog_transxyz(x,y,z), transformations.homog_rotxyz(phi,psi,theta))
                         
             legs : Dict[str, Leg] = {}
             legs['back_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_right(ht_body,self.body_length,self.body_width),leg12=True) 
