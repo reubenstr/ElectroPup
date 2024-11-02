@@ -25,7 +25,7 @@ body_length: 0.338
 foot_length: 0.338
 
 # distance between left and right foot centers at ground touch 
-foot_width: 0.2605
+foot_width: 0.261
 
 ###############################################################################
 # Joint bounds. Units in degrees

@@ -48,7 +48,6 @@ Page page = Page::SYSTEM;
 const int cornerRadiusPx{2};
 
 uint32_t lastMessageReceivedMillis;
-float batteryVoltage{0};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Program
@@ -117,12 +116,6 @@ void DisplaySplashPage()
 
 void DisplaySystemPage(bool forceRefresh = false)
 {
-  if (forceRefresh)
-  {
-    tft.setTextFont(1);
-    tft.setTextSize(1);
-    tft.setTextColor(TFT_BLACK);
-  }
 
   // SBC (RPI) errors take precedence of colors and requires refreshes.
   bool isSbcError = getValueFromStatusString("RPI") || getValueFromStatusString("SFT");
@@ -131,6 +124,13 @@ void DisplaySystemPage(bool forceRefresh = false)
   {
     previousSbcStatus = isSbcError;
     forceRefresh = true;
+  }
+
+  if (forceRefresh)
+  {
+    tft.setTextFont(1);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_BLACK);
   }
 
   {
@@ -159,6 +159,11 @@ void DisplaySystemPage(bool forceRefresh = false)
             {
               color = TFT_DARKGREY;
             }
+          }
+
+          if (index == getValueFromStatusString("JOY") && systemValues.joystickBatteryPercentage < systemLowBatteryPercentThreashold)
+          {
+            color = TFT_YELLOW;
           }
 
           tft.fillRoundRect(x * xMult + xOffset, y * yMult + yOffset, 26, 20, cornerRadiusPx, color);
@@ -252,7 +257,7 @@ void CheckForMessage()
         setValueFromStatusString("CAN", message.statusData.canError);
         setValueFromStatusString("OTe", message.statusData.overTemperatureError);
         setValueFromStatusString("UVo", message.statusData.underVoltageError);
-        setValueFromStatusString("MCo", message.statusData.physicalLimitError);
+        setValueFromStatusString("MCo", message.statusData.motorCommunicationError);
         setValueFromStatusString("IMU", message.statusData.imuError);
         setValueFromStatusString("---", false);
 
@@ -262,7 +267,8 @@ void CheckForMessage()
           motorErrors[i] = message.statusData.motorErrors[i];
         }
 
-        batteryVoltage = message.statusData.batteryVoltage;
+        systemValues.batteryVoltage = message.statusData.batteryVoltage;
+        systemValues.joystickBatteryPercentage = message.statusData.joystickBatteryPercentage;
       }
       else
       {
@@ -318,12 +324,12 @@ void CheckCommsTimeout()
 float CalcBatteryPercent()
 {
   // https://electronics.stackexchange.com/questions/435837/calculate-battery-percentage-on-lipo-battery
-  return 123 - (123 / pow(1 + pow(batteryVoltage / 3.7, 80), 0.165));
+  return 123 - (123 / pow(1 + pow(systemValues.batteryVoltage / 3.7, 80), 0.165));
 }
 
 bool IsLowBattery()
 {
-  return CalcBatteryPercent() < lowBatteryPercentThreashold;
+  return CalcBatteryPercent() < systemLowBatteryPercentThreashold;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

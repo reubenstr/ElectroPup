@@ -21,7 +21,8 @@ const uint32_t byteLongPressActivationMs{3000};
 // General
 ///////////////////////////////////////////////////////////////////////////////
 
-const float lowBatteryPercentThreashold{0.20};
+const float gamepadLowBatteryPercentThreashold{0.25};
+const float systemLowBatteryPercentThreashold{0.25};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Display
@@ -39,15 +40,21 @@ const char *systemStatusStrings[numSystemStatus] = {"RPI", "SFT", "JOY", "LIM", 
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
-// Message Structs and Data
+// Message and Data Structs
 ///////////////////////////////////////////////////////////////////////////////
-
 
 bool systemErrors[numSystemStatus];
 
 const int numMotors{12};
 bool motorOns[numMotors];
 bool motorErrors[numMotors];
+
+struct SystemValues
+{
+    float batteryVoltage{0};
+    float joystickBatteryPercentage{0};
+} systemValues;
+
 
 #pragma pack(1)
 struct StatusData
@@ -69,6 +76,7 @@ struct StatusData
     bool motorErrors[numMotors];
 
     float batteryVoltage;
+    float joystickBatteryPercentage;
 };
 
 enum class MessageType : uint8_t

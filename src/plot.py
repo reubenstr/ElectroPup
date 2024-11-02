@@ -41,7 +41,9 @@ class Plot:
         self.ax.set_ylim([0.0, 0.4])
         self.ax.set_zlim([-0.2, 0.2])
 
+        # Select a viewing angle:
         self.ax.view_init(elev=-45, azim=45, roll=45)
+        #self.ax.view_init(elev=90, azim=0, roll=90)
 
         plt.ion()
         plt.show()
@@ -123,9 +125,7 @@ if __name__ == "__main__":
    
     plot = Plot(frame_parameters)
     plot.create_plot()
-
     
-
     try:   
         if gamepad.is_connected(): 
             """Use gamepad to update motion parameters"""

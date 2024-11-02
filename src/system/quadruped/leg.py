@@ -110,7 +110,7 @@ class Leg(object):
         '''
         # Build up the total homogeneous transformation incrementally, saving each leg
         # point along the way
-        # The total homogeneous transformation builup is:
+        # The total homogeneous transformation buildup is:
         # ht = ht_leg_start @ t01 @ t12 @ t23 @ t34 
         p1 = self._ht_leg_start[0:3,3]
 

@@ -76,10 +76,10 @@ class Body(object):
         offset = -0.00 # TEMP: for testing stylistic poses 
         
         global_foot_positions = {}
-        global_foot_positions['back_right'] = [-l/2,   0,  w/2 + l1 + offset]
-        global_foot_positions['front_right'] = [ l/2 ,  0,  w/2 + l1+ offset]
-        global_foot_positions['front_left'] = [ l/2 ,  0, -w/2 - l1- offset]
-        global_foot_positions['back_left'] = [-l/2 ,  0, -w/2 - l1- offset]
+        global_foot_positions['front_left'] =  [ l/2 ,  0, -w/2 - l1 - offset]
+        global_foot_positions['front_right'] = [ l/2 ,  0,  w/2 + l1 + offset]        
+        global_foot_positions['back_left'] =   [-l/2 ,  0, -w/2 - l1 - offset]
+        global_foot_positions['back_right'] =  [-l/2,   0,  w/2 + l1 + offset]
 
         return global_foot_positions
 
@@ -105,14 +105,14 @@ class Body(object):
         '''
      
         try:
-            ht_body = transformations.homog_transform(phi, psi, theta, x, y, z)
+            ht_body = np.matmul(transformations.homog_transxyz(x,y,z), transformations.homog_rotxyz(phi,psi,theta))
                         
             legs : Dict[str, Leg] = {}
-            legs['back_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_right(ht_body,self.body_length,self.body_width),leg12=True) 
+            legs['front_left'] =  Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_left(ht_body,self.body_length,self.body_width),leg12=False)
             legs['front_right'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_right(ht_body,self.body_length,self.body_width),leg12=True)
-            legs['front_left'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_front_left(ht_body,self.body_length,self.body_width),leg12=False)
-            legs['back_left'] = Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_left(ht_body,self.body_length,self.body_width),leg12=False)
-            
+            legs['back_left'] =   Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_left(ht_body,self.body_length,self.body_width),leg12=False)
+            legs['back_right'] =  Leg(0, 0, 0, self.hip_length,self.upper_leg_length,self.lower_leg_length, kinematics.t_back_right(ht_body,self.body_length,self.body_width),leg12=True) 
+
             global_foot_positions = self.create_default_global_foot_positions()
                           
             for key in legs.keys():
