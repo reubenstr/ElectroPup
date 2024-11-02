@@ -79,7 +79,7 @@ class MotionParameters:
         self.yaw: float = 0
         self.side_translation: float = 0
         self.forward_translation: float = 0
-        self.height_translation: float = 0
+        self.height_translation: float = (self.height_translation_min + self.height_translation_max) / 2
         self.step_length: float = 0
         self.yaw_rate: float = 0
       
@@ -94,7 +94,7 @@ class MotionParameters:
         motion_parameters.yaw = 0
         motion_parameters.side_translation = 0
         motion_parameters.forward_translation = 0
-        motion_parameters.height_translation= (self.height_translation_min + self.height_translation_max) / 2
+        motion_parameters.height_translation = (self.height_translation_min + self.height_translation_max) / 2
         motion_parameters.step_length = 0
         motion_parameters.yaw_rate = 0
         return motion_parameters
