@@ -33,7 +33,7 @@ foot_width: 0.261
 
 abduction_joint_lower_bounds: -45
 abduction_joint_upper_bounds: 45
-hip_joint_lower_bounds: -90
+hip_joint_lower_bounds: -100
 hip_joint_upper_bounds: 90
 knee_joint_lower_bounds: -180
 knee_joint_upper_bounds: 180

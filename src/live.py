@@ -105,16 +105,16 @@ class Live():
                
         if self.body_error_state == Body.ErrorState.NONE:  
             joint_angles = self.body.get_joint_angles(units="DEGREES") 
-            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=joint_angles['front_left']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=-joint_angles['front_left']['abduction'])   
             self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=joint_angles['front_left']['hip'])  
             self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=joint_angles['front_left']['knee']) 
-            self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=-joint_angles['front_right']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=joint_angles['front_right']['abduction'])   
             self.motor_interface_front.set_motor_targets(motor_tag="FRH", speed=self.speed, angle=joint_angles['front_right']['hip'])  
             self.motor_interface_front.set_motor_targets(motor_tag="FRK", speed=self.speed, angle=joint_angles['front_right']['knee']) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=joint_angles['back_right']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=-joint_angles['back_right']['abduction'])   
             self.motor_interface_back.set_motor_targets(motor_tag="BLH", speed=self.speed, angle=joint_angles['back_left']['hip'])  
             self.motor_interface_back.set_motor_targets(motor_tag="BLK", speed=self.speed, angle=joint_angles['back_left']['knee']) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=-joint_angles['back_left']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=joint_angles['back_left']['abduction'])   
             self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=joint_angles['back_right']['hip'])  
             self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=joint_angles['back_right']['knee']) 
         
