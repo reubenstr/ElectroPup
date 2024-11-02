@@ -146,6 +146,8 @@ class Gamepad:
                 self.motion_parameters.yaw_rate_min,
                 self.motion_parameters.yaw_rate_max,
             )
+        else:
+            self.motion_parameters.roll = self.motion_parameters.get_pose_standing().roll   
 
     def axis_left_y_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE:
@@ -164,6 +166,8 @@ class Gamepad:
                 self.motion_parameters.step_length_min,
                 self.motion_parameters.step_length_max,
             )
+        else:
+            self.motion_parameters.pitch = self.motion_parameters.get_pose_standing().pitch
 
     def axis_right_x_changed_callback(self, value):
         if self.kinetic_state == KineticState.POSE:
@@ -182,6 +186,8 @@ class Gamepad:
                 self.motion_parameters.yaw_rate_min,
                 self.motion_parameters.yaw_rate_max,
             )
+        else:
+            self.motion_parameters.yaw = self.motion_parameters.get_pose_standing().yaw
 
     def axis_right_y_changed_callback(self, value):       
         if self.kinetic_state == KineticState.POSE:
@@ -200,6 +206,8 @@ class Gamepad:
                 self.motion_parameters.height_translation_min,
                 self.motion_parameters.height_translation_max,
             )
+        else:
+            self.motion_parameters.height_translation = self.motion_parameters.get_pose_standing().height_translation
 
     ###############################################################################
     # Methods
