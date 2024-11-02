@@ -2,7 +2,7 @@
 /*
   Project:
     Auxiliary Board for ElectroPup quadruped.
-    Drives LCD display, Neopixels, RC servo, and more.
+    Drives a LCD display, buzzer, Neopixels strips, RC servo, and more.
 
   MCU:
     STM32F401CC
@@ -27,7 +27,7 @@
       https://github.com/reubenstr/ElectroPup
 
   TODO:
-    System error bools and strings are magical; should they be made into their own class?
+    System error bools and strings are magical; should they be made into their own enum and/or class?
  */
 
 #include <Arduino.h>
@@ -36,11 +36,13 @@
 #include "TFT_eSPI.h"
 #include "OneButton.h"
 #include "buzzer.h"
+#include "neopixels.h"
 #include "main.h"
 
 TFT_eSPI tft = TFT_eSPI();
 Buzzer buzzer(PIN_MCU_BUZZER);
 OneButton button(PIN_BTN_1, true);
+Neopixels neopixels(PIN_NEO_0, PIN_NEO_1);
 
 Page page = Page::SYSTEM;
 const int cornerRadiusPx{2};
@@ -69,8 +71,8 @@ void CheckUserButton()
 {
   if (digitalRead(USER_BTN) == LOW)
   {
-    Serial.println("USER BTN TEST");
-    delay(250);
+    Serial.println("Blackpill onboard button is pressed.");
+    delay(500);
   }
 }
 
@@ -217,6 +219,7 @@ void InitMessageComms()
   Serial1.setTimeout(10);
 }
 
+// TODO: DRY crc error message.
 void CheckForMessage()
 {
   uint8_t data[1024];
@@ -242,15 +245,15 @@ void CheckForMessage()
       {
         lastMessageReceivedMillis = millis();
 
-        setValueFromStatusString("JOY", message.statusData.joystickError);      
+        setValueFromStatusString("JOY", message.statusData.joystickError);
         setValueFromStatusString("LIM", message.statusData.physicalLimitError);
         setValueFromStatusString("JA", message.statusData.jointAngleError);
         setValueFromStatusString("IK", message.statusData.inverseKinematicsError);
         setValueFromStatusString("CAN", message.statusData.canError);
         setValueFromStatusString("OTe", message.statusData.overTemperatureError);
         setValueFromStatusString("UVo", message.statusData.underVoltageError);
-        setValueFromStatusString("MCo", message.statusData.sensorError);
-        setValueFromStatusString("SEN", message.statusData.sensorError);
+        setValueFromStatusString("MCo", message.statusData.physicalLimitError);
+        setValueFromStatusString("IMU", message.statusData.imuError);
         setValueFromStatusString("---", false);
 
         for (int i = 0; i < numMotors; i++)
@@ -323,23 +326,6 @@ bool IsLowBattery()
   return CalcBatteryPercent() < lowBatteryPercentThreashold;
 }
 
-bool IsError()
-{
-  for (int i = 0; i < numSystemStatus; i++)
-  {
-    if (systemErrors[i])
-      return true;
-  }
-
-  for (int i = 0; i < numMotors; i++)
-  {
-    if (motorErrors[i])
-      return true;
-  }
-
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Misc.
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,30 +334,79 @@ bool IsError()
 void CheckRpiHeartbeat()
 {
   static bool previousHeartbeatState{true};
-  static bool newRpiHasError{true};
+  static bool rpiHasError{true};
+  static bool previousRpiHasError{true};
   static uint32_t start{0};
 
   if (digitalRead(PIN_RPI_HEARTBEAT) != previousHeartbeatState)
   {
     previousHeartbeatState = digitalRead(PIN_RPI_HEARTBEAT);
     start = millis();
-    newRpiHasError = false;
+    rpiHasError = false;
   }
 
   if (millis() - start > rpiHeartbeatTimeoutMs)
   {
-    newRpiHasError = true;
+    rpiHasError = true;
   }
 
-  if (getValueFromStatusString("RPI") != newRpiHasError)
+  if (previousRpiHasError != rpiHasError)
   {
-    setValueFromStatusString("RPI", newRpiHasError);
+    previousRpiHasError = rpiHasError;
 
-    if (newRpiHasError)
+    setValueFromStatusString("RPI", rpiHasError);
+
+    if (rpiHasError)
       buzzer.play(Sequence::RPI_OFF);
     else
       buzzer.play(Sequence::RPI_ON);
   }
+}
+
+void ProcessNeopixels()
+{
+  static bool inStartState{true};
+
+  bool error = false;
+  for (int i = 0; i < numSystemStatus; i++)
+  {
+    if (systemErrors[i])
+      error = true;
+  }
+
+  // Don't change starting pattern until all errors are clear,
+  // which means the RPI has booted and is ready.
+  if (!error)
+  {
+    inStartState = false;
+  }
+
+  if (inStartState)
+  {
+    neopixels.setMode(PixelMode::SPARKLE, PixelColor::RANDOM);
+  }
+  else
+  {
+    if (error)
+    {
+      neopixels.setMode(PixelMode::ERROR, PixelColor::RED);
+    }
+    else
+    {
+      bool allMotorsOn = false;
+      for (int i = 0; i < numMotors; i++)
+      {
+        if (!motorOns[i])
+          allMotorsOn = false;
+      }
+      if (allMotorsOn)
+        neopixels.setMode(PixelMode::RIDER, PixelColor::RED);
+      else
+        neopixels.setMode(PixelMode::RIDER, PixelColor::BLUE);
+    }
+  }
+
+  neopixels.tick();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -418,6 +453,8 @@ void setup()
   button.attachLongPressStart(btnLongPressStart, &button);
   button.setPressMs(byteLongPressActivationMs);
 
+  neopixels.init();
+
   InitMessageComms();
 
   InitDisplay();
@@ -446,6 +483,8 @@ void loop()
   buzzer.tick();
 
   button.tick();
+
+  ProcessNeopixels();
 }
 
 /*

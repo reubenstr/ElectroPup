@@ -5,6 +5,8 @@
 #define PIN_BTN_1 PC14
 #define PIN_RPI_HEARTBEAT PB12
 #define PIN_MCU_BUZZER PB9
+#define PIN_NEO_0 PB3
+#define PIN_NEO_1 PB4
 
 ///////////////////////////////////////////////////////////////////////////////
 // Timings
@@ -32,15 +34,15 @@ enum class Page
     BATTERY
 };
 
-const uint8_t numSystemStatusStrings{16};
-const char *systemStatusStrings[numSystemStatusStrings] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "SEN", "---"};
+const int numSystemStatus{12};
+const char *systemStatusStrings[numSystemStatus] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "IMU", "---"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message Structs and Data
 ///////////////////////////////////////////////////////////////////////////////
 
-const int numSystemStatus{8};
+
 bool systemErrors[numSystemStatus];
 
 const int numMotors{12};
@@ -61,7 +63,7 @@ struct StatusData
     bool underVoltageError;
     bool motorCommunicationError;
 
-    bool sensorError;
+    bool imuError;
 
     bool motorOns[numMotors];
     bool motorErrors[numMotors];
@@ -125,7 +127,7 @@ bool IsError();
 
 int getIndexFromStatusString(const char *status)
 {
-    for (int i = 0; i < numSystemStatusStrings; ++i)
+    for (int i = 0; i < numSystemStatus; ++i)
     {
         if (strcmp(status, systemStatusStrings[i]) == 0)
         {
@@ -139,7 +141,7 @@ int getValueFromStatusString(const char *status)
 {
     int index = getIndexFromStatusString(status);
 
-    if (index > 0)
+    if (index != -1)
         return systemErrors[index];
     else
         return false;
@@ -149,7 +151,7 @@ void setValueFromStatusString(const char *status, bool state)
 {
     int index = getIndexFromStatusString(status);
 
-    if (index > 0)
+    if (index != -1)
         systemErrors[index] = state;
 }
 
