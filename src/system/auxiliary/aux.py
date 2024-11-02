@@ -41,6 +41,7 @@ class StatusMessage:
         self.motor_ons : List[bool] = [False] * 12
         self.motor_errors : List[bool] = [False] * 12
         self.battery_voltage : float = 0.0
+        self.gamepad_battery_percent : float = 0.0
 
     def pack(self):        
         bools = (
@@ -56,8 +57,9 @@ class StatusMessage:
     
         packed_message_id = bytes([MessageType.STATUS.value])
         packed_bools = bytearray(bool(b) for b in bools)   
-        packed_voltage = struct.pack('f', self.battery_voltage)                       
-        packed_message = packed_message_id + packed_bools + packed_voltage                                      
+        packed_voltage = struct.pack('f', self.battery_voltage)   
+        packed_gamepad = struct.pack('f', self.gamepad_battery_percent)                       
+        packed_message = packed_message_id + packed_bools + packed_voltage + packed_gamepad                                      
         packed_crc = crc32(packed_message).to_bytes(4, byteorder='little')
         return packed_message + packed_crc
    

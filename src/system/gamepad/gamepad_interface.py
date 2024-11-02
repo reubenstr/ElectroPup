@@ -14,6 +14,7 @@
 import time
 import struct
 import threading
+import subprocess
 
 class GamepadInterface:
     EVENT_CODE_BUTTON = 0x01
@@ -154,6 +155,14 @@ class GamepadInterface:
             self.axisMap[index] = finalValue
             for callback in self.movedEventMap[index]:
                 callback(finalValue)
+        elif eventType == GamepadInterface.EVENT_CODE_INIT_BUTTON:
+            # This can be used to verify the buttons we expect match the actual gamepad.
+            pass
+        elif eventType == GamepadInterface.EVENT_CODE_INIT_AXIS:
+            # This can be used to verify the axis we expect match the actual gamepad.
+            pass
+        else:
+            print (f"[Gamepad] unprocessed even receive: {eventType}")
   
 
     def isPressed(self, buttonName):
@@ -375,10 +384,21 @@ class GamepadInterface:
         self.connected = False
         self.removeAllEventHandlers()
         self.updateThread.running = False
-        self.updateThread.join()
-        if self.joystickFile:
-            del self.joystickFile
-
+        self.updateThread.join()       
+            
+    ###############################################################################
+    # Battery 
+    ###############################################################################        
+    def get_battery_percentage(self):
+        try:
+            output = subprocess.check_output("upower -i $(upower -e | grep battery)", shell=True, text=True)           
+            for line in output.splitlines():
+                if "percentage" in line:
+                    percentage = line.split(":")[1].strip()
+                    return float(percentage.rstrip('%'))                    
+        except Exception as e:
+            print(f"[Gamepad] error, unable to retrieve battery level from upower command: {e}")
+        return None
 
 ###############################################################################
 # Gamepad classes and mappings

@@ -23,6 +23,16 @@ ssh pi@pidog.local
 user: pi
 pass: pi
 
+dependancies:
+sudo apt install python3-evdev
+
+Optional:
+sudo apt-get install joystick
+	Test joystick: jstest /dev/input/js0
+
+sudo apt install upower
+	Check gamepad battery level: upower -i $(upower -e | grep battery)
+
 
 ###############################################################################
 # aux-board

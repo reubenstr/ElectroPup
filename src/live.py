@@ -37,6 +37,9 @@ class Live():
         self.gamepad.register_controller_event_callback(self.controller_event_callback)
         self.gamepad_last_connected_time : float = 0
         self.gamepad_no_comms_timeout_seconds : float = 5
+        
+        self.gamepad_last_battery_check_time : float = 0
+        self.gamepad_battery_check_rate_seconds : float = 1
 
         self.body = Body(frame_parameters=frame_parameters)
 
@@ -229,6 +232,8 @@ class Live():
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
         message.imuError = False
         
+       
+        
         voltage_accumulator : float = 0.0
         motors : Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
@@ -245,6 +250,12 @@ class Live():
             voltage_accumulator += motor.voltage
                                                     
         message.battery_voltage = voltage_accumulator / len(motors)
+        
+        if time.time() - self.gamepad_last_battery_check_time > self.gamepad_battery_check_rate_seconds:
+            self.gamepad_last_battery_check_time = time.time()
+            self.gamepad_battery_percent = self.gamepad.get_battery_percentange() or -1           
+                        
+        message.gamepad_battery_percent = self.gamepad_battery_percent
                 
         send_rate_seconds = 0.500         
         self.aux.send_at_rate(message.pack(), send_rate_seconds) 
@@ -252,12 +263,12 @@ class Live():
     
     def check_game_pad(self):
         if self.gamepad.is_connected():
-            self.gamepad_last_connected_time = time.time()           
+            self.gamepad_last_connected_time = time.time()                      
         else:        
             if time.time() - self.gamepad_last_connected_time > self.gamepad_no_comms_timeout_seconds:
                 if self.kinetic_state == KineticState.POSE or self.kinetic_state == KineticState.MOTION:
                     self.kinetic_state = KineticState.LIE_DOWN
-  
+                      
     
     def sleep_loop(self):
         """

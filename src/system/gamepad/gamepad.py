@@ -216,6 +216,9 @@ class Gamepad:
 
     def disconnect(self):
         self.gamepad.disconnect()
+        
+    def get_battery_percentange(self):
+        return self.gamepad.get_battery_percentage()
 
     ###############################################################################
     # Helpers
