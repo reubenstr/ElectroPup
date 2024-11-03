@@ -13,8 +13,7 @@ Robot is posing live!
 
 Updating first rounds of documentation.
 
-See [TODO](#todo) section for major tasks.
-
+See TODO section for major tasks.
 
 ## 📁 Docs
 
@@ -105,7 +104,7 @@ Boards are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCP
 
 Power carrier.
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png.png" width="800">
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png" width="800">
 
 The Auxiliary Board was quickly made (hence the STM32 Black Pill dev kit) since it will likely be updated when more advanced features are desired.
 
@@ -124,15 +123,33 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
+# 🎮 Gamepad
+
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
+
+ElectroPup was coded with a PS4 controller in mind. But xBox, PS5, Logitech gamepads can also be used with minor software modifications: [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404)
+
+Future additions to the controller will include commands to flip the quadruped after a rollover, change gait, hop, bark, etc.
 
 # 🚧 TODO  
 
+### Major
+
+- Build and document battery pack
 - Implement gait controller and start walking
+- Update kinematics to include hip to foot x-axis offset
 - Finish IMU code
 - Implement machine learning to handle uneven terrian
 - Implement vision system (camera or LiDAR) for obstacle avoidance
 - Complete BOM and documentation
 
+### Minor
+- Convert kinematics orientation from Z being forward to X being forward to match simulation.
+- Add speaker for barks
+- Add a tail ੭ 
+
+## Future Upgrades
+- Add current sensor for entire system
 
 # 💻 Environment and IDEs 
 
@@ -156,7 +173,6 @@ The quadruped is driven by a Raspberry Pi 4 with 2GB RAM. A Raspberry Pi 5 shoul
 A STM32F401 Black Pill dev kit operates the auxiliary board to display the quadruped motor and system status on a LCD display. 
 
 Software: VSCode (with Platformio extension that loads libraries).
-
 
 # ⚙️ Parts
 
