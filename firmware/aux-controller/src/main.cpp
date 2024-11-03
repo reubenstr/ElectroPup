@@ -390,7 +390,7 @@ void ProcessNeopixels()
 
   if (inStartState)
   {
-    neopixels.setMode(PixelMode::SPARKLE, PixelColor::RANDOM);
+    neopixels.setMode(PixelMode::SPARKLE, PixelColor::RED);
   }
   else
   {

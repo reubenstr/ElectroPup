@@ -7,16 +7,24 @@ A quadrudped robot dog!
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
+## Docs
+
+See the docs directory for installation notes, BOM, 3D printed parts info, actuator drivers, CAN drivers, etc.
+
 ## Kinematics
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
-https://github.com/mike4192/
+The plot shows the robot's wireframe moving based on a gamepads input.
+
+Inverse kinematics and plotting code was a sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/). This project added live plot updates from gamepad inputs and visual warnings for IK and joint range errors.
 
 
 ## Simulation
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
+
+Simulation is performed in [MuJoCo](https://mujoco.org/).
 
 ## Motors
 
@@ -29,6 +37,39 @@ https://github.com/mike4192/
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-power-carrier-v1-render.png" width="800">
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png.png" width="800">
+
+
+# TODO
+
+Major TODO list:
+- Implement gait controller and start walking
+- Implement machine learning to handle uneven terrian
+- Implement vision system (camera or LiDAR) for obstacle avoidance
+- Complete BOM and documentation
+
+
+# Environment and IDEs
+
+There are three harware/software enviroments:
+- **PC:** plotting, simulation, and development
+- **Raspberry Pi:** quadruped hardware driver
+- **STM32:** auxiliary board
+
+### PC - Plotting, Simulation, and Development
+
+Desktop or laptop PC running Ubunut 22.04 Desktop. Newer Ubuntu versions or other distros are likely to work as well. 
+
+Software: VSCode (with remote SSH extension), Drawio, LibreOffice, KiCad, OrcaSlicer, Chrome/Firefox
+
+### Raspberry Pi - Quadruped Hardware Driver
+
+The quadruped is driven by a Raspberry Pi 4 with 2GB RAM. A Raspberry Pi 5 should work but is untested (there are pin driver differences).
+
+### STM32 - Auxiliary Board
+
+A STM32F401 Black Pill dev kit operates the auxiliary board to display the quadruped motor and system status on a LCD display. 
+
+Software: VSCode (with Platformio extension that loads libraries).
 
 
 # Parts

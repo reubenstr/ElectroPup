@@ -8,7 +8,6 @@
         is copied into neopixels strips contained in an array to simplify the code.
 */
 
-
 #include <Arduino.h>
 #include "Adafruit_NeoPixel.h"
 
@@ -155,7 +154,7 @@ private:
             else if (index == _numNeopixelsPerStrip - 1)
             {
                 direction = -1;
-            }          
+            }
             _neo0->setPixelColor(index, _getColor());
             _neo1->setPixelColor(index, _getColor());
             _neo0->show();
@@ -189,7 +188,7 @@ private:
                 index = random(0, _numNeopixelsPerStrip);
             } while (_neo0->getPixelColor(index) > 0);
 
-                _neo0->setPixelColor(index, _getColor());
+            _neo0->setPixelColor(index, _getColor());
             _neo1->setPixelColor(index, _getColor());
             _neo0->show();
             _neo1->show();
@@ -216,7 +215,7 @@ private:
         {
             start = millis();
             for (uint16_t i = 0; i < _numNeopixelsPerStrip; i++)
-            {             
+            {
                 _neo0->setPixelColor(i, _getColor());
                 _neo1->setPixelColor(i, _getColor());
             }
@@ -256,15 +255,19 @@ private:
 
     uint32_t _getColor()
     {
+        uint32_t color;
+
         if (_pixelColor == PixelColor::RANDOM)
         {
             int randomIndex = random(0, 3);
-            return _colors[randomIndex];
+            color = _colors[randomIndex];
         }
         else
         {
-            _colors[(uint8_t)_pixelColor];
+            color = _colors[(uint8_t)_pixelColor];
         }
+
+        return color;
     }
 
     static uint32_t _color(uint8_t r, uint8_t g, uint8_t b)
