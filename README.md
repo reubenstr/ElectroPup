@@ -3,15 +3,15 @@
 
 A quadrudped robot dog!
 
-## About
+## 🐶 About
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
-## Docs
+## 📁 Docs
 
 See the docs directory for installation notes, BOM, 3D printed parts info, actuator drivers, CAN drivers, etc.
 
-## Kinematics
+## 🧮 Kinematics
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
@@ -20,7 +20,7 @@ The plot shows the robot's wireframe moving based on a gamepads input.
 Inverse kinematics and plotting code was a sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/). This project added live plot updates from gamepad inputs and visual warnings for IK and joint range errors.
 
 
-## Simulation
+## ⏯ Simulation
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
 
@@ -40,7 +40,7 @@ Motor tags.
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-zero-motors-script.png" width="800">
 
-The zero-motors.py script is a quick way to verify correct motor configuration and placement, and to zero the motors.  The script shows which motor has been zeroed during the script's session, and shows motors which are not attached.
+The zero-motors.py script is a quick way to verify correct motor configuration and placement, and to zero the motors.
 
 
 | State | Description |
@@ -49,13 +49,11 @@ The zero-motors.py script is a quick way to verify correct motor configuration a
 | ZEROED  | Motor was zeroed  |
 | ERROR | No communication with motor on the accociated motor ID on the CAN bus |
 
+🚩 Motor zero does not take effect until the motor is power cycled. 🚩
 
+The zero_motors.py script applies an offset after zeroing a motor as a convience to continue calibration without power cycling.
 
-
-
-
-
-## PCBs
+# ⚡ PCBs
 
 There are two custom PCBS:
 - Power Carrier : power and CAN bus distribution
@@ -87,8 +85,7 @@ Provides direct connection to RPi header for the following breakouts:
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
 
-
-# TODO
+# 🚧 TODO  
 
 - Implement gait controller and start walking
 - Implement machine learning to handle uneven terrian
@@ -96,7 +93,7 @@ Provides direct connection to RPi header for the following breakouts:
 - Complete BOM and documentation
 
 
-# Environment and IDEs
+# 💻 Environment and IDEs 
 
 There are three harware/software enviroments:
 - **PC:** plotting, simulation, and development
@@ -120,7 +117,7 @@ A STM32F401 Black Pill dev kit operates the auxiliary board to display the quadr
 Software: VSCode (with Platformio extension that loads libraries).
 
 
-# Parts
+# ⚙️ Parts
 
 The 3D printed parts are printed from Polymaker PolyMax Tough PLA in red selected for strength and ease of printing. See [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker)'s excellent blog post.
 
@@ -145,7 +142,7 @@ All parts have export permissions to allow printing and modification.
 - [PCB](https://cad.onshape.com/documents/c8a855826c37bd92b89d9f0e)
 - [Neopixels](https://cad.onshape.com/documents/567292ac55c75b2efa25b7d5)
 
-# Credits
+# 👏 Credits
 
 There are many excellent open source quadruped robot projects at various sizes, costs, and complexity. Below are projects and code examples worth checking out.
 

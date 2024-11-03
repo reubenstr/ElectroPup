@@ -12,6 +12,7 @@ enum class Sequence
     LOW_BATTERY,
     ERROR,
     SHUTDOWN,
+    BTN_BEEP_SHORT,
     NUM_SOUNDS
 };
 
@@ -29,6 +30,7 @@ public:
             {500, 0, 500, 0, 500, 0, 500},  // LOW BATTERY
             {500, 250, 500, 250, 500, 250}, // ERROR
             {500, 200},                     // SHUTDOWN
+            {750}                           // BTN_BEEP_SHORT
         };
 
         _delays = {
@@ -40,6 +42,7 @@ public:
             {100, 50, 100, 50, 100, 50, 100}, // LOW BATTERY
             {125, 250, 125, 250, 125, 250},   // ERROR
             {100, 500},                       // SHUTDOWN
+            {100}                             // BTN_BEEP_SHORT
         };
     }
 
@@ -76,7 +79,7 @@ public:
         {
             if (millis() - _start > _delay)
             {
-                _start = millis();               
+                _start = millis();
 
                 if (_index < _delays[(int)_sequence].size() - 1)
                 {

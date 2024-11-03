@@ -422,7 +422,9 @@ void ProcessNeopixels()
 
 void btnClick(void *oneButton)
 {
-  Serial.println("btnDoubleClick");
+  Serial.println("btnClick");
+
+  buzzer.play(Sequence::BTN_BEEP_SHORT);
 }
 
 void btnDoubleClick(void *oneButton)
@@ -459,6 +461,7 @@ void setup()
   button.attachDoubleClick(btnDoubleClick, &button);
   button.attachLongPressStart(btnLongPressStart, &button);
   button.setPressMs(byteLongPressActivationMs);
+  button.setClickMs(100);
 
   neopixels.init();
 
