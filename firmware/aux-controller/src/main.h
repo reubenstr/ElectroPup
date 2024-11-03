@@ -55,21 +55,17 @@ struct SystemValues
     float joystickBatteryPercentage{0};
 } systemValues;
 
-
 #pragma pack(1)
 struct StatusData
 {
     bool joystickError;
-
     bool physicalLimitError;
     bool jointAngleError;
     bool inverseKinematicsError;
-
     bool canError;
     bool overTemperatureError;
     bool underVoltageError;
     bool motorCommunicationError;
-
     bool imuError;
 
     bool motorOns[numMotors];
@@ -135,7 +131,7 @@ bool IsError();
 
 int getIndexFromStatusString(const char *status)
 {
-    for (int i = 0; i < numSystemStatus; ++i)
+    for (int i = 0; i < numSystemStatus; i++)
     {
         if (strcmp(status, systemStatusStrings[i]) == 0)
         {

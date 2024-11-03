@@ -163,6 +163,7 @@ void DisplaySystemPage(bool forceRefresh = false)
 
           if (index == getValueFromStatusString("JOY") && systemValues.joystickBatteryPercentage < systemLowBatteryPercentThreashold)
           {
+            Serial.println(index);
             color = TFT_YELLOW;
           }
 

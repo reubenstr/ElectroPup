@@ -33,7 +33,7 @@ https://github.com/mike4192/
 
 # Parts
 
-The 3D printed parts are printed from Polymaker PolyMax Tough PLA in red selected for excellent strength and ease of printing. See [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker)'s excellent blog post.
+The 3D printed parts are printed from Polymaker PolyMax Tough PLA in red selected for strength and ease of printing. See [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker)'s excellent blog post.
 
 Estimated amount of filament (main color): 738 grams
 
