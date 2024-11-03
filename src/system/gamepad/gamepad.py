@@ -19,7 +19,6 @@ from ..parameters.motion_parameters import (
     ControllerEvent,
 )
 
-
 DPAD_DIRECTION_UP = -1
 DPAD_DIRECTION_LEFT = -1
 DPAD_DIRECTION_CENTER = 0
