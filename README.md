@@ -28,30 +28,68 @@ Simulation is performed in [MuJoCo](https://mujoco.org/).
 
 ## Motors
 
-The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH).
-
-<figure>
-  <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" alt="">
-  <figcaption>Zero positions</figcaption>
-</figure>
+The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH). 
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" width="800">
 
-Zero Position
-
+Zero position of the motors.
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motor-labels.png" width="800">
 
+Motor tags.
+
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-zero-motors-script.png" width="800">
+
+The zero-motors.py script is a quick way to verify correct motor configuration and placement, and to zero the motors.  The script shows which motor has been zeroed during the script's session, and shows motors which are not attached.
+
+
+| State | Description |
+| ------------- | ------------- |
+| STBY | Motor found with on the associated motor ID and CAN bus and has not been zeroed since the script started  |
+| ZEROED  | Motor was zeroed  |
+| ERROR | No communication with motor on the accociated motor ID on the CAN bus |
+
+
+
+
+
+
+
 ## PCBs
+
+There are two custom PCBS:
+- Power Carrier : power and CAN bus distribution
+- Auxiliary Board : provides LCD display and pheripherials
+
+Boards are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB.
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-power-carrier-v1-render.png" width="800">
 
+Power carrier.
+
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png.png" width="800">
+
+The Auxiliary Board was quickly made (hence the STM32 Black Pill dev kit) since it will likely be updated when more advanced features are desired.
+
+Features:
+- Powers RPi via terminal header
+- LCD display
+- Buzzer (variable pitch)
+- NeoPixel strips
+- RC Servo channel
+- I2C expansion
+- Button to control LCD and shutdown Rasperry Pi before power off
+
+Provides direct connection to RPi header for the following breakouts:
+- IMU (BNO055 via I2C)
+- 4x contact inputs or GPIO
+- I2S for sound driver (future barks 🐶)
+- SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
+
 
 
 # TODO
 
-Major TODO list:
 - Implement gait controller and start walking
 - Implement machine learning to handle uneven terrian
 - Implement vision system (camera or LiDAR) for obstacle avoidance
