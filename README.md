@@ -7,9 +7,18 @@ A quadrudped robot dog!
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
+## 🕑 Status
+
+Robot is posing live!
+
+Updating first rounds of documentation.
+
+See [TODO](#todo) section for major tasks.
+
+
 ## 📁 Docs
 
-See the docs directory for installation notes, BOM, 3D printed parts info, actuator drivers, CAN drivers, etc.
+See the docs directory for BOM, 3D printed parts, installation notes, actuator drivers, CAN drivers, etc.
 
 ## 🧮 Kinematics
 
@@ -19,6 +28,8 @@ The plot shows the robot's wireframe moving based on a gamepads input.
 
 Inverse kinematics and plotting code was a sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/). This project added live plot updates from gamepad inputs and visual warnings for IK and joint range errors.
 
+Run plot.py to start the plot. A gamepad is required to update the plot but if a gamepad is not connected the plot will display a static pose.
+
 
 ## ⏯ Simulation
 
@@ -26,9 +37,39 @@ Inverse kinematics and plotting code was a sourced from mike4192: [https://githu
 
 Simulation is performed in [MuJoCo](https://mujoco.org/).
 
-## Motors
+Run ./sim.py to start the simulation (gamepad required to drive the robot, keyboard buttons not added yet)
+
+## 🚄 Motors
 
 The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH). 
+
+Specifications (see docs directory for more info):
+- voltage: 7.4-32v
+- communication: CAN 1Mbps
+- rated torque: 2.5 N.m
+- max torque: 4.5 N.m
+- rated current: 3.5 A
+- max power: 140 W
+- gear ratio: 1:10
+- dual posistion encoders
+- size: 53mm diameter, 41mm tall
+- weight: 238 grams
+
+MG4010E-i10v3 pros:
+- easy to use configuration software (Windows only however) over UART with non-proprietary USB to UART hardware.
+- decent CAN bus communication documentation
+- small physical size that works well with the desired size of ElectroPup
+- non-proprietary headers (JST-ZH 6-POS)
+
+MG4010E-i10v3 cons:
+- closed source firmware
+- foreign sourced and warranty process
+- CAN unable to configure all parameters
+- UART required to configure error thresholds, motor torque limits (for compliance), etc.
+- some motors are more difficult to turn by hand and require slightly more operational current
+
+There are other promising actuators on the market that are less expensive and may be considered for projects starting from scratch: [Xiaomi CyberGear](https://www.aliexpress.us/item/3256805896329964.html) and [Steadywin 5N.M GIM6010-8](https://www.aliexpress.us/item/3256806153022534.html). These motors have larger diameters, more weight, and require more power. The motor libraries for ElectroPup are not compatible, however here is noteable progress from the SimpleFOC community to add SimpleFOC firmware these motors [CyberGear discussion](https://community.simplefoc.com/t/xiaomi-cyber-dog-geared-motor-60/3855) and [Steadywin discussion](https://community.simplefoc.com/t/steadywin-new-cheap-gear-motor/4509).
+
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" width="800">
 
@@ -40,8 +81,7 @@ Motor tags.
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-zero-motors-script.png" width="800">
 
-The zero-motors.py script is a quick way to verify correct motor configuration and placement, and to zero the motors.
-
+The zero-motors.py script is a quick way to verify correct motor configuration and zero the motors.
 
 | State | Description |
 | ------------- | ------------- |
@@ -56,8 +96,8 @@ The zero_motors.py script applies an offset after zeroing a motor as a convience
 # ⚡ PCBs
 
 There are two custom PCBS:
-- Power Carrier : power and CAN bus distribution
-- Auxiliary Board : provides LCD display and pheripherials
+- **Power Carrier:** power and CAN bus distribution
+- **Auxiliary Board:** provides LCD display and pheripherials
 
 Boards are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB.
 
@@ -88,6 +128,7 @@ Provides direct connection to RPi header for the following breakouts:
 # 🚧 TODO  
 
 - Implement gait controller and start walking
+- Finish IMU code
 - Implement machine learning to handle uneven terrian
 - Implement vision system (camera or LiDAR) for obstacle avoidance
 - Complete BOM and documentation
@@ -96,19 +137,19 @@ Provides direct connection to RPi header for the following breakouts:
 # 💻 Environment and IDEs 
 
 There are three harware/software enviroments:
-- **PC:** plotting, simulation, and development
+- **PC/Laptop:** plotting, simulation, and development
 - **Raspberry Pi:** quadruped hardware driver
 - **STM32:** auxiliary board
 
-### PC - Plotting, Simulation, and Development
+### PC/Laptop - Plotting, Simulation, and Development
 
-Desktop or laptop PC running Ubunut 22.04 Desktop. Newer Ubuntu versions or other distros are likely to work as well. 
+Desktop or laptop computer running Ubunut 22.04 Desktop. Newer Ubuntu versions or other distros are likely to work as well. 
 
 Software: VSCode (with remote SSH extension), Drawio, LibreOffice, KiCad, OrcaSlicer, Chrome/Firefox
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 4 with 2GB RAM. A Raspberry Pi 5 should work but is untested (there are pin driver differences).
+The quadruped is driven by a Raspberry Pi 4 with 2GB RAM. A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
 
 ### STM32 - Auxiliary Board
 
