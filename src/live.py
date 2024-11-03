@@ -21,6 +21,7 @@ from system.parameters.frame_parameters import FrameParameters
 from system.parameters.motion_parameters import MotionParameters, KineticState, ControllerEvent
 from system.motors.motors import Motor, Motors
 from system.auxiliary.aux import Aux, StatusMessage
+from system.utilities import *
 
 
 class Live():
@@ -32,6 +33,7 @@ class Live():
         self.motion_parameters = MotionParameters(motion_parameters_filepath)
 
         self.aux = Aux() 
+        self.aux_send_rate_seconds : float = 0.125
 
         self.gamepad = Gamepad(self.motion_parameters)
         self.gamepad.register_controller_event_callback(self.controller_event_callback)
@@ -257,9 +259,8 @@ class Live():
             self.gamepad_battery_percent = self.gamepad.get_battery_percentange() or -1           
                         
         message.gamepad_battery_percent = self.gamepad_battery_percent
-                
-        send_rate_seconds = 0.500         
-        self.aux.send_at_rate(message.pack(), send_rate_seconds) 
+                                
+        self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds) 
         
     
     def check_game_pad(self):
@@ -298,7 +299,8 @@ class Live():
     def shutdown(self):
         self.motor_interface_front.shutdown()
         self.gamepad.disconnect()
-
+        
+                
 ###############################################################################
 # Entry
 ###############################################################################
@@ -328,8 +330,12 @@ if __name__ == "__main__":
     # Run Main Program
     ###############################################################################
     
-    live = Live()
-      
+    if is_service_running("live.service"):
+        print(f"[Live] error, live.service is running, unable to start live.py")
+        exit(1)
+        
+    live = Live()    
+          
     try:        
         live.run()            
     except KeyboardInterrupt:

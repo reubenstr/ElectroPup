@@ -48,12 +48,12 @@ class StatusMessage:
             self.joystick_error,
             self.physical_limit_error,
             self.joint_angle_error,
-                self.inverse_kinematics_error,                
-                self.over_temperature_error,
-                self.under_voltage_error,
-                self.motor_communication_error,
-                self.imuError,
-                self.can_error) + tuple(self.motor_ons) + tuple(self.motor_errors)
+            self.inverse_kinematics_error,
+            self.can_error,
+            self.over_temperature_error,
+            self.under_voltage_error,
+            self.motor_communication_error,
+            self.imuError) + tuple(self.motor_ons) + tuple(self.motor_errors)
     
         packed_message_id = bytes([MessageType.STATUS.value])
         packed_bools = bytearray(bool(b) for b in bools)   
