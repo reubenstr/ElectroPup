@@ -192,8 +192,8 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA that was sele
 
 | Item         | Estimated Print Time | Estimated Amount   |
 |--------------|----------------------|--------------------|
-| Main color   | 25.07 hours          | 738 grams          |
-| Accent color | 3.53 hours           | 76 grams           |
+| main color   | 25.07 hours          | 738 grams          |
+| accent color | 3.53 hours           | 76 grams           |
 
 ### CAD
 

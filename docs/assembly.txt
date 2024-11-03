@@ -8,6 +8,14 @@ Notes taken during the assembly process and recommendations.
 # Body
 ###############################################################################
 
+Carbon fiber tube: 12mm OD, 10mm ID, 254mm length
+In retrospect the frame probably could of been shorted by 4mm to require 250mm 
+tubes as this is a more common length. However, only a few listings (aliexpress only)
+have been found at the required dimensions at 250mm length.
+
+To use a 250mm length either the Power Carrier PCB will need to be shortend (by 2 to 4mm),
+or a slot can be added to the hip plate to allow the PCB to slip in the needed ~1mm per end.
+
 The carbon fiber rods have PLA inserts on both ends which in turn holds a M5 brass insert.
 The PLA inserts attach to the ends of the rod using superglue. 
 About five minutes after the superglue is applied the threaded inserts can be applied to the PLA insert.
@@ -42,7 +50,8 @@ Lower Leg:
 # Motors
 ###############################################################################
 
-After the all the motors are physically attached each motor will need to be configured prior to connecting the final wiring.
+After the all the motors are physically attached each motor will need to be configured 
+prior to connecting the final wiring.
 (See docs for motor ID and parameter setup)
 
 ###############################################################################
