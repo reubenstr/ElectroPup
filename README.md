@@ -3,11 +3,11 @@
 
 A quadrudped robot dog!
 
-## 🐶 About
+# 🐶 About
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
-## 🕑 Status
+# 🕑 Status
 
 Robot is posing live!
 
@@ -15,11 +15,11 @@ Updating first rounds of documentation.
 
 See TODO section for major tasks.
 
-## 📁 Docs
+# 📁 Docs
 
 See the docs directory for BOM, 3D printed parts, installation notes, actuator drivers, CAN drivers, etc.
 
-## 🧮 Kinematics
+# 🧮 Kinematics
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
@@ -29,8 +29,7 @@ Inverse kinematics and plotting code was a sourced from mike4192: [https://githu
 
 Run plot.py to start the plot. A gamepad is required to update the plot but if a gamepad is not connected the plot will display a static pose.
 
-
-## ⏯ Simulation
+# ⏯ Simulation
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
 
@@ -38,9 +37,9 @@ Simulation is performed in [MuJoCo](https://mujoco.org/).
 
 Run ./sim.py to start the simulation (gamepad required to drive the robot, keyboard buttons not added yet)
 
-## 🚄 Motors
+# 🏋️ Motors
 
-The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH). 
+The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be purchased from [Aliexpress](https://www.aliexpress.us/item/3256805950420462.html?spm=a2g0o.order_list.order_list_main.5.32491802no3XMa&gatewayAdapt=glo2usa) 
 
 Specifications (see docs directory for more info):
 - voltage: 7.4-32v
@@ -50,15 +49,15 @@ Specifications (see docs directory for more info):
 - rated current: 3.5 A
 - max power: 140 W
 - gear ratio: 1:10
-- dual posistion encoders
+- encoders: 18-bit motor, 14-bit reducer
 - size: 53mm diameter, 41mm tall
 - weight: 238 grams
 
 MG4010E-i10v3 pros:
-- easy to use configuration software (Windows only however) over UART with non-proprietary USB to UART hardware.
-- decent CAN bus communication documentation
+- easy to use configuration software over UART with non-proprietary USB to UART hardware (Windows only however).
+- readable CAN bus communication documentation
 - small physical size that works well with the desired size of ElectroPup
-- non-proprietary headers (JST-ZH 6-POS)
+- non-proprietary power/communications connector (JST-ZH 6-POS)
 
 MG4010E-i10v3 cons:
 - closed source firmware
@@ -84,9 +83,9 @@ The zero-motors.py script is a quick way to verify correct motor configuration a
 
 | State | Description |
 | ------------- | ------------- |
-| STBY | Motor found with on the associated motor ID and CAN bus and has not been zeroed since the script started  |
+| STBY | Motor found with on the associated CAN bus with and motor ID and has not been zeroed since the script started  |
 | ZEROED  | Motor was zeroed  |
-| ERROR | No communication with motor on the accociated motor ID on the CAN bus |
+| ERROR | No communication with motor on the accociated the CAN bus and motor ID |
 
 🚩 Motor zero does not take effect until the motor is power cycled. 🚩
 
@@ -94,9 +93,9 @@ The zero_motors.py script applies an offset after zeroing a motor as a convience
 
 # ⚡ PCBs
 
-There are two custom PCBS:
+There are two custom PCBs:
 - **Power Carrier:** power and CAN bus distribution
-- **Auxiliary Board:** provides LCD display and pheripherials
+- **Auxiliary Board:** LCD display and pheripherials
 
 Boards are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB.
 
@@ -105,8 +104,6 @@ Boards are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCP
 Power carrier.
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png" width="800">
-
-The Auxiliary Board was quickly made (hence the STM32 Black Pill dev kit) since it will likely be updated when more advanced features are desired.
 
 Features:
 - Powers RPi via terminal header
@@ -123,11 +120,13 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
+The current version of the Auxiliary Board was designed to be quick to assemble (hence the STM32 dev board) to make the board more accessible for builders with non-advanced skills.
+
 # 🎮 Gamepad
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
 
-ElectroPup was coded with a PS4 controller in mind. But xBox, PS5, Logitech gamepads can also be used with minor software modifications: [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404)
+ElectroPup was coded with a PS4 controller in mind. But xBox, PS5, Logitech gamepads can also be used with minor software modifications at [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404).
 
 Future additions to the controller will include commands to flip the quadruped after a rollover, change gait, hop, bark, etc.
 
@@ -135,27 +134,28 @@ Future additions to the controller will include commands to flip the quadruped a
 
 ### Major
 
-- Build and document battery pack
-- Implement gait controller and start walking
-- Update kinematics to include hip to foot x-axis offset
-- Finish IMU code
-- Implement machine learning to handle uneven terrian
-- Implement vision system (camera or LiDAR) for obstacle avoidance
-- Complete BOM and documentation
+- build and document battery pack
+- implement gait controller and start walking
+- update kinematics to include hip to foot x-axis offset
+- finish IMU code
+- implement machine learning to handle uneven terrian
+- implement vision system (camera or LiDAR) for obstacle avoidance
+- complete BOM and documentation
 
 ### Minor
-- Convert kinematics orientation from Z being forward to X being forward to match simulation.
-- Add speaker for barks
-- Add a tail ੭ 
+- design foot bolt clips and install
+- convert kinematics orientation from Z being forward to X being forward to match simulation
+- add speaker for barks
+- add a tail ੭ 
 
-## Future Upgrades
-- Add current sensor for entire system
+### Future Upgrades
+- add current sensor for entire system
 
 # 💻 Environment and IDEs 
 
 There are three harware/software enviroments:
 - **PC/Laptop:** plotting, simulation, and development
-- **Raspberry Pi:** quadruped hardware driver
+- **Raspberry Pi:** quadruped hardware driver and remote development
 - **STM32:** auxiliary board
 
 ### PC/Laptop - Plotting, Simulation, and Development
@@ -166,7 +166,7 @@ Software: VSCode (with remote SSH extension), Drawio, LibreOffice, KiCad, OrcaSl
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 4 with 2GB RAM. A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
+The quadruped is driven by a Raspberry Pi 4 (2GB RAM, more may be required for advanced future features). A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
 
 ### STM32 - Auxiliary Board
 
@@ -176,11 +176,12 @@ Software: VSCode (with Platformio extension that loads libraries).
 
 # ⚙️ Parts
 
-The 3D printed parts are printed from Polymaker PolyMax Tough PLA in red selected for strength and ease of printing. See [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker)'s excellent blog post.
+The 3D printed parts are printed using Polymaker PolyMax Tough PLA that was selected for strength and ease of printing. See these excellent blog posts: [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker) and [edemargerie](https://www.instructables.com/Comparing-Impact-Resistance-of-21-Filaments-for-3D/).
 
-Estimated amount of filament (main color): 738 grams
-
-Estimated print time (main color): 25.07 hours.
+| Item         | Estimated Print Time | Estimated Amount   |
+|--------------|----------------------|--------------------|
+| Main color   | 25.07 hours          | 738 grams          |
+| Accent color | 3.53 hours           | 76 grams           |
 
 ### CAD
 
@@ -188,7 +189,7 @@ Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides fr
 
 ### Links
 
-All parts have export permissions to allow printing and modification.
+All parts have export permissions to allow copying the workspace for modifications.
 
 - [Assembly](https://cad.onshape.com/documents/b02341d4ebb7f3e9dd488186)
 - [Legs](https://cad.onshape.com/documents/6da583196278caf8e90b3122)
