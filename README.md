@@ -28,7 +28,17 @@ Simulation is performed in [MuJoCo](https://mujoco.org/).
 
 ## Motors
 
+The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH).
+
+<figure>
+  <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" alt="">
+  <figcaption>Zero positions</figcaption>
+</figure>
+
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" width="800">
+
+Zero Position
+
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motor-labels.png" width="800">
 
