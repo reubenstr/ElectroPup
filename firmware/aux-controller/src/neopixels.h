@@ -46,6 +46,9 @@ public:
         _neo0->begin();
         _neo0->show();
         _neo0->setBrightness(_neopixelBrightness);
+        _neo1->begin();
+        _neo1->show();
+        _neo1->setBrightness(_neopixelBrightness);
     }
 
     void setMode(PixelMode pixelMode, PixelColor pixelColor)

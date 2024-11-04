@@ -400,7 +400,7 @@ void ProcessNeopixels()
     }
     else
     {
-      bool allMotorsOn = false;
+      bool allMotorsOn{true};
       for (int i = 0; i < numMotors; i++)
       {
         if (!motorOns[i])

@@ -156,7 +156,8 @@ Future additions to the controller may include commands to flip the quadruped af
 - complete BOM and documentation
 
 ### Minor
-- design foot bolt clips and install
+- design and install foot bolt clips to keep foot bolt in place
+- design and install electronic covers to protect PCBs from potential shorts
 - convert kinematics orientation from Z being forward to X being forward to match simulation
 - add speaker for barks
 - add a tail ੭ 
