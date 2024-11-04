@@ -223,7 +223,7 @@ All parts have export permissions to allow copying the workspace for modificatio
 - add current sensor for entire system
 - rework PCBs to move DC-DC from Power Carrier to Auxiliary Board
 
-# 🙋 Questions
+# ❔ Questions
 
 For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues).
 
