@@ -155,15 +155,13 @@ void DisplaySystemPage(bool forceRefresh = false)
 
           if (isSbcError)
           {
-            if ((index != getValueFromStatusString("RPI") && !hasError) || (index != getValueFromStatusString("SFT") && !hasError))
+            if ((index != getIndexFromStatusString("RPI") && !hasError) || (index != getIndexFromStatusString("SFT") && !hasError))
             {
               color = TFT_DARKGREY;
             }
           }
-
-          if (index == getValueFromStatusString("JOY") && systemValues.joystickBatteryPercentage < systemLowBatteryPercentThreashold)
-          {
-            Serial.println(index);
+          else if (index == getIndexFromStatusString("JOY") && systemValues.joystickBatteryPercentage < systemLowBatteryPercentThreashold)
+          {    
             color = TFT_YELLOW;
           }
 
