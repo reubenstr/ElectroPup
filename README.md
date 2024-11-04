@@ -29,7 +29,7 @@ See the docs directory for bill of materials (BOM), 3D printed parts info, and n
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
-The plot shows body and leg positions from the inverse kinematics based on gamepad input.
+Inverse kinematics, leg position, and gamepad inputs are verifed using a live plot.
 
 Run plot.py to start the plot. A gamepad is required to update the plot but if a gamepad is not connected the plot will display a static pose.
 
@@ -39,8 +39,7 @@ Run plot.py to start the plot. A gamepad is required to update the plot but if a
 
 Simulation is performed in [MuJoCo](https://mujoco.org/).
 
-Run ./sim.py to start the simulation (gamepad required to drive the robot, keyboard buttons not added yet)
-
+Run ./sim.py to start the simulation. A gamepad is required to drive the robot as keyboard buttons are not yet added.
 
 # ⚡ PCBs
 
@@ -50,7 +49,7 @@ PCBs are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-power-carrier-v1-render.png" width="800">
 
-The Power Carrier PCB provides a main on/off power switch and distributes power the the motor headers. The Power Carrier creates four CAN bus networks one for each leg. Solder on the jumpers can merge the front two networks and merge the back two networks to allow the use of a dual CAN controller Raspberry Pi hat.
+The Power Carrier PCB provides a main on/off power switch and distributes power the the motor headers. The Power Carrier creates four CAN bus networks one for each leg. Solder jumpers allow merging the front two legs into a single network and the back two legs into another single network.
 
 ### Auxiliary Board
 
@@ -71,8 +70,7 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
-The current version of the Auxiliary Board was designed to be quick to assemble (hence the STM32 dev board) to make the board more accessible for builders with non-advanced skills.
-
+The current version of the Auxiliary Board uses a STM32 Black Pill dev board for quicker development and assembly since there will likely be future revisions with more advanced features such as built in speaker amplifier.
 
 # 🏋️ Motors
 
@@ -108,7 +106,7 @@ See docs directory for more infomation.
 
 ### Other Options
 
-There are other promising actuators on the market that are less expensive and may better fit for projects starting from scratch: [Xiaomi CyberGear](https://www.aliexpress.us/item/3256805896329964.html) and [Steadywin 5N.M GIM6010-8](https://www.aliexpress.us/item/3256806153022534.html). These motors have larger diameters, more weight, require more power, and provide more torque. ElectroPup's motor driver libraries are not directly compatible. There are good discussions and resources from the SimpleFOC community: [CyberGear discussion](https://community.simplefoc.com/t/xiaomi-cyber-dog-geared-motor-60/3855) and [Steadywin discussion](https://community.simplefoc.com/t/steadywin-new-cheap-gear-motor/4509).
+There are other promising actuators on the market that are less expensive and may better fit for projects starting from scratch: [Xiaomi CyberGear](https://www.aliexpress.us/item/3256805896329964.html) and [Steadywin 5N.M GIM6010-8](https://www.aliexpress.us/item/3256806153022534.html). These motors have larger diameters, more weight, require more power, and provide more torque. ElectroPup's motor driver libraries are not directly compatible. There are discussions and resources worth checking out from the SimpleFOC community: [CyberGear discussion](https://community.simplefoc.com/t/xiaomi-cyber-dog-geared-motor-60/3855) and [Steadywin discussion](https://community.simplefoc.com/t/steadywin-new-cheap-gear-motor/4509).
 
 ### Motor Zero Positions
 
@@ -146,7 +144,7 @@ Each CAN controller drivers six motors with an average motor update rate of ~70h
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
 
-ElectroPup was coded with a PS4 controller in mind. But xBox, PS5, Logitech gamepads can also be used with minor software modifications in [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404).
+ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may also be used with minor software modifications in [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404).
 
 Future controller additions may include commands to flip the quadruped after a rollover, change gaits, hop, etc.
 
@@ -163,22 +161,24 @@ Software: VSCode (with remote SSH and PlatformIO extensions), Drawio, LibreOffic
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 4 (2GB RAM, more may be required for advanced future features). A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
+The quadruped is driven by a Raspberry Pi 4. A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
+
+The OS is Raspberry Pi OS Lite (Bookworm 64-bit) which is headless so all development is performed using remote SSH.
 
 ### STM32 - Auxiliary Board
 
 A STM32F401 Black Pill dev kit operates the auxiliary board to display the quadruped motor and system status on a LCD display. 
 
-Uses PC/Laptop for development.
+Uses VSCode with PlatformIO on the PC/Laptop for development.
 
 # ⚙️ Parts
 
-The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for strength and ease of printing. See these excellent blog posts: [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker) and [edemargerie](https://www.instructables.com/Comparing-Impact-Resistance-of-21-Filaments-for-3D/).
+The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for strength and ease of printing. See these excellent blog posts for more information: [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker) and [edemargerie](https://www.instructables.com/Comparing-Impact-Resistance-of-21-Filaments-for-3D/).
 
-| Item         | Estimated Print Time | Estimated Amount   |
-|--------------|----------------------|--------------------|
-| main color   | 25.07 hours          | 738 grams          |
-| accent color | 3.53 hours           | 76 grams           |
+| Color          | Estimated Print Time | Estimated Filament |
+|----------------|----------------------|--------------------|
+| main (red)     | 25.07 hours          | 738 grams          |
+| accent (black) | 3.53 hours           | 76 grams           |
 
 ### CAD
 
@@ -217,10 +217,15 @@ All parts have export permissions to allow copying the workspace for modificatio
 - add speaker for barks
 - add a tail ੭ 
 - rework NeoPixel strip brackets to include a light diffusing layer
+- add keyboard commands to sim.py
 
 ### Future Version Updates/Changes
 - add current sensor for entire system
 - rework PCBs to move DC-DC from Power Carrier to Auxiliary Board
+
+# 🙋 Questions
+
+For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues).
 
 # 👏 Credits
 
