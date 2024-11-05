@@ -9,7 +9,7 @@ A quadrudped robot... dog!?
 
 ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my [Zuko robot dog](https://github.com/reubenstr/zuko) project. ElectroPup applies lessons learned from building Zuko, such as:
 - simplifying the code by dropping ROS2 in favor of pure Python
-- creating a modifiable frame where changes in one part do not require reprinting of other parts
+- reducing reprints by designing the frame to have less interdependent parts
 - creating an open frame concept that allows for easier part additions such as cameras and LiDAR
 - designing the leg system to allow flipping the quadruped upright after a rollover
 - swapping out the RC servos for backdrivable BLDC motors that allow for compliance
@@ -39,7 +39,7 @@ Run plot.py to start the plot. A gamepad is required to update the plot but if a
 
 Simulation is performed in [MuJoCo](https://mujoco.org/).
 
-Run ./sim.py to start the simulation. A gamepad is required to drive the robot as keyboard buttons are not yet added.
+Run ./sim.py to start the simulation. A gamepad is required to drive the robot as keyboard input is not yet added.
 
 # ⚡ PCBs
 
@@ -70,7 +70,7 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
-The current version of the Auxiliary Board uses a STM32 Black Pill dev board for quicker development and assembly since there will likely be future revisions with more advanced features such as built in speaker amplifier.
+The current version of the Auxiliary Board uses a STM32 Black Pill dev board for quicker development and assembly since there will likely be future revisions with more advanced features such as a built in speaker amplifier.
 
 # 🏋️ Motors
 
@@ -136,9 +136,9 @@ The zero_motors.py script applies an offset after zeroing a motor as a convience
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-can-bus-controller.png" width="800">
 
-The CAN bus controller is the [2-Channel Isolated CAN Expansion HAT](https://www.waveshare.com/2-ch-can-hat.htm) from waveshare.
+The CAN bus controller is a [2-Channel Isolated CAN Expansion HAT](https://www.waveshare.com/2-ch-can-hat.htm) from waveshare.
 
-Each CAN controller drivers six motors with an average motor update rate of ~70hz. This includes fetching current angle, setting target angle, and getting error states.
+Each CAN controller drivers six motors with an average motor update rate of ~70hz. This includes fetching encoder position, setting target angle/speed, and getting error states.
 
 # 🎮 Gamepad
 
@@ -161,13 +161,13 @@ Software: VSCode (with remote SSH and PlatformIO extensions), Drawio, LibreOffic
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 4. A Raspberry Pi 5 should work but is untested (there are GPIO driver differences).
+The quadruped is driven by a Raspberry Pi 4. A Raspberry Pi 5 is untested and may need code updates due to GPIO hardware differences.
 
 The OS is Raspberry Pi OS Lite (Bookworm 64-bit) which is headless so all development is performed using remote SSH.
 
 ### STM32 - Auxiliary Board
 
-A STM32F401 Black Pill dev kit operates the auxiliary board to display the quadruped motor and system status on a LCD display. 
+A STM32F401 Black Pill dev kit operates the auxiliary board to display the motor and system status on a LCD display and interface with other peripherals such as the IMU. 
 
 Uses VSCode with PlatformIO on the PC/Laptop for development.
 
@@ -177,8 +177,8 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for 
 
 | Color          | Estimated Print Time | Estimated Filament |
 |----------------|----------------------|--------------------|
-| main (red)     | 25.07 hours          | 738 grams          |
-| accent (black) | 3.53 hours           | 76 grams           |
+| main (red)     | 25.23 hours          | 742 grams          |
+| accent (black) | 3.58 hours           | 92 grams           |
 
 ### CAD
 
@@ -196,6 +196,10 @@ All parts have export permissions to allow copying the workspace for modificatio
 - [Parts](https://cad.onshape.com/documents/6d4d4e21394ee725ee8ddb38)
 - [PCB](https://cad.onshape.com/documents/c8a855826c37bd92b89d9f0e)
 - [Neopixels](https://cad.onshape.com/documents/567292ac55c75b2efa25b7d5)
+
+# 🔋 Battery Pack 
+
+In progress.
 
 # 🚧 TODO  
 
@@ -223,13 +227,15 @@ All parts have export permissions to allow copying the workspace for modificatio
 - add current sensor for entire system
 - rework PCBs to move DC-DC from Power Carrier to Auxiliary Board
 
-# ❔ Questions
+# ❓ Questions
 
 For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues).
 
 # 👏 Credits
 
 Inverse kinematics and leg points for plotting was sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/).
+
+Using carbon fiber tube as frame supports inspired from [Open Dog 3](https://www.youtube.com/watch?v=ts2l_Em7fpI&list=PLpwJoq86vov8uTgd8_WNgBHFpDYemO-OJ&index=3) by James Bruton.
 
 There are many excellent open source quadruped robot projects at various sizes, costs, and complexity. Below are projects and code examples worth checking out.
 
@@ -238,6 +244,7 @@ There are many excellent open source quadruped robot projects at various sizes, 
 - https://github.com/mike4192/spot_micro_kinematics_python
 - https://spotmicroai.readthedocs.io/en/latest/
 - https://github.com/adham-elarabawy/open-quadruped
+- https://www.youtube.com/jamesbruton
 - https://github.com/chvmp/champ
 - https://grabcad.com/library/diy-quadruped-robot-1
 - https://github.com/Jerome-Graves/yertle
