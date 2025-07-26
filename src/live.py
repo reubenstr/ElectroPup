@@ -47,7 +47,7 @@ class Live():
 
         motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"] 
         self.motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags)
-        self.motor_interface_front.cmd_all_motors_off()                
+        self.motor_interface_front.disable_all_motors()                
         self.motor_interface_front.set_limits("FLA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_front.set_limits("FLH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_front.set_limits("FLK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))               
@@ -57,7 +57,7 @@ class Live():
 
         motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
         self.motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
-        self.motor_interface_back.cmd_all_motors_off()               
+        self.motor_interface_back.disable_all_motors()               
         self.motor_interface_back.set_limits("BLA", degrees(frame_parameters.abduction_joint_lower_bounds), degrees(frame_parameters.abduction_joint_upper_bounds))
         self.motor_interface_back.set_limits("BLH", degrees(frame_parameters.hip_joint_lower_bounds), degrees(frame_parameters.hip_joint_upper_bounds))
         self.motor_interface_back.set_limits("BLK", degrees(frame_parameters.knee_joint_lower_bounds), degrees(frame_parameters.knee_joint_upper_bounds))               
@@ -110,18 +110,18 @@ class Live():
                
         if self.body_error_state == Body.ErrorState.NONE:  
             joint_angles = self.body.get_joint_angles(units="DEGREES") 
-            self.motor_interface_front.set_motor_targets(motor_tag="FLA", speed=self.speed, angle=-joint_angles['front_left']['abduction'])   
-            self.motor_interface_front.set_motor_targets(motor_tag="FLH", speed=self.speed, angle=joint_angles['front_left']['hip'])  
-            self.motor_interface_front.set_motor_targets(motor_tag="FLK", speed=self.speed, angle=joint_angles['front_left']['knee']) 
-            self.motor_interface_front.set_motor_targets(motor_tag="FRA", speed=self.speed, angle=joint_angles['front_right']['abduction'])   
-            self.motor_interface_front.set_motor_targets(motor_tag="FRH", speed=self.speed, angle=joint_angles['front_right']['hip'])  
-            self.motor_interface_front.set_motor_targets(motor_tag="FRK", speed=self.speed, angle=joint_angles['front_right']['knee']) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BLA", speed=self.speed, angle=-joint_angles['back_right']['abduction'])   
-            self.motor_interface_back.set_motor_targets(motor_tag="BLH", speed=self.speed, angle=joint_angles['back_left']['hip'])  
-            self.motor_interface_back.set_motor_targets(motor_tag="BLK", speed=self.speed, angle=joint_angles['back_left']['knee']) 
-            self.motor_interface_back.set_motor_targets(motor_tag="BRA", speed=self.speed, angle=joint_angles['back_left']['abduction'])   
-            self.motor_interface_back.set_motor_targets(motor_tag="BRH", speed=self.speed, angle=joint_angles['back_right']['hip'])  
-            self.motor_interface_back.set_motor_targets(motor_tag="BRK", speed=self.speed, angle=joint_angles['back_right']['knee']) 
+            self.motor_interface_front.set_motor_targets(motor_name="FLA", speed=self.speed, position=-joint_angles['front_left']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_name="FLH", speed=self.speed, position=joint_angles['front_left']['hip'])  
+            self.motor_interface_front.set_motor_targets(motor_name="FLK", speed=self.speed, position=joint_angles['front_left']['knee']) 
+            self.motor_interface_front.set_motor_targets(motor_name="FRA", speed=self.speed, position=joint_angles['front_right']['abduction'])   
+            self.motor_interface_front.set_motor_targets(motor_name="FRH", speed=self.speed, position=joint_angles['front_right']['hip'])  
+            self.motor_interface_front.set_motor_targets(motor_name="FRK", speed=self.speed, position=joint_angles['front_right']['knee']) 
+            self.motor_interface_back.set_motor_targets(motor_name="BLA", speed=self.speed, position=-joint_angles['back_right']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_name="BLH", speed=self.speed, position=joint_angles['back_left']['hip'])  
+            self.motor_interface_back.set_motor_targets(motor_name="BLK", speed=self.speed, position=joint_angles['back_left']['knee']) 
+            self.motor_interface_back.set_motor_targets(motor_name="BRA", speed=self.speed, position=joint_angles['back_left']['abduction'])   
+            self.motor_interface_back.set_motor_targets(motor_name="BRH", speed=self.speed, position=joint_angles['back_right']['hip'])  
+            self.motor_interface_back.set_motor_targets(motor_name="BRK", speed=self.speed, position=joint_angles['back_right']['knee']) 
         
         elif self.body_error_state == Body.ErrorState.KINEMATICS or self.body_error_state == Body.ErrorState.JOINT:
             print(f"[Body] error, {self.body_error_state.name}")
@@ -160,22 +160,22 @@ class Live():
             self.gamepad.set_kinetic_state(self.kinetic_state)  
                             
             if self.kinetic_state == KineticState.ERROR:
-                self.motor_interface_front.cmd_all_motors_off()
-                self.motor_interface_back.cmd_all_motors_off()    
+                self.motor_interface_front.disable_all_motors()
+                self.motor_interface_back.disable_all_motors()    
             
             elif self.kinetic_state == KineticState.STARTUP:              
                 self.motor_interface_front.start()
                 self.motor_interface_back.start()                    
             
             elif self.kinetic_state == KineticState.HALT:
-                self.motor_interface_front.cmd_all_motors_off()
-                self.motor_interface_back.cmd_all_motors_off()
+                self.motor_interface_front.disable_all_motors()
+                self.motor_interface_back.disable_all_motors()
             
             elif self.kinetic_state == KineticState.STAND: 
                 self.speed = 500   
                 self.apply_controller_input(self.motion_parameters.get_pose_standing())                      
-                self.motor_interface_front.cmd_all_motors_on()
-                self.motor_interface_back.cmd_all_motors_on()   
+                self.motor_interface_front.enable_all_motors()
+                self.motor_interface_back.enable_all_motors()   
                 
             elif self.kinetic_state == KineticState.LIE_DOWN: 
                 self.speed = 500   
@@ -240,7 +240,7 @@ class Live():
         voltage_accumulator : float = 0.0
         motors : Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
-            message.motor_ons[index] = motor.is_on()
+            message.motor_ons[index] = motor.is_enabled()
             message.motor_errors[index] = motor.is_error()  
             if motor.angle_limit_breached == True:
                 message.physical_limit_error = True
@@ -292,8 +292,8 @@ class Live():
                 
     def clear_all_errors(self):    
         self.body_error_state = Body.ErrorState.NONE
-        self.motor_interface_front.cmd_all_motors_clear_errors()           
-        self.motor_interface_back.cmd_all_motors_clear_errors() 
+        self.motor_interface_front.clear_errors_all_motors()           
+        self.motor_interface_back.clear_errors_all_motors() 
         self.kinetic_state = KineticState.STARTUP
                                         
     def shutdown(self):

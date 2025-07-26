@@ -41,11 +41,11 @@ for key in motor_info.keys():
 
 motor_tags_front = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]
 motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags_front)    
-motor_interface_front.cmd_all_motors_off()
+motor_interface_front.disable_all_motors()
 
 motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
 motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
-motor_interface_back.cmd_all_motors_off()
+motor_interface_back.disable_all_motors()
 
 def get_motor_interface_from_tag(motor_tag : str):
     if motor_tag in motor_tags_front:
@@ -57,7 +57,7 @@ def get_motor_angle_from_tag(motor_tag : str):
     motor_interface = get_motor_interface_from_tag(motor_tag=motor_tag)   
     success = motor_interface.op_fetch_motor_angle(motor_tag=motor_tag) 
     if success: 
-        angle = motor_interface.get_motor_angle(motor_tag=motor_tag)
+        angle = motor_interface.get_motor_position(motor_name=motor_tag)
         return angle
             
 def main(stdscr):  

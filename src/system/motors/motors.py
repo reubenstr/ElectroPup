@@ -1,464 +1,402 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 """
-    Controls a collection of MG4010E-i10v3 actuators on a single CAN bus network.
-    
-    Class expects the hardware ID of the actuators to be [1 to number_of_motors]
+Controls a collection of MG4010E-i10v3 actuators on a single CAN bus network.
 
-    Creates a constains stream of target (angle, speed) updates via a thread.
-    
-    Application should poll for errors and take action such as shutting down the motors.
+Class expects the hardware ID of the actuators to be [1 to number_of_motors]
 
-    Actuator driver limitations:       
-        - The driver does not have a min and max angle, therefore there is a higher risk of collision.
-        - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
-            of setting these parameters. The torque limit is used to create 'compliance'.  
-                        
-    Motor startup angle reading is 0 to 360, but this library uses a -180 to 180 convention.
-    If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.                   
+Creates a constains stream of target (angle, speed) updates via a thread.
+
+Application should poll for errors and take action such as shutting down the motors.
+
+Actuator driver limitations:
+    - The driver does not have a min and max angle, therefore there is a higher risk of collision.
+    - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
+        of setting these parameters. The torque limit is used to create 'compliance'.
+
+Motor startup angle reading is 0 to 360, but this library uses a -180 to 180 convention.
+If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.
 """
 
+import os
+import can
 import sys
-import time
 import traceback
 import threading
-from time import sleep
-from rich import print # Overrides print and injects colors
+import subprocess
+from dataclasses import dataclass
+from time import time, sleep
+from rich import print  # Overrides print and injects colors
 from threading import Thread, Event, Lock
 from typing import Dict
 from enum import Enum
 
+
 # Local
-from . can_interface import CanInterface
+from can_interface import CanInterface
+from motor import Motor
+from interfaces import Status, CanInfo
+from motor_list import motor_list
 
 
-class Motor():
-    def __init__(self,  tag : str, motor_id : int):
-        self.tag = tag
-        self.motor_id = motor_id   
-                   
-        # Targets:       
-        self.target_speed: int = 100
-        self.target_angle_degrees : float = 0
-           
-        # Motor states (from motor driver):
-        self.temperature : int = 0
-        self.voltage : float = 0               
-        self.watts : float = 0
-        self.motor_speed : int = 0
-        self.encoder_position : int = 0
-        self.angle_degrees : float = 0
-        
-        # Motor fault states (from motor driver):
-        self.under_voltage_protection : bool = False
-        self.over_voltage_protection  : bool = False
-        self.over_temperature_protection : bool = False
-        self.lost_input_protection : bool = False    
-        
-        # Motor fault states (from library):
-        self.angle_limit_breached : bool = False
-             
-        # Communication states:
-        self.reply_timeout_count : int = 0
-        
-        # Limits:
-        self.angle_min : float = 0
-        self.angle_max : float = 0
-        
-        # Misc.
-        self.on : bool = False
-        self.apply_negative_angle_offset : bool = False
-        
-        # Driver config:
-        self.angle_pid_kp : int = 10
-        self.angle_pid_ki : int = 10
-        self.speed_pid_kp : int = 10
-        self.speed_pid_ki : int = 10
-        self.iq_pid_kp : int = 40
-        self.iq_pid_ki : int = 40
-        
-        # Other config:
-        self.max_reply_timeouts_allow : int = 3
-      
-    ###############################################################################
-    # Methods
-    ###############################################################################  
-      
-    def is_on(self):
-        return self.on     
-               
-    def is_error(self):
-        error = False
-        if self.angle_limit_breached:
-                error = True                
-        if self.under_voltage_protection or self.over_voltage_protection or self.over_temperature_protection or self.lost_input_protection:                 
-                error = True
-        if self.is_comms_error():
-                error = True
-        return error
-    
-    def is_comms_error(self):
-        return self.reply_timeout_count > self.max_reply_timeouts_allow
-    
-    def clear_all_errors(self):
-        self.under_voltage_protection = False
-        self.over_voltage_protection = False
-        self.over_temperature_protection = False
-        self.lost_input_protection = False
-        self.angle_limit_breached = False
-        self.reply_timeout_count = 0
-    
-    
-class MotorDirection(Enum):  
+class MotorDirection(Enum):
     COUNTER_CLOCKWISE = 0
     CLOCKWISE = 1
-    
 
-class Motors():
-    
+
+class Motors:
+
     ###############################################################################
     # Class Initialization
     ###############################################################################
-    
-    def __init__(self, can_bus_id : str, motor_tags : list):                
-        """
-        Parameters:
-        - can_bus_id (str): the ID of the CAN bus, example: "CAN0"
-        - motor_tags (str): list of tags as keys to access motor objects, example: ["FLA", "FLH", "FLK"]                     
-        """
-        
-        self.thread_handle = None        
-        self.exit_event = Event()   
-        self.lock = Lock()          
-        self.comm_lock = Lock()  
-        
-        self.tag = can_bus_id.upper()
-        
-        self.motors : Dict[str, Motor] = {} 
-        for i, tag in enumerate(motor_tags):
-            self.motors[tag] = Motor(tag=tag, motor_id = i + 1)
-    
-        self.can_interface = CanInterface(can_bus_id)
-        self.can_interface.op_can_init()
-                           
-                
+
+    def __init__(self, allow_enable: bool):
+        self.allow_enable: bool = allow_enable
+        self.tag: str = "Motors"
+
+        self.thread_handle = None
+        self.exit_event = Event()
+        self.lock = Lock()
+        self.comm_lock = Lock()
+
+        self.motor_enable_sequence_delay_seconds: float = 0.250
+        self.motor_disable_sequence_delay_seconds: float = 0.125
+
+        self.min_loop_rate_seconds: float = 0.050
+
+        can_channels = list({motor.can_channel for motor in motor_list() if motor.allow_motion or motor.allow_comms})
+        self.can_infos: Dict[str, CanInfo] = {}
+        for can_channel in can_channels:
+            self.can_infos[can_channel] = CanInfo(
+                can_channel=can_channel,
+                bus=None,
+                status=Status.STANDBY,
+                thread_handle=None,
+                exit_event=Event(),
+                lock=Lock(),
+            )
+
+        self.init_can_buses(self.can_infos)
+
+        self.motors: Dict[str, Motor] = {}
+        self.target_positions: Dict[str, float] = {}
+        self.target_speeds: Dict[str, float] = {}
+        self.targets_lock = Lock()
+
+        default_speed = 1.0
+        default_current_limit = 1.0
+        default_kp = 50.0
+
+        for motor in motor_list():
+            if motor.can_channel in can_channels:
+                self.motors[motor.name] = Motor(
+                    name=motor.name,
+                    motor_id=motor.id,
+                    min_angle=motor.min_angle,
+                    max_angle=motor.max_angle,
+                    inverse_rotation=motor.inverse_rotation,
+                    allow_comms=motor.allow_comms,
+                    allow_motion=motor.allow_motion,
+                    can_channel=motor.can_channel,
+                    bus=self.can_infos[motor.can_channel].bus,
+                )
+                self.target_positions[motor.name] = 0  # Will be set during enable.
+                self.target_speeds[motor.name] = default_speed
+
+    ###############################################################################
+    # CAN
+    ###############################################################################
+
+    def init_can_buses(self, can_infos: Dict[str, CanInfo]):
+
+        self.deinit_can_buses(can_infos)
+
+        for can_info in can_infos.values():
+            print(f"[{self.tag}] upping {can_info.can_channel} interface")
+
+            result = subprocess.run(
+                f"sudo ip link set {can_info.can_channel} up type can bitrate 1000000",
+                shell=True,
+                capture_output=True,
+                text=True,
+            )
+
+            if result.returncode == 0:
+                print(f"[{self.tag}] initializing {can_info.can_channel}  bus")
+                try:
+                    # USB CAN using this firmware:
+                    # https://canable.io/getting-started.html#alt-firmware
+                    # https://canable.io/updater/canable2.html
+                    can_info.bus = can.interface.Bus(interface="socketcan", channel=can_info.can_channel, bitrate=1000000)
+                except:
+                    print(f"[{self.tag}] error, unable to init {can_info.can_channel}!")
+                    can_info.status = Status.ERROR
+                    continue
+
+            else:
+                print(f"[{self.tag}] error, failed to up {can_info.can_channel}!")
+                can_info.status = Status.ERROR
+                continue
+
+            can_info.status = Status.ACTIVE
+
+    def deinit_can_buses(self, can_infos: Dict[str, CanInfo]):
+        for can_info in can_infos.values():
+            # if can_info.status == Status.ACTIVE:
+            print(f"[{self.tag}] deinitializing {can_info.can_channel}")
+            try:
+                if can_info.bus:
+                    can_info.bus.shutdown()
+                    can_info.status = Status.STANDBY
+            except:
+                print(f"[{self.tag}] error deinitializing {can_info.can_channel}!")
+
+            print(f"[{self.tag}] downing {can_info.can_channel} interface")
+            os.system(f"sudo ifconfig {can_info.can_channel} down")
+
     ###############################################################################
     # Per Motor
-    ###############################################################################      
- 
-    def cmd_motor_on(self, motor_tag : str):    
-        start = time.time() 
-        motor_id = self.motors[motor_tag].motor_id
-        success = self.can_interface.cmd_motor_on(motor_id)          
+    ###############################################################################
+
+    def cmd_motor_on(self, motor_tag: str):
+        start = time()
+        motor_id = self.motors[motor_tag].id
+        success = self.can_interface.cmd_motor_on(motor_id)
         if success:
-            print(f"[{self.tag}][{motor_tag}] command on completed, success: {success}, time: {time.time() - start:0.3f}")   
-            self.motors[motor_tag].reply_timeout_count = 0 
+            print(f"[{self.tag}][{motor_tag}] command on completed, success: {success}, time: {time() - start:0.3f}")
+            self.motors[motor_tag].reply_timeout_count = 0
             self.motors[motor_tag].on = True
         else:
-            self.motors[motor_tag].reply_timeout_count += 1 
-        return success      
-              
-    def cmd_motor_off(self, motor_tag: str) :    
-        start = time.time() 
-        motor_id = self.motors[motor_tag].motor_id
-        success = self.can_interface.cmd_motor_off(motor_id)        
+            self.motors[motor_tag].reply_timeout_count += 1
+        return success
+
+    def cmd_motor_off(self, motor_tag: str):
+        start = time()
+        motor_id = self.motors[motor_tag].id
+        success = self.can_interface.cmd_motor_off(motor_id)
         if success:
-            print(f"[{self.tag}][{motor_tag}] command off completed, success: {success}, time: {time.time() - start:0.3f}")   
-            self.motors[motor_tag].reply_timeout_count = 0 
+            print(f"[{self.tag}][{motor_tag}] command off completed, success: {success}, time: {time() - start:0.3f}")
+            self.motors[motor_tag].reply_timeout_count = 0
             self.motors[motor_tag].on = False
         else:
-            self.motors[motor_tag].reply_timeout_count += 1 
-        return success    
-          
-    def cmd_motor_set_zero_to_current_position(self, motor_tag: str):    
-        start = time.time() 
-        motor_id = self.motors[motor_tag].motor_id
-        success = self.can_interface.cmd_set_zero_to_current_pos(motor_id)                
+            self.motors[motor_tag].reply_timeout_count += 1
+        return success
+
+    def cmd_motor_set_zero_to_current_position(self, motor_tag: str):
+        start = time()
+        motor_id = self.motors[motor_tag].id
+        success = self.can_interface.cmd_set_zero_to_current_pos(motor_id)
         if success:
-            print(f"[{self.tag}][{motor_tag}] command set zero to current position completed, success: {success}, time: {time.time() - start:0.3f}")    
-            self.motors[motor_tag].reply_timeout_count = 0 
+            print(f"[{self.tag}][{motor_tag}] command set zero to current position completed, success: {success}, time: {time() - start:0.3f}")
+            self.motors[motor_tag].reply_timeout_count = 0
         else:
-            self.motors[motor_tag].reply_timeout_count += 1 
-        return success        
-    
+            self.motors[motor_tag].reply_timeout_count += 1
+        return success
+
+    '''
     def op_motor_buzz(self, motor_tag: str, duration_seconds : int):
         """Vibrates motors used to assist assembly and debugging"""
-        motor_id = self.motors[motor_tag].motor_id       
+        motor_id = self.motors[motor_tag].id       
         print(f"[{self.tag}][{motor_tag}] buzzing motor {motor_tag} with ID {motor_id} for {duration_seconds} seconds")    
-        start = time.time()        
-        while time.time() - start < duration_seconds:            
+        start = time()        
+        while time() - start < duration_seconds:            
             self.can_interface.cmd_motor_increment_angle(motor_id, speed=250, angle=1)
             sleep(0.250)
             self.can_interface.cmd_motor_increment_angle(motor_id, speed=250, angle=-1)
             sleep(0.250)
-     
-    def get_motor_tag_by_motor_id(self, motor_id : int):
-            for key, motor in self.motors.items():
-                if motor.motor_id == motor_id:
-                    return key
-            
+    '''
+
     ###############################################################################
     # All Motors
-    ###############################################################################      
-               
-    def cmd_all_motors_on(self):
-        with self.comm_lock:          
-            success = True
-            start = time.time()
-            for motor in self.motors.values():            
-                success = self.can_interface.cmd_motor_on(motor.motor_id)
-                if success:
-                    motor.on = True
-                else:
-                    success = False      
-            print(f"[{self.tag}][ALL] command motors on completed, success: {success}, time: {time.time() - start:0.3f}")
-            return success
-                
-    def cmd_all_motors_off(self):
+    ###############################################################################
+
+    def enable_all_motors(self):
+        start = time()
         with self.comm_lock:
-            self.motors_on = False
-            success = True
-            start = time.time()
             for motor in self.motors.values():
-                success = self.can_interface.cmd_motor_off(motor.motor_id)
-                if success:
-                    motor.on = False
-                else:
-                    success = False       
-            print(f"[{self.tag}][ALL] command motors off completed, success: {success}, time: {time.time() - start:0.3f}")
-            return success
-        
-    def cmd_all_motors_clear_errors(self):
-        with self.comm_lock:           
-            success = True
-            start = time.time()
+                if not motor.cmd_motor_on():
+                    return False
+            print(f"[{self.tag}][ALL] command motors on completed, time: {time() - start:0.3f}")
+            return True
+
+    def disable_all_motors(self):
+        start = time()
+        with self.comm_lock:
+            self.motors_on = False           
+            for motor in self.motors.values():
+                if not motor.cmd_motor_off():
+                    return False
+            print(f"[{self.tag}][ALL] command motors off completed, time: {time() - start:0.3f}")
+            return True
+
+    def clear_errors_all_motors(self):
+        start = time()
+        with self.comm_lock:
             for motor_tag, motor in self.motors.items():
                 self.motors[motor_tag].reply_timeout_count = 0
-                success = self.can_interface.cmd_clear_motor_errors(motor.motor_id)
-                if success:
-                    self.motors[motor_tag].clear_all_errors()
-                else:
-                    success = False       
-            print(f"[{self.tag}][ALL] command clear errors completed, success: {success}, time: {time.time() - start:0.3f}")
-            return success
-                 
-    def set_all_motors_pid(self):
-        with self.comm_lock:           
-            success = True
-            start = time.time()
+                if not motor.cmd_clear_motor_errors():
+                    return False
+            print(f"[{self.tag}][ALL] command clear errors completed, time: {time() - start:0.3f}")
+            return True
+
+    def set_pid_all_motors(self):
+        start = time()
+        with self.comm_lock:
             for motor_tag, motor in self.motors.items():
-                success = self.can_interface.cmd_set_pid_to_ram(motor.motor_id, motor.angle_pid_kp, motor.angle_pid_ki, motor.speed_pid_kp, motor.speed_pid_ki, motor.iq_pid_kp, motor.iq_pid_ki) 
-                if not success:
-                    success = False       
-            print(f"[{self.tag}][ALL] set all motors PID completed, success: {success}, time: {time.time() - start:0.3f}")
-            return success            
-        
-                
+                if not motor.cmd_set_pid_to_ram(
+                    motor.angle_pid_kp, motor.angle_pid_ki, motor.speed_pid_kp, motor.speed_pid_ki, motor.iq_pid_kp, motor.iq_pid_ki
+                ):
+                    return False
+            print(f"[{self.tag}][ALL] set all motors PID completed, time: {time() - start:0.3f}")
+            return True
+
     ###############################################################################
     # Protected Getters, Setters, and Operations
     ###############################################################################
-           
-    def set_limits(self, motor_tag : str, angle_min : float, angle_max : float):
+
+    def set_motor_targets(self, motor_name: str, speed: int, position: float):
         with self.lock:
-            self.motors[motor_tag].angle_min = angle_min
-            self.motors[motor_tag].angle_max = angle_max
-            
-    def set_apply_negative_offset_angle_flag(self, motor_tag : str, value : bool):
+            self.target_speeds[motor_name] = speed
+            self.target_positions[motor_name] = position
+   
+    def get_motor(self, motor_name: str):
         with self.lock:
-            self.motors[motor_tag].apply_negative_angle_offset = value
-                   
-    def set_motor_targets(self, motor_tag : str, speed : int, angle : float):              
+            return self.motors[motor_name]
+
+    def get_all_motors(self):
         with self.lock:
-            self.motors[motor_tag].target_speed = speed
-            self.motors[motor_tag].target_angle_degrees = angle
-         
-    def get_motor_targets(self,  motor_tag : str):      
-        with self.lock:                    
-            return self.motors[motor_tag].target_speed, self.motors[motor_tag].target_angle_degrees
-        
-    def get_motor(self, motor_tag : str):      
-        with self.lock:                    
-            return self.motors[motor_tag]
-    
-    def get_all_motors(self):      
-        with self.lock:                    
             return self.motors.copy()
-        
-    def get_motor_angle(self, motor_tag : str):      
-        with self.lock:                    
-            return self.motors[motor_tag].angle_degrees
-       
-    def op_fetch_motor_angle(self, motor_tag : str):
-        with self.lock: 
-            motor_id = self.motors[motor_tag].motor_id
-            sensor_angle = self.can_interface.req_motor_multi_angle(motor_id) 
-            
-            if self.motors[motor_tag].apply_negative_angle_offset:
-                sensor_angle += -360.0
-            
-            if sensor_angle:
-                self.motors[motor_tag].reply_timeout_count = 0 
-                self.motors[motor_tag].angle_degrees = sensor_angle  
-                return True
-            else:
-                self.motors[motor_tag].reply_timeout_count += 1     
-                return False
-                   
-    def op_set_all_target_angles_to_current_angles(self):
-        """
-        Sets all motor target angles to current current.  
-        """
-        with self.lock: 
-            for motor_tag, motor in self.motors.items(): 
-                self.motors[motor_tag].target_angle_degrees = self.motors[motor_tag].angle_degrees                
-        
-    def op_is_all_motor_angles_within_range(self, tolerance : float): 
+
+    def get_motor_position(self, motor_name: str):
+        with self.lock:
+            return self.motors[motor_name].position_degrees
+    
+    def op_is_all_motor_angles_within_range(self, tolerance: float):
         with self.lock:
             for motor_tag, motor in self.motors.items():
                 if self.is_angle_within_range(motor, tolerance) == False:
-                    #print(motor_tag, motor.angle_degrees, motor.target_angle_degrees)
-                    return False                    
-            return True 
-    
-    def is_error(self) :
-        """        
-        Args: None          
+                    # print(motor_tag, motor.angle_degrees, motor.target_angle_degrees)
+                    return False
+            return True
+
+    def is_error(self):
+        """
+        Args: None
 
         Returns:
             bool: True if motor contains a fault state or comms error
         """
         if self.is_can_error():
             return True
-        
-        if self.thread_handle:             
+
+        if self.thread_handle:
             if not self.thread_handle.is_alive():
                 return True
-        
-        with self.lock: 
+
+        with self.lock:
             error = False
             for motor_tag, motor in self.motors.items():
                 if motor.is_error():
                     error = motor_tag
-            return error      
-                                  
-                        
+            return error
+
     ###############################################################################
     # Worker (thread)
     ###############################################################################
-        
-    def _worker_set_all_targets(self):
-        """Send target speed and angle to the motors"""
-        for motor_tag, motor in self.motors.items():   
-            speed, angle = self.get_motor_targets (motor_tag)                        
-            success = self.can_interface.cmd_motor_multi_angle_2(motor.motor_id, speed, angle)  
-            if success:
-                self.motors[motor_tag].reply_timeout_count = 0  
-            else:
-                self.motors[motor_tag].reply_timeout_count += 1     
-    
-    def _worker_get_all_angles(self): 
-        success = True  
-        for motor_tag, motor in self.motors.items():
-            if self.op_fetch_motor_angle(motor_tag) == False:
-                success = False 
-        return success        
-    
-    def _worker_get_all_status(self):
-        """Get motor status from the motors"""        
-        for motor_tag, motor in self.motors.items():   
-            result = self.can_interface.req_state_1(motor.motor_id)  
-            if result:                          
-                with self.lock:             
-                    self.motors[motor_tag].temperature = result['temperature']
-                    self.motors[motor_tag].voltage = result['voltage']
-                    self.motors[motor_tag].under_voltage_protection = result['under_voltage_protection']  
-                    self.motors[motor_tag].over_voltage_protection = result['over_voltage_protection']
-                    self.motors[motor_tag].over_temperature_protection = result['over_temperature_protection']
-                    self.motors[motor_tag].lost_input_protection = result['lost_input_protection']  
-    
+
+    def start(self):
+        print(f"[{self.tag}] starting motor worker threads")
+        if not all(can_info.status == Status.ACTIVE for can_info in self.can_infos.values()):
+            print(f"[{self.tag}] error, unable to start motors, not all CAN interfaces are active!")
+            return
+
+        for can_info in self.can_infos.values():
+            if not can_info.thread_handle or not can_info.thread_handle.is_alive():              
+                can_info.thread_handle = threading.Thread(target=self._worker, args=(can_info,))
+                can_info.thread_handle.start()
+
+    def _stop(self):
+        for can_info in self.can_infos.values():
+            if can_info.thread_handle and can_info.thread_handle.is_alive():
+                print(f"[{self.tag}] exiting thread for {can_info.can_channel}")
+                can_info.exit_event.set()
+                can_info.thread_handle.join()
+
+    """
     def _worker_check_all_angle_limits(self)   :
         with self.lock:
             for motor_tag, motor in self.motors.items(): 
-                if motor.angle_degrees < motor.angle_min or motor.angle_degrees > motor.angle_max:
+                if motor.position_degrees < motor.angle_min or motor.position_degrees > motor.angle_max:
                     self.motors[motor_tag].angle_limit_breached = True 
-                    print(f"[{motor_tag}] error, breach! angle: {motor.angle_degrees}, min: {motor.angle_min}, max: {motor.angle_max}")
+                    print(f"[{motor_tag}] error, breach! angle: {motor.position_degrees}, min: {motor.angle_min}, max: {motor.angle_max}")
+    """
 
-    
-    def worker(self):      
-        """
-        Main function that continously updates motor targets (speed, position) and checks for errors.
-        """  
-       
-        print(f"[{self.tag}][Worker] starting") 
-       
-        # Set target angles to current angle to prevent startup runaways
-        # Check started position and apply offset if required.
-        if self._worker_get_all_angles():
-            self.op_set_all_target_angles_to_current_angles()                        
-            for motor_tag, motor in self.motors.items(): 
-                if self.motors[motor_tag].angle_degrees > 180.0:
-                    self.motors[motor_tag].apply_negative_angle_offset = True    
-            print(f"[{self.tag}][Run] all motor target angles set to physical angles")            
-        else:    
-            print(f"[{self.tag}][Run] error, unable to set all motor target angles, exiting thread!")
-            return
-        
-        # Set all PID values.
-        if self.set_all_motors_pid():
-            print(f"[{self.tag}][Run] all motor PID values set")
-        else:
-            print(f"[{self.tag}][Run] error, unable to set all motor PID values, exiting thread!")
-            return    
-        
-        self.exit_event.clear()          
-        while not self.exit_event.is_set():             
-            start = time.time()        
-            
-            if self.is_error():
-                print(f"[{self.tag}] error, exiting thread!")  
-                self.cmd_all_motors_off()
-                break           
-                                   
-            with self.comm_lock:                
-                self._worker_set_all_targets()                                
-                self._worker_get_all_angles()                                        
-                self._worker_get_all_status()                
-                self._worker_check_all_angle_limits() 
-                                   
-                #print(f"[{self.tag}][Motors] processing time: {((time.time() - start) * 1000):0.2f}")   
-                           
-                                 
+    def _worker(self, can_info: CanInfo):
+        can_info.exit_event.clear()
+
+        for key, motor in self.motors.items():
+            if motor.allow_comms:
+                motor.req_position()
+                if motor.position_degrees > 180.0:
+                    motor.set_apply_position_offset(True)
+                self.target_positions[key] = motor.position_degrees
+                # SET MOTOR TARGET?
+                # TODO: set PIDs
+
+        while not can_info.exit_event.is_set():
+            loop_time = time()
+            for key, motor in self.motors.items():
+                if motor.can_channel == can_info.can_channel:
+                    with self.targets_lock:
+                        target_angle = self.target_positions[key]
+                        target_speed = self.target_speeds[key]
+
+                    with can_info.lock:
+                        if motor.allow_motion and motor.is_enabled():
+                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
+                            motor.req_position()
+                            motor.req_state_1()
+
+                        elif motor.allow_comms:
+                            motor.req_position()
+                            motor.req_state_1()
+
+                    # check error
+
+            delta = time() - loop_time
+
+            if delta < self.min_loop_rate_seconds:
+                sleep(self.min_loop_rate_seconds - delta)
+
+            can_info.loop_completion_time_ms = (time() - loop_time) * 1000
+            print("LOOP TIME:", can_info.loop_completion_time_ms)
+
     ###############################################################################
-    # General 
-    ###############################################################################  
-                    
+    # General
+    ###############################################################################
+
+    def shutdown(self):
+        self._stop()
+        self.disable_all_motors()
+        self.deinit_can_buses(self.can_infos)
+
     @staticmethod
-    def is_angle_within_range(motor : Motor, tolerance: float) -> bool:        
+    def is_angle_within_range(motor: Motor, tolerance: float) -> bool:
         def normalize(angle):
             """Normalize the angle to be within the range of 0 to 360 degrees."""
-            return angle % 360   
-        difference = abs(normalize(motor.target_angle_degrees) - normalize(motor.angle_degrees))
+            return angle % 360
+
+        difference = abs(normalize(motor.target_position_degrees) - normalize(motor.position_degrees))
         return difference <= tolerance or difference >= (360 - tolerance)
-           
+
     def is_can_error(self):
-        return self.can_interface.is_can_error()   
-    
-    def start(self):       
-        if not self.thread_handle or not self.thread_handle.is_alive():
-            self.thread_handle = threading.Thread(target=self.worker)
-            self.thread_handle.start()
-              
-    def shutdown(self):
-        if self.thread_handle and self.thread_handle.is_alive():
-            self.exit_event.set()   
-            self.thread_handle.join()    
-        self.cmd_all_motors_off()
-        self.can_interface.op_can_deinit()    
-    
+        return self.can_interface.is_can_error()
+
+ 
     ###############################################################################
     # Helpers
     ###############################################################################
- 
+
     """ def angle_direction(self, motor_tag: str, current_angle : float, target_angle : float):   
         '''Determine the direction of movement from going from the current angle to the target angle'''
         difference = target_angle - current_angle
@@ -474,82 +412,49 @@ class Motors():
             print(f"[{self.tag}][{motor_tag}] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
         return direction """
 
+
 ###############################################################################
 # Main / Entry - For Testing
 ###############################################################################
 if __name__ == "__main__":
-    
-    print("Starting motor test...")
 
-    try:   
-        can_bus_id = 'can0'
+   
 
-        #motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]     
-        motor_tags = ["FLA", "FLH", "FLK"]
-        
-     
-        motor_set_0 = Motors(can_bus_id=can_bus_id, motor_tags=motor_tags)        
-              
-        motor_set_0.cmd_all_motors_on()
-        
-        # Disabling prints from the can interface reduces time between transmissions.
-        motor_set_0.can_interface.enable_prints(False)
-         
+    motors = Motors(allow_enable=True)
+    motors.start()
+
+    test = 1
+    print(f"Starting motor test: {test}")
+
+
+    try:    
+        if test == 0:
+            while True:
+                print(motors.motors['FLA'].position_degrees)
+                sleep(0.100)
+
+
+        elif test == 1:
+            motors.enable_all_motors()
+            while True:
+                motors.set_motor_targets(motor_name="FLA", speed=2000, position=90)
+                # motor_set_0.set_motor_targets(motor_tag="FLH", speed=1500, angle=90)
+                # motor_set_0.set_motor_targets(motor_tag="FLK", speed=1000, angle=90)
+                sleep(2)
+                motors.set_motor_targets(motor_name="FLA", speed=2000, position=180)
+                # motor_set_0.set_motor_targets(motor_tag="FLH", speed=1500, angle=180)
+                # motor_set_0.set_motor_targets(motor_tag="FLK", speed=1000, angle=180)
+                sleep(2)
        
-        test = 1        
-        if test == 0:    
-            """
-            Vibrate individual motors for identification and debugging.
-            """             
-            while(True):
-                motor_set_0.op_motor_buzz(motor_tag="FLA", duration_seconds = 1)
-                motor_set_0.op_motor_buzz(motor_tag="FLH", duration_seconds = 1)
-                motor_set_0.op_motor_buzz(motor_tag="FLK", duration_seconds = 1)
-        
-        elif test ==  1:
-            """
-            Start the update thread, change target angles
-            """
-    
-            motor_set_0.start()    
-                
-            while(True):
-                motor_set_0.set_motor_targets(motor_tag="FLA", speed=2000, angle=90)   
-                motor_set_0.set_motor_targets(motor_tag="FLH", speed=1500, angle=90)  
-                motor_set_0.set_motor_targets(motor_tag="FLK", speed=1000, angle=90)           
-                sleep(2)
-                motor_set_0.set_motor_targets(motor_tag="FLA", speed=2000, angle=180)
-                motor_set_0.set_motor_targets(motor_tag="FLH", speed=1500, angle=180)  
-                motor_set_0.set_motor_targets(motor_tag="FLK", speed=1000, angle=180)  
-                sleep(2)
-                
-        elif test ==  2:
-            """
-            Update the target angle and print current angle periodically
-            """
-            motor_set_0.start()   
-            
-            start_update = time.time()
-            start_print = time.time()
-            toggle = True
-            while(True):
-                if time.time() - start_update > 1: 
-                    start_update = time.time() 
-                    toggle = not toggle        
-                    motor_set_0.set_motor_targets(motor_tag="FLA", speed=500, angle=45 if toggle else 270)                 
-                if time.time() - start_print > 0.050: 
-                    start_print = time.time()             
-                    motors = motor_set_0.get_all_motors()  
-                    print(motors["FLA"].angle_degrees)
-      
+
     except Exception as e:
         print(e)
         print(traceback.format_exc())
-    
+
     except KeyboardInterrupt:
-        print ('Keyboard interrupt, exiting')
-        
-    finally:         
-        motor_set_0.shutdown()       
-                   
-        sys.exit(0)   
+        print("Keyboard interrupt, exiting")
+
+    finally:
+        motors.shutdown()
+
+        sys.exit(0)
