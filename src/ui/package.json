@@ -37,6 +37,7 @@
     "expo-system-ui": "~5.0.7",
     "expo-three": "^8.0.0",
     "expo-web-browser": "~14.1.6",
+    "plotly.js": "^2.35.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
@@ -50,6 +51,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
+    "react-plotly.js": "^2.6.0",
     "socket.io-client": "^4.8.1",
     "zustand": "^5.0.4"
   },

@@ -1,40 +1,68 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { View } from 'react-native';
-import { GLView } from 'expo-gl';
-import { Renderer } from 'expo-three';
-import * as THREE from 'three';
-
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { Platform, View, Text, StyleSheet, LayoutChangeEvent, TouchableOpacity } from 'react-native';
 import { QuadData } from '@/interfaces/messages';
+import { Switch } from 'react-native-paper';
+import { PlotData } from '@/interfaces/messages';
 
 
-const legColor = '#00cd00';
 
-
+const scale = (values: number[]): number[] => {
+  // Convert meters into milimeters
+  return values.map(v => v * 1000);
+}
 interface Plot3DProps {
   quadData?: QuadData;
 }
 
 export default function Plot3D({ quadData }: Plot3DProps) {
-
-  const isDragging = useRef(false);
-  const lastMousePosition = useRef({ x: 0, y: 0 });
-  const rotation = useRef({ x: 0, y: 0 });
-  const pan = useRef({ x: 0, y: 0 });
-  const cameraRef = useRef();
-  const groupRef = useRef();
-
-  //////////////////////////////
-
-  const [pointSets, setPointSets] = useState([]);
-
-
+  const [Plot, setPlot] = useState<any>(null);
   const [hold, setHold] = useState(false);
-  const lastUpdateRef = useRef<number>(0);
-  const [throttledPlotData, setThrottledPlotData] = useState<any[]>([]);
+  const [plotWidth, setPlotWidth] = useState(0);
+  const [plotHeight, setPlotHeight] = useState(0);
   const [checkedValues, setCheckedValues] = useState({ x: true, y: true, z: true, sim: true, live: true });
 
+  const lastUpdateRef = useRef<number>(0);
+  const [throttledPlotData, setThrottledPlotData] = useState<any[]>([]);
 
   const max_plot_refresh_rate_ms: number = 50
+
+  const gridBoundry = 600;
+  const legColor = '#00cd00';
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      if (typeof self === 'undefined') {
+        (global as any).self = global;
+      }
+      import('react-plotly.js').then((mod) => {
+        setPlot(() => mod.default);
+      }).catch(err => {
+        console.error("Failed to load react-plotly.js", err);
+      });
+    }
+  }, []);
+
+  const onLayoutContainer = (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setPlotWidth(width);
+    setPlotHeight(height);
+  };
+
+  const computePlotData = useMemo(() => {
+    return (quadData: QuadData) => {
+      const plotData: any[] = []
+
+      if (quadData.plotSim && checkedValues.sim) {
+        plotData.push(...generatePlotData(quadData.plotSim));
+      }
+
+      if (quadData.plotLive && checkedValues.live) {
+        plotData.push(...generatePlotData(quadData.plotLive));
+      }
+
+      return plotData;
+    };
+  }, [legColor, checkedValues]);
 
   useEffect(() => {
     if (quadData) {
@@ -42,175 +70,285 @@ export default function Plot3D({ quadData }: Plot3DProps) {
       if (Date.now() - lastUpdateRef.current > max_plot_refresh_rate_ms) {
         lastUpdateRef.current = Date.now();
         setThrottledPlotData(computePlotData(quadData));
-        console.log(throttledPlotData)
       }
     }
-  }, [quadData]);
+  }, [quadData, hold, computePlotData]);
+
+  const defaultZoomLevel = 0.5;
+  const layout = useMemo(() => ({
+    scene: {
+      xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      yaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      zaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      camera: {
+        eye: { x: checkedValues.x ? defaultZoomLevel : 0, y: checkedValues.y ? defaultZoomLevel : 0, z: checkedValues.z ? defaultZoomLevel : 0 },
+        center: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+      },
+      aspectmode: 'cube',
+    },
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    paper_bgcolor: 'rgba(0, 0, 0, 0)',
+    plot_bgcolor: 'rgba(0, 0, 0, 0)',
+    font: { color: 'white' },
+  }), [checkedValues, gridBoundry]);
+
+  const config = useMemo(() => ({
+    displayModeBar: false,
+    responsive: true,
+  }), []);
+
+  const plotComponentStyle = useMemo(() => ({
+    width: plotWidth,
+    height: plotHeight,
+  }), [plotWidth, plotHeight]);
+
+  const toggleCheckbox = (key: string) => {
+    setCheckedValues((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const handleHoldClick = () => {
+    console.log(hold)
+    setHold(!hold);
+  };
 
 
-  const computePlotData = useMemo(() => {
-    return (quadData: QuadData) => {
-      const plotData: any[] = []
-
-      if (quadData.plotSim && checkedValues.sim) {
-        //plotData.push(...generatePlotData(quadData.plotSim));
-        plotData.push(...generatePlotData(quadData.plotSim));
-      }
-
-      if (quadData.plotLive && checkedValues.live) {
-        plotData.push(...generatePlotData(quadData.plotLive));
-      }
-    
-      return plotData;
-    };
-  }, [legColor, checkedValues]);
-
-
-  const generatePlotData = (plotData: any): any[] => {
-    const newPointSets = [];
-
-    if (plotData.body) {           
-        const points = plotData.body.points.map((point) =>
-          new THREE.Vector3(point.x, point.y, point.z)
-        );
-        points.push(points[0])
-        newPointSets.push(points);   
+  const generatePlotData = (plotData: PlotData): any[] => {
+    const newPlotData: any = [];
+    if (plotData.cog) { newPlotData.push({ x: [plotData.cog.x], y: [plotData.cog.y], z: [plotData.cog.z], type: 'scatter3d', mode: 'markers', name: 'cog', showlegend: false, marker: { color: 'blue' } }); }
+    if (plotData.body) {
+      newPlotData.push({
+        x: scale(plotData.body.x),
+        y: scale(plotData.body.y),
+        z: scale(plotData.body.z),
+        type: 'scatter3d',
+        mode: 'markers+lines',
+        name: 'body',
+        showlegend: false,
+        marker: { color: 'blue' },
+        line: {
+          shape: 'linear',
+          width: 5, color: 'black'
+        }
+      });
     }
 
     if (plotData.legs) {
-      plotData.legs.forEach((leg) => {
-        const points = leg.points.map((point) =>
-          new THREE.Vector3(point.x, point.y, point.z)
-        );
-        newPointSets.push(points);
+      plotData.legs.map((leg, index) => {
+        newPlotData.push({
+          x: scale(leg.x),
+          y: scale(leg.y),
+          z: scale(leg.z),
+          type: 'scatter3d',
+          mode: 'markers+lines',
+          name: leg.name,
+          showlegend: false,
+          line: { shape: 'linear', width: 5, color: 'black' },
+          marker: { color: legColor }
+        });
       });
     }
 
-    return newPointSets;
-  }
+    if (plotData.mesh) {
+      newPlotData.push(
+        {
+          x: plotData.mesh.x,
+          y: plotData.mesh.y,
+          z: plotData.mesh.z,
+          type: 'mesh3d',
+          name: 'mesh',
+          showlegend: false,
+          opacity: 0.1,
+          color: '#ffa801'
+        });
+    }
 
-
-
-  function createCircleTexture(size = 64) {
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    // Draw circle
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-    ctx.fillStyle = 'white';
-    ctx.fill();
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }
-
-  const onContextCreate = async (gl) => {
-    const { drawingBufferWidth: width, drawingBufferHeight: height } = gl;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 1);
-    cameraRef.current = camera;
-
-    const renderer = new Renderer({ gl });
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 1);
-
-    const group = new THREE.Group();
-    groupRef.current = group;
-
-    throttledPlotData.forEach((points, i) => {
-      const pointMat = new THREE.PointsMaterial({
-        color: 0x00ff00,
-        size: 0.05,
-        sizeAttenuation: true,
-        map: createCircleTexture(),
-        alphaTest: 0.5,
-        transparent: true,
+    if (plotData.trajectories) {
+      plotData.trajectories.map((trajectory, index) => {
+        const pI = trajectory.x.map((_, i) => i);
+        const m = { size: 4, color: pI, colorscale: index > 8 ? [[0, 'yellow'], [1, 'green']] : [[0, 'red'], [1, 'blue']] };
+        newPlotData.push({
+          x: trajectory.x,
+          y: trajectory.y,
+          z: trajectory.z,
+          type: 'scatter3d',
+          mode: 'markers+lines',
+          name: trajectory.name,
+          showlegend: false,
+          line: { shape: 'linear', width: 6, color: 'black' },
+          marker: m
+        });
       });
-      // Points
-      const pointGeom = new THREE.BufferGeometry().setFromPoints(points);
-      const pointCloud = new THREE.Points(pointGeom, pointMat);
-      group.add(pointCloud);
+    }
 
-      // Lines (connecting points within the same set)
-      const lineMat = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-      const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(lineGeom, lineMat);
-      group.add(line);
-    });
+    if (plotData.softTrajectories) {
+      plotData.softTrajectories.map((trajectory, index) => {
+        newPlotData.push({
+          x: trajectory.x,
+          y: trajectory.y,
+          z: trajectory.z,
+          type: 'scatter3d',
+          mode: 'markers+lines',
+          name: `soft-${index}`,
+          showlegend: false,
+          line: { shape: 'linear', width: 6, color: 'black' },
+          marker: { size: 4, color: 'yellow' }
+        });
+      });
+    }
 
-    scene.add(group);
+    if (plotData.rings) {
+      plotData.rings.forEach((ring, index) => {
+        newPlotData.push({
+          x: ring.x,
+          y: ring.y,
+          z: ring.z,
+          type: 'scatter3d',
+          mode: 'markers+lines',
+          name: `ring-${index}`,
+          showlegend: false,
+          line: { shape: 'linear', width: 6, color: 'black' },
+          marker: { size: 4, color: 'yellow' }
+        });
+      });
+    }
+    return newPlotData;
+  }
 
-    const light = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(light);
+  if (Platform.OS !== 'web') {
+    return (
+      <Text style={styles.errorText}>Plot not supported on native platform.</Text>
+    );
+  }
 
-    const canvas = gl.canvas;
+  if (!Plot) {
+    return (
+      <View style={styles.container} onLayout={onLayoutContainer}>
+        <Text style={styles.loadingText}>Loading plot library...</Text>
+      </View>
+    );
+  }
 
-    // Mouse controls
-    canvas.addEventListener('mousedown', (e) => {
-      isDragging.current = true;
-      lastMousePosition.current = { x: e.clientX, y: e.clientY };
-    });
+  if (plotWidth === 0 || plotHeight === 0) {
+    return (
+      <View style={styles.container} onLayout={onLayoutContainer}>
+        <Text style={styles.loadingText}>Measuring layout...</Text>
+      </View>
+    );
+  }
 
-    canvas.addEventListener('mouseup', () => {
-      isDragging.current = false;
-    });
-
-    canvas.addEventListener('mouseleave', () => {
-      isDragging.current = false;
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (!isDragging.current) return;
-
-      const dx = e.clientX - lastMousePosition.current.x;
-      const dy = e.clientY - lastMousePosition.current.y;
-      lastMousePosition.current = { x: e.clientX, y: e.clientY };
-
-      if (e.shiftKey) {
-        // PAN CAMERA
-        const panSpeed = 0.01;
-        pan.current.x -= dx * panSpeed;
-        pan.current.y += dy * panSpeed;
-        camera.position.x = pan.current.x;
-        camera.position.y = pan.current.y;
-      } else {
-        // ROTATE SCENE
-        rotation.current.y += dx * 0.01;
-        rotation.current.x += dy * 0.01;
-      }
-    });
-
-    // Zoom
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomSpeed = 0.5;
-      camera.position.z += e.deltaY * 0.01 * zoomSpeed;
-      camera.position.z = Math.max(1, Math.min(camera.position.z, 50)); // Clamp zoom
-    });
-
-    const animate = () => {
-      requestAnimationFrame(animate);
-      group.rotation.y = rotation.current.y;
-      group.rotation.x = rotation.current.x;
-
-      renderer.render(scene, camera);
-      gl.endFrameEXP();
-    };
-    animate();
-  };
+  if (!quadData) {
+    return (
+      <View style={styles.container} onLayout={onLayoutContainer}>
+        <Text style={styles.loadingText}>Waiting for data...</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ flex: 1 }}>
-      <GLView
-        style={{ flex: 1 }}
-        onContextCreate={onContextCreate}
-        webglContextAttributes={{ preserveDrawingBuffer: true }}
+    <View style={styles.container} onLayout={onLayoutContainer}>
+      <View style={styles.checkboxesRow}>
+        <View style={styles.checkboxContainer}>
+          <Switch
+            value={checkedValues.x}
+            onValueChange={() => toggleCheckbox('x')}
+            color={'#0077ff'}
+          />
+          <Text style={styles.checkboxText}>X</Text>
+          <Switch
+            value={checkedValues.y}
+            onValueChange={() => toggleCheckbox('y')}
+            color={'#0077ff'}
+          />
+          <Text style={styles.checkboxText}>Y</Text>
+          <Switch
+            value={checkedValues.z}
+            onValueChange={() => toggleCheckbox('z')}
+            color={'#0077ff'}
+          />
+          <Text style={styles.checkboxText}>Z</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.holdButton}
+          onPress={() => handleHoldClick()}>
+          <Text style={styles.holdButtonText}>{hold ? 'UNHOLD' : 'HOLD'}</Text>
+        </TouchableOpacity>
+        <Switch
+          value={checkedValues.sim}
+          onValueChange={() => toggleCheckbox('sim')}
+          color={'#0077ff'}
+        />
+        <Text style={styles.checkboxText}>SIM</Text>
+        <Switch
+          value={checkedValues.live}
+          onValueChange={() => toggleCheckbox('live')}
+          color={'#0077ff'}
+        />
+        <Text style={styles.checkboxText}>LIVE</Text>
+      </View>
+      <Plot
+        data={throttledPlotData}
+        layout={layout}
+        style={plotComponentStyle}
+        config={config}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+  },
+  checkboxesRow: {
+    position: 'absolute',
+    zIndex: 9999,
+    top: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+  checkboxText: {
+    paddingLeft: 5,
+    paddingRight: 15,
+    color: 'white'
+  },
+  holdButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+    borderRadius: 4,
+    backgroundColor: '#0077ff',
+    width: 75,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 30
+  },
+  holdButtonText: {
+
+  },
+  loadingText: {
+    fontSize: 18,
+    color: 'white',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+  },
+
+});
+

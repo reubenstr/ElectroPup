@@ -131,6 +131,8 @@ class Forwarder:
     def _create_plot_data(self, quad: Quad):
         """
         Convert a hexapod object into points for the UI.
+        The kinematics uses a different convention that standard ploting libaries,
+        therefore rotate the points to match the expected convention of the UI plotting library.
         """
         plot = {}
         if quad:
@@ -153,24 +155,24 @@ class Forwarder:
             # plot["body"]["y"] = [round(point.y, 2) for point in points]
             # plot["body"]["z"] = [round(point.z, 2) for point in points]
 
-            plot["body"] = []
-            
-            data = {}
-            data["name"] = "body"
-            data["points"] = []
-            for key, point in quad.get_body_coordinates().items():
-                data["points"].append({"x": round(point.x, 3), "y": round(point.y, 3), "z": round(point.z, 3)})            
-            plot["body"] = data
-
-
             plot["legs"] = []
-            for key, points in quad.get_leg_coordinates().items():
-                data = {}
-                data["name"] = key
-                data["points"] = [{"x": round(point.x, 3), "y": round(point.y, 3), "z": round(point.z, 3)} for point in points]
-                plot["legs"].append(data)
+            for key, points in quad.get_leg_coordinates().items():              
+                leg_data = {}
+                leg_data["name"] = key
+                leg_data["x"] = [round(point.z, 2) for point in points]
+                leg_data["y"] = [round(point.x, 2) for point in points]
+                leg_data["z"] = [round(point.y, 2) for point in points]
+                plot["legs"].append(leg_data)
 
-            """
+             
+            plot["body"] = {}
+            points = quad.get_body_coordinates() + [quad.get_body_coordinates()[0]]
+            plot["body"]["name"] = "body"
+            plot["body"]["x"] = [round(point.z, 2) for point in points]
+            plot["body"]["y"] = [round(point.x, 2) for point in points]
+            plot["body"]["z"] = [round(point.y, 2) for point in points]
+
+        """
 
 
             leg_data["x"] = [round(point.x, 2) for point in points]

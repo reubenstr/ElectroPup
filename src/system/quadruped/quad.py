@@ -109,8 +109,7 @@ class Quad(object):
 
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
-
-            # legs: Dict[str, Leg] = {}
+   
             self.legs["front_left"] = Leg(
                 0,
                 0,
@@ -176,12 +175,11 @@ class Quad(object):
         Return coordinates of each hip as a list of 4 points
         """
 
-        return {
-            "BR": self.legs["back_right"].get_hip_point(),
-            "FR": self.legs["front_right"].get_hip_point(),
-            "FL": self.legs["front_left"].get_hip_point(),
-            "BL": self.legs["back_left"].get_hip_point(),
-        }
+        return [ self.legs["back_right"].get_hip_point(),
+           self.legs["front_right"].get_hip_point(),
+             self.legs["front_left"].get_hip_point(),
+             self.legs["back_left"].get_hip_point()]
+       
 
     def get_leg_coordinates(self) -> dict[str, list[Point]]:
         """
