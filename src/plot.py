@@ -16,7 +16,7 @@ from math import pi
 from time import sleep
 
 # Local source.
-from system.quadruped.body import Body
+from system.quadruped.quad import Quad
 from system.gamepad.gamepad import Gamepad
 from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters, KineticState
@@ -25,7 +25,7 @@ from system.quadruped.parameters.motion_parameters import MotionParameters, Kine
 class Plot:
     def __init__(self):
 
-        self.body = Body()
+        self.body = Quad()
 
     def create_plot(self):
         """Create the 3D plot"""
@@ -68,7 +68,7 @@ class Plot:
             y=.2,
             z=0,
         )
-        if error_state == Body.ErrorState.NONE:
+        if error_state == Quad.ErrorState.NONE:
 
             
 

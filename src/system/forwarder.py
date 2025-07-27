@@ -13,7 +13,7 @@ from dataclasses import dataclass, asdict
 
 from system.utilities.key_converter import KeyConverter
 from system.status import SystemStatus
-from system.quadruped.body import Body
+from system.quadruped.quad import Quad
 from system.interfaces import Contacts
 from system.quadruped.parameters.ik_parameters import IKParameters
 
@@ -53,11 +53,11 @@ class Forwarder:
     # Public Methods
     ###############################################################################
 
-    def set_sim_quad(self, quad: Body):
+    def set_sim_quad(self, quad: Quad):
         with self.data_lock:
             self.sim_quad = deepcopy(quad)
 
-    def set_live_quad(self, quad: Body):
+    def set_live_quad(self, quad: Quad):
         with self.data_lock:
             self.live_quad = deepcopy(quad)
 
@@ -128,7 +128,7 @@ class Forwarder:
     # Private Methods
     ###############################################################################
 
-    def _create_plot_data(self, quad: Body):
+    def _create_plot_data(self, quad: Quad):
         """
         Convert a hexapod object into points for the UI.
         """

@@ -1,29 +1,32 @@
+from dataclasses import dataclass
+
 """
     User inputs that modify the rotation and translation of the hexapod.
     Edit these values to prevent inputs that cause positional errors.
 """
 
+@dataclass
 class IKParameters:  
     # Rotation limits in degrees:
-    rotate_x_min: float = -30
-    rotate_x_max: float = 30
-    rotate_y_min: float = -45
-    rotate_y_max: float = 45
-    rotate_z_min: float = -45
-    rotate_z_max: float = 45
+    roll_min: float = -30
+    roll_max: float = 30
+    pitch_min: float = -45
+    pitch_max: float = 45
+    yaw_min: float = -45
+    yaw_max: float = 45
 
     # Translation limits in millimeters:
-    translate_x_min: float = -100
-    translate_x_max: float = 100
-    translate_y_min: float = -100
-    translate_y_max: float = 100
-    translate_z_min: float = -100
-    translate_z_max: float = 100
+    forward_translation_min: float = -100
+    forward_translation_max: float = 100
+    side_translation_min: float = -100
+    side_translation_max: float = 100
+    height_translation_min: float = -100
+    height_translation_max: float = 100
 
     # Do not change, will be overwritten:
-    translate_x: float = 0
-    translate_y: float = 0
-    translate_z: float = 0
-    rotate_x: float = 0
-    rotate_y: float = 0
-    rotate_z: float = 0
+    forward_translation: float = 0
+    side_translation: float = 0
+    height_translation: float = 0
+    roll: float = 0
+    pitch: float = 0
+    yaw: float = 0

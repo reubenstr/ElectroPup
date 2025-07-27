@@ -8,7 +8,7 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 
-from system.quadruped.body import Body
+from system.quadruped.quad import Quad
 from system.gamepad.gamepad import Gamepad
 from system.parameters.frame_parameters import FrameParameters
 from system.parameters.motion_parameters import MotionParameters, KineticState
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     gamepad = Gamepad(motion_parameters)
     gamepad.set_kinetic_state(KineticState.POSE)
 
-    body = Body(frame_parameters=frame_parameters)
+    body = Quad(frame_parameters=frame_parameters)
 
     joint_angles = None
     start = time.time()
@@ -102,7 +102,7 @@ if __name__ == "__main__":
                 z=new_motion_parameters.forward_translation,
             )
 
-            if error_state == Body.ErrorState.NONE:
+            if error_state == Quad.ErrorState.NONE:
                 joint_angles = body.get_joint_angles(units="RADIANS")
 
                 # print(joint_angles)

@@ -15,7 +15,7 @@ from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.point import Point
 
 
-class Body(object):
+class Quad(object):
     """
     Encapsulates a 12 DOF quadruped.
 
@@ -166,13 +166,13 @@ class Body(object):
             error_string = self.check_joint_angles(self.legs)
             if error_string != None:
                 print(error_string)
-                return Body.ErrorState.JOINT
+                return Quad.ErrorState.JOINT
         
         except DomainBreach as error:
             print(error)
-            return Body.ErrorState.KINEMATICS
+            return Quad.ErrorState.KINEMATICS
 
-        return Body.ErrorState.NONE
+        return Quad.ErrorState.NONE
     
 
     def get_body_coordinates(self) -> dict[str, Point]:
