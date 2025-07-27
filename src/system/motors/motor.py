@@ -65,7 +65,7 @@ class Motor:
 
         # Communication states:
         self.send_error: bool = False
-        self.reply_timeout_ms: float = 30.0
+        self.reply_timeout_seconds: float = 0.050
         self.reply_timeout_count: int = 0
 
         # Driver config:
@@ -100,7 +100,7 @@ class Motor:
             return False
 
     def op_wait_for_reply(self) -> Optional[can.Message]:
-        reply = self.bus.recv(self.reply_timeout_ms / 1000.0)
+        reply = self.bus.recv(self.reply_timeout_seconds)
         if reply == None:
             self.reply_timeout_count += 1
         return reply
@@ -167,7 +167,6 @@ class Motor:
             return False
         reply = self.op_wait_for_reply()
         return reply and self.motor_id == reply.arbitration_id - 0x140
-
 
     ###############################################################################
     # Requests
@@ -259,25 +258,17 @@ class Motor:
     def is_enabled(self) -> bool:
         return self.enabled
 
-
     def set_apply_position_offset(self, value: bool):
         self.apply_position_offset = value
 
     def is_error(self) -> bool:
-        error = False
-        if self.under_voltage_protection or self.over_voltage_protection or self.over_temperature_protection or self.lost_input_protection:
-            error = True
-        if self.is_comms_error():
-            error = True
-        return error
+        return self.is_hardware_error() or self.is_comms_error()
+
+    def is_hardware_error(self) -> bool:
+        return any([self.under_voltage_protection, self.over_voltage_protection, self.over_temperature_protection, self.lost_input_protection])
 
     def is_comms_error(self) -> bool:
-        error = False
-        if self.send_error:
-            error = True
-        if self.reply_timeout_count > self.max_reply_timeouts_allow:
-            error = True
-        return error
+        return self.send_error or self.reply_timeout_count > self.max_reply_timeouts_allow
 
     def clear_all_errors(self):
         self.under_voltage_protection = False
@@ -319,4 +310,3 @@ class Motor:
     @staticmethod
     def map_range(x, in_min, in_max, out_min, out_max):
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-

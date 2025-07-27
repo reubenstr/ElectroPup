@@ -42,3 +42,4 @@ class CanInfo:
     lock: Lock
     exit_event: Event
     loop_completion_time_ms: float = 0.01    
+    worker_running_flag: bool = False
