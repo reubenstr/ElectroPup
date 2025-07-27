@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-    ElectroPup main application to control the physical quadruped with live input from the gamepad.
+ElectroPup main application to control the physical quadruped with live input from the gamepad.
 """
 
 import os
@@ -11,7 +11,7 @@ import traceback
 import subprocess
 from math import pi
 from time import sleep
-from rich import print # Overrides print and injects colors
+from rich import print  # Overrides print and injects colors
 from math import degrees
 from typing import List, Dict
 
@@ -33,7 +33,7 @@ from system.status import SystemStatus
 from system.forwarder import Forwarder
 
 
-class Main():
+class Main:
     def __init__(self, mode: OpModes):
         self.op_mode: OpModes = mode
 
@@ -41,18 +41,15 @@ class Main():
 
         allow_enable = True if self.op_mode == OpModes.LIVE else False
 
-
         self.input = Input(callback=self.controller_event_callback)
         self.forwarder = Forwarder()
 
-
-
-        self.quad_sim= Quad()  
-        self.quad_live = Quad() 
+        self.quad_sim = Quad()
+        self.quad_live = Quad()
 
         ######################################################################
-           
-        '''   
+
+        """   
         self.aux = Aux() 
         self.aux_send_rate_seconds : float = 0.125
 
@@ -74,7 +71,7 @@ class Main():
         
         #self.pose_start_time : float = 0
         #self.pose_timeout_seconds : float = 0
-        '''
+        """
 
         ######################################################################
 
@@ -85,13 +82,12 @@ class Main():
         self.loop_time: float = 0
         self.loop_completion_time_ms: float = 0
 
-
         self.previous_system_state: SystemStates = SystemStates.INIT
         if self.op_mode == OpModes.LIVE:
             self.system_state: SystemStates = SystemStates.STANDBY
         elif self.op_mode == OpModes.SIM:
             self.system_state: SystemStates = SystemStates.MOTION
-        
+
     ###############################################################################
     # Callback from Input(s)
     ###############################################################################
@@ -124,141 +120,135 @@ class Main():
 
         if event == InputCommand.VECTOR_WALK:
             self.motion.set_target_motion_state(MotionStates.VECTOR_WALK)
-         
-                
+
     ###############################################################################
     # Main Loop
-    ###############################################################################       
-        
+    ###############################################################################
+
     def run(self):
-        while True:        
-            
+        while True:
+
             self.process_state_changes()
-            
+
             self.process_states()
-            
-            #self.check_motor_errors()
-                    
-            #self.process_aux()    
 
-            self.forward_states()                       
+            # self.check_motor_errors()
 
-            self.sleep_loop()           
-            
+            # self.process_aux()
+
+            self.forward_states()
+
+            self.sleep_loop()
+
     ###############################################################################
     # Loop Methods
-    ###############################################################################   
-       
-    def process_state_changes(self):                                
+    ###############################################################################
+
+    def process_state_changes(self):
         """
         Execute once after kinetic state change
-        """ 
-                           
-        if self.previous_system_state != self.system_state:   
+        """
+
+        if self.previous_system_state != self.system_state:
             self.previous_system_state = self.system_state
             print(f"[STATE] kinetic state changed to: {self.system_state.name}")
-                                                   
+
             if self.system_state == SystemStates.ERROR:
-                pass 
-            
-            elif self.system_state == SystemStates.STANDBY:              
-                pass                   
-            
+                pass
+
+            elif self.system_state == SystemStates.STANDBY:
+                pass
+
             elif self.system_state == SystemStates.ENABLE_MOTORS:
                 pass
-            
-            elif self.system_state == SystemStates.STAND: 
-                self.speed = 500   
-                self.apply_controller_input(self.motion_parameters.get_pose_standing())                      
+
+            elif self.system_state == SystemStates.STAND:
+                self.speed = 500
+                self.apply_controller_input(self.motion_parameters.get_pose_standing())
                 self.motor_interface_front.enable_all_motors()
-                self.motor_interface_back.enable_all_motors()   
-                
-            elif self.system_state == SystemStates.SIT: 
-                self.speed = 500   
-                self.apply_controller_input(self.motion_parameters.get_pose_lie_down())                      
-                        
+                self.motor_interface_back.enable_all_motors()
+
+            elif self.system_state == SystemStates.SIT:
+                self.speed = 500
+                self.apply_controller_input(self.motion_parameters.get_pose_lie_down())
+
             elif self.system_state == SystemStates.MOTION:
                 self.speed = 1000
-                    
+
             elif self.system_state == SystemStates.POWER_DOWN:
                 pass
-    
+
     def process_states(self):
         """
         Kinetic state machine
-        """      
+        """
         if self.system_state == SystemStates.ERROR:
             pass
-        
+
         elif self.system_state == SystemStates.STANDBY:
             pass
 
         elif self.system_state == SystemStates.ENABLE_MOTORS:
-                pass
-        
-        elif self.system_state == SystemStates.STAND:                       
+            pass
+
+        elif self.system_state == SystemStates.STAND:
             if self.motor_interface_front.is_all_motor_angles_within_range(0.5):
                 self.system_state = SystemStates.POSE
-                
-        elif self.system_state == SystemStates.SIT:                       
+
+        elif self.system_state == SystemStates.SIT:
             if self.motor_interface_front.is_all_motor_angles_within_range(0.5):
-                self.system_state = SystemStates.HALT        
-        
-        elif self.system_state == SystemStates.MOTION:               
-            self.compute_quad()         
+                self.system_state = SystemStates.HALT
+
+        elif self.system_state == SystemStates.MOTION:
+            self.compute_quad()
 
         elif self.system_state == SystemStates.POWER_DOWN:
-                pass    
-        
-       
-        
-        
-    def check_motor_errors(self): 
-        if self.motors.is_error(): 
-            self.system_state = SystemStates.ERROR    
-       
+            pass
+
+    def check_motor_errors(self):
+        if self.motors.is_error():
+            self.system_state = SystemStates.ERROR
+
     def process_aux(self):
         """
         Check for commands and send latest status data to Auxiliary Board.
         """
-        
+
         self.aux.check_for_commands()
-        
-        message = StatusMessage()  
-        
-        message.joint_angle_error = self.body_error_state ==  Quad.ErrorState.JOINT
-        message.inverse_kinematics_error = self.body_error_state ==  Quad.ErrorState.KINEMATICS
+
+        message = StatusMessage()
+
+        message.joint_angle_error = self.body_error_state == Quad.ErrorState.JOINT
+        message.inverse_kinematics_error = self.body_error_state == Quad.ErrorState.KINEMATICS
         message.joystick_error = self.gamepad.is_connected() == False
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
         message.imuError = False
-              
-        voltage_accumulator : float = 0.0
-        motors : Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
+
+        voltage_accumulator: float = 0.0
+        motors: Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
             message.motor_ons[index] = motor.is_enabled()
-            message.motor_errors[index] = motor.is_error()  
+            message.motor_errors[index] = motor.is_error()
             if motor.angle_limit_breached == True:
                 message.physical_limit_error = True
             if motor.over_temperature_protection == True:
                 message.over_temperature_error = True
             if motor.under_voltage_protection == True:
-                message.under_voltage_error = True            
+                message.under_voltage_error = True
             if motor.is_comms_error() == True:
-                message.motor_communication_error = True                
+                message.motor_communication_error = True
             voltage_accumulator += motor.voltage
-                                                    
+
         message.battery_voltage = voltage_accumulator / len(motors)
-        
+
         if time.time() - self.gamepad_last_battery_check_time > self.gamepad_battery_check_rate_seconds:
             self.gamepad_last_battery_check_time = time.time()
-            self.gamepad_battery_percent = self.gamepad.get_battery_percentange() or -1           
-                        
+            self.gamepad_battery_percent = self.gamepad.get_battery_percentange() or -1
+
         message.gamepad_battery_percent = self.gamepad_battery_percent
-                                
-        self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds) 
-        
-                        
-    
+
+        self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds)
+
     def forward_states(self):
         system_status = SystemStatus()
         system_status.opMode.state = self.op_mode
@@ -266,18 +256,14 @@ class Main():
 
         system_status.input.state = self.input.get_input_mode()
 
-
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
-        
-
         self.forwarder.set_sim_quad(self.quad_sim)
-        self.forwarder.set_live_quad(self.quad_live)
+        #self.forwarder.set_live_quad(self.quad_live)
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
-    
     def sleep_loop(self):
         """
         Keep a consistance loop rate by sleeping the delta of processing time.
@@ -301,32 +287,21 @@ class Main():
     ###############################################################################
 
     def stand_quad(self):
-        self.stand.tick()        
+        self.stand.tick()
 
     def compute_quad(self):
         motion_parameters = self.input.get_motion_parameters()
         ik_parameters = self.input.get_ik_parameters()
 
-        print(ik_parameters)
-        return
-        
-        self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(
-            phi=ik_parameters.roll,
-            theta=ik_parameters.pitch,
-            psi=ik_parameters.yaw,
-            x=ik_parameters.side_translation,
-            y=ik_parameters.height_translation,
-            z=ik_parameters.forward_translation,
-        ) 
-               
-        if self.body_error_state == Quad.ErrorState.NONE:  
-            joint_angles = self.quad_sim.get_joint_angles(units="DEGREES") 
-            # APPLY JOINT ANGLES            
+        self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
+
+        if self.body_error_state == Quad.ErrorState.NONE:
+            joint_angles = self.quad_sim.get_joint_angles(units="DEGREES")
+            # APPLY JOINT ANGLES
         elif self.body_error_state == Quad.ErrorState.KINEMATICS or self.body_error_state == Quad.ErrorState.JOINT:
             print(f"[Body] error, {self.body_error_state.name}")
 
-
-        '''try:
+        """try:
             motion_parameters = self.input.get_motion_parameters()
             ik_parameters = self.input.get_ik_parameters()
             #self.motion.tick(self.sim_hexapod, ik_parameters, motion_parameters)
@@ -342,42 +317,41 @@ class Main():
             self.ik_status = Status.ERROR
             print(f"{time.time()} {e}")
             traceback.print_exc()
-            return'''
+            return"""
 
         # Apply angles to motors.
-        '''leg_angles = self.sim_hexapod.get_all_leg_angles_radians()
+        """leg_angles = self.sim_hexapod.get_all_leg_angles_radians()
         for key, leg_angle in leg_angles.items():
-            self.motors.set_target_position(key, leg_angle)'''
-        
+            self.motors.set_target_position(key, leg_angle)"""
+
     ###############################################################################
     # Helpers
-    ###############################################################################  
-                
-    def clear_all_errors(self):    
+    ###############################################################################
+
+    def clear_all_errors(self):
         self.body_error_state = Quad.ErrorState.NONE
-        self.motor_interface_front.clear_errors_all_motors()           
-        self.motor_interface_back.clear_errors_all_motors() 
+        self.motor_interface_front.clear_errors_all_motors()
+        self.motor_interface_back.clear_errors_all_motors()
         self.kinetic_state = KineticState.STARTUP
-                                        
- 
+
     def shutdown(self, full_shutdown_flag: bool):
         print("[MAIN] shutdown...")
 
         # TODO: sit hexapod to avoid hard crashes
 
-        #self.hardware.beep(BeepType.SHUTDOWN)
-        #self.motors.shutdown()
-        #self.hardware.power_motors_off()
-        #self.hardware.shutdown()
-        #self.input.shutdown()
+        # self.hardware.beep(BeepType.SHUTDOWN)
+        # self.motors.shutdown()
+        # self.hardware.power_motors_off()
+        # self.hardware.shutdown()
+        # self.input.shutdown()
         self.forwarder.shutdown()
 
         if full_shutdown_flag:
             print(f"[MAIN] shutting down system...")
             sleep(1)
             os.system("sudo shutdown now")
-        
-                
+
+
 ###############################################################################
 # Entry
 ###############################################################################
@@ -386,18 +360,16 @@ if __name__ == "__main__":
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-s", "--sim", action="store_true", help="Run in simulation mode")
     group.add_argument("-l", "--live", action="store_true", help="Run in live mode")
-    parser.add_argument('-r', '--reset', action='store_true', help='Restart the service')
+    parser.add_argument("-r", "--reset", action="store_true", help="Restart the service")
     args = parser.parse_args()
 
-
-    
     ###############################################################################
     # Process Arguments
     ###############################################################################
-    
+
     if args.reset:
         try:
-            subprocess.run(['sudo', 'systemctl', 'restart', 'live.service'], check=True)
+            subprocess.run(["sudo", "systemctl", "restart", "live.service"], check=True)
             print("[System] live.service has been restarted.")
         except subprocess.CalledProcessError as e:
             print(f"[System] error, failed to restart live.service: {str(e)}")
@@ -412,23 +384,22 @@ if __name__ == "__main__":
     elif args.live:
         mode = OpModes.LIVE
 
-    
     ###############################################################################
     # Run Main Program
     ###############################################################################
-    
+
     if is_service_running("live.service"):
         print(f"[Live] error, live.service is running, unable to start live.py")
         exit(1)
-        
-    main = Main(mode=mode)    
-          
-    try:        
-        main.run()            
+
+    main = Main(mode=mode)
+
+    try:
+        main.run()
     except KeyboardInterrupt:
-        print ('Keyboard interrupt, exiting')        
+        print("Keyboard interrupt, exiting")
     except Exception as e:
         print(str(e))
-        print(traceback.format_exc())        
-    finally:          
+        print(traceback.format_exc())
+    finally:
         main.shutdown(full_shutdown_flag=False)

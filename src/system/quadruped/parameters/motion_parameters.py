@@ -12,7 +12,7 @@ from math import degrees, atan2, sqrt
 @dataclass
 class MotionParameters:
     ###############################################################################
-    # Rotation limits (degrees)
+    # Rotation limits parameters (degrees)
     ###############################################################################
     roll_min: float = -30.0
     roll_max: float = 30.0
@@ -21,25 +21,11 @@ class MotionParameters:
     yaw_min: float = -30.0
     yaw_max: float = 30.0
 
-    ###############################################################################
-    # Translation limits (meters)
-    ###############################################################################
-
-    side_translation_min: float = -0.050
-    side_translation_max: float = 0.050
-    foward_translation_min: float = -0.050
-    foward_translation_max: float = 0.050
-
-    # Lowest allowable point of body center in the world frame.
-    height_translation_min: float = 0.050
-
-    # Highest allowable position of body center, must no be higher than the physical leg lengths.
-    height_translation_max: float = 0.250
 
     ###############################################################################
-    # Gait parameters
+    # Gait parameters parameters
     ###############################################################################
-    lateral_fraction: float = 0.0
+    '''lateral_fraction: float = 0.0
     step_velocity: float = 0.001
     swing_period: float = 0.200
     clearance_height: float = 0.045
@@ -47,7 +33,7 @@ class MotionParameters:
     yaw_rate_min: float = -0.785
     yaw_rate_max: float = 0.785
     step_length_min: float = -0.100
-    step_length_max: float = 0.100
+    step_length_max: float = 0.100'''
 
     ###############################################################################
     # Running values, do not change, will be overwritten

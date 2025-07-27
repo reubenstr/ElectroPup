@@ -1,7 +1,7 @@
 import copy
 import math
 import numpy as np
-from math import pi, sin, cos
+from math import pi, sin, cos, radians, degrees
 from enum import Enum
 from typing import Dict
 from typing import Dict, List
@@ -12,6 +12,7 @@ from . import transformations
 from .exceptions import DomainBreach
 from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
+from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.point import Point
 
 
@@ -62,18 +63,11 @@ class Quad(object):
         self.foot_width = self.frame_parameters.foot_width
 
         self.legs: Dict[str, Leg] = {}
-    
-        z_avg = (MotionParameters().height_translation_min + MotionParameters().height_translation_max) / 2
-
+       
         # Initialize legs at the neutral position
-        self.set_body_pose_by_transform_inputs(
-            phi=0,
-            theta=0,
-            psi=0,
-            x=0,
-            y=z_avg/2,
-            z=0,
-        )
+        ik_parameters = IKParameters()
+        ik_parameters.height_translation = (IKParameters().height_translation_min + IKParameters().height_translation_max) / 2
+        self.set_body_pose_by_transform_inputs(ik_parameters)
 
     def create_default_global_foot_positions(self):
         """Creates a default global foot positions dict for reference and testing."""
@@ -90,18 +84,14 @@ class Quad(object):
 
         return global_foot_positions
 
-    def set_body_pose_by_transform_inputs(self, phi, theta, psi, x, y, z):
-        """Set the body translation and orientation angles
-            Perform full inverse kinematics
-            Check for domain breaches and joint boundries errors
+    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters):
+        """
+        Set the body translation and orientation angles
+        Perform full inverse kinematics
+        Check for domain breaches and joint boundries errors
 
         Args:
-            x: translation along the x axis in meters
-            y: translation along the y axis in meters
-            z: translation along the z axis in meters
-            phi: roll angle in radians
-            theta: pitch angle in radians
-            psi: yaw angle in radians
+            ik_parameters containing rotation and translation values
         Returns:
             ErrorState
 
@@ -110,10 +100,17 @@ class Quad(object):
         on a physical system.
         """
 
+        phi = radians(ik_parameters.roll)
+        theta = radians(ik_parameters.pitch)
+        psi = radians(ik_parameters.yaw)
+        x = ik_parameters.forward_translation
+        y = ik_parameters.height_translation
+        z = ik_parameters.side_translation
+
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
 
-            #legs: Dict[str, Leg] = {}
+            # legs: Dict[str, Leg] = {}
             self.legs["front_left"] = Leg(
                 0,
                 0,
@@ -167,38 +164,36 @@ class Quad(object):
             if error_string != None:
                 print(error_string)
                 return Quad.ErrorState.JOINT
-        
+
         except DomainBreach as error:
             print(error)
             return Quad.ErrorState.KINEMATICS
 
         return Quad.ErrorState.NONE
-    
 
     def get_body_coordinates(self) -> dict[str, Point]:
         """
         Return coordinates of each hip as a list of 4 points
         """
-         
+
         return {
-            'BR': self.legs["back_right"].get_hip_point(),
-            'FR': self.legs["front_right"].get_hip_point(),
-            'FL': self.legs["front_left"].get_hip_point(),
-            'BL': self.legs["back_left"].get_hip_point(),
+            "BR": self.legs["back_right"].get_hip_point(),
+            "FR": self.legs["front_right"].get_hip_point(),
+            "FL": self.legs["front_left"].get_hip_point(),
+            "BL": self.legs["back_left"].get_hip_point(),
         }
 
     def get_leg_coordinates(self) -> dict[str, list[Point]]:
         """
         Return coordinates of each leg as a dict containing 4 sets of 4 leg points
         """
-         
+
         return {
-            'BR': self.legs["back_right"].get_leg_points(),
-            'FR': self.legs["front_right"].get_leg_points(),
-            'FL': self.legs["front_left"].get_leg_points(),
-            'BL': self.legs["back_left"].get_leg_points(),
+            "BR": self.legs["back_right"].get_leg_points(),
+            "FR": self.legs["front_right"].get_leg_points(),
+            "FL": self.legs["front_left"].get_leg_points(),
+            "BL": self.legs["back_left"].get_leg_points(),
         }
-       
 
     def set_joint_angles(self, leg_angs):
         """Set the joint angles for all four legs
