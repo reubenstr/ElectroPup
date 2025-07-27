@@ -157,32 +157,8 @@ class Motors:
     ###############################################################################
     # Per Motor
     ###############################################################################
-
-    def cmd_motor_on(self, motor_tag: str):
-        start = time()
-        motor_id = self.motors[motor_tag].id
-        success = self.can_interface.cmd_motor_on(motor_id)
-        if success:
-            print(f"[{self.tag}][{motor_tag}] command on completed, success: {success}, time: {time() - start:0.3f}")
-            self.motors[motor_tag].reply_timeout_count = 0
-            self.motors[motor_tag].on = True
-        else:
-            self.motors[motor_tag].reply_timeout_count += 1
-        return success
-
-    def cmd_motor_off(self, motor_tag: str):
-        start = time()
-        motor_id = self.motors[motor_tag].id
-        success = self.can_interface.cmd_motor_off(motor_id)
-        if success:
-            print(f"[{self.tag}][{motor_tag}] command off completed, success: {success}, time: {time() - start:0.3f}")
-            self.motors[motor_tag].reply_timeout_count = 0
-            self.motors[motor_tag].on = False
-        else:
-            self.motors[motor_tag].reply_timeout_count += 1
-        return success
-
-    def cmd_motor_set_zero_to_current_position(self, motor_tag: str):
+   
+    def set_zero_to_current_position(self, motor_tag: str):
         start = time()
         motor_id = self.motors[motor_tag].id
         success = self.can_interface.cmd_set_zero_to_current_pos(motor_id)
@@ -193,18 +169,6 @@ class Motors:
             self.motors[motor_tag].reply_timeout_count += 1
         return success
 
-    '''
-    def op_motor_buzz(self, motor_tag: str, duration_seconds : int):
-        """Vibrates motors used to assist assembly and debugging"""
-        motor_id = self.motors[motor_tag].id       
-        print(f"[{self.tag}][{motor_tag}] buzzing motor {motor_tag} with ID {motor_id} for {duration_seconds} seconds")    
-        start = time()        
-        while time() - start < duration_seconds:            
-            self.can_interface.cmd_motor_increment_angle(motor_id, speed=250, angle=1)
-            sleep(0.250)
-            self.can_interface.cmd_motor_increment_angle(motor_id, speed=250, angle=-1)
-            sleep(0.250)
-    '''
 
     ###############################################################################
     # All Motors
@@ -249,6 +213,14 @@ class Motors:
                     return False
             print(f"[{self.tag}][ALL] set all motors PID completed, time: {time() - start:0.3f}")
             return True
+        
+    def is_all_motor_angles_within_range(self, tolerance: float):
+        with self.lock:
+            for motor_name, motor in self.motors.items():
+                if self.is_angle_within_range(motor.position_degrees, self.target_positions[motor.name]) == False:
+                    # print(motor_name, motor.angle_degrees, motor.target_angle_degrees)
+                    return False
+            return True
 
     ###############################################################################
     # Protected Getters, Setters, and Operations
@@ -271,14 +243,6 @@ class Motors:
         with self.lock:
             return self.motors[motor_name].position_degrees
     
-    def op_is_all_motor_angles_within_range(self, tolerance: float):
-        with self.lock:
-            for motor_tag, motor in self.motors.items():
-                if self.is_angle_within_range(motor, tolerance) == False:
-                    # print(motor_tag, motor.angle_degrees, motor.target_angle_degrees)
-                    return False
-            return True
-
     def is_error(self):
         """
         Args: None
@@ -320,7 +284,7 @@ class Motors:
             if can_info.thread_handle and can_info.thread_handle.is_alive():
                 print(f"[{self.tag}] exiting thread for {can_info.can_channel}")
                 can_info.exit_event.set()
-                can_info.thread_handle.join()
+                can_info.thread_handle.join(timeout=1)
 
     """
     def _worker_check_all_angle_limits(self)   :
@@ -380,38 +344,23 @@ class Motors:
         self.disable_all_motors()
         self.deinit_can_buses(self.can_infos)
 
-    @staticmethod
-    def is_angle_within_range(motor: Motor, tolerance: float) -> bool:
-        def normalize(angle):
-            """Normalize the angle to be within the range of 0 to 360 degrees."""
-            return angle % 360
-
-        difference = abs(normalize(motor.target_position_degrees) - normalize(motor.position_degrees))
-        return difference <= tolerance or difference >= (360 - tolerance)
-
     def is_can_error(self):
         return self.can_interface.is_can_error()
+    
 
- 
     ###############################################################################
     # Helpers
     ###############################################################################
 
-    """ def angle_direction(self, motor_tag: str, current_angle : float, target_angle : float):   
-        '''Determine the direction of movement from going from the current angle to the target angle'''
-        difference = target_angle - current_angle
-    
-        # Normalize the difference to be within -180 to 180 degrees
-        while difference > 180:
-            difference -= 360
-        while difference < -180:
-            difference += 360
-        
-        direction = MotorDirection.COUNTER_CLOCKWISE if difference >= 0 else MotorDirection.CLOCKWISE        
-        if motor_tag == 'FLH':
-            print(f"[{self.tag}][{motor_tag}] current angle: {current_angle:0.2f}, target angle: {target_angle:0.2f}, difference: {difference:0.2f}, direction: {direction.name}")
-        return direction """
+    @staticmethod
+    def is_angle_within_range(position: float, target: float, tolerance: float) -> bool:
+        def normalize(angle):
+            """Normalize the angle to be within the range of 0 to 360 degrees."""
+            return angle % 360
 
+        difference = abs(normalize(position) - normalize(target))
+        return difference <= tolerance or difference >= (360 - tolerance)
+    
 
 ###############################################################################
 # Main / Entry - For Testing

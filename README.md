@@ -13,7 +13,7 @@ ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my 
 - creating an open frame concept that allows for easier part additions such as cameras and LiDAR
 - designing the leg system to allow flipping the quadruped upright after a rollover
 - swapping out the RC servos for backdrivable BLDC motors that allow for compliance
-- cheaper (haha, j/k 😥)
+- cheaper (j/k 😥)
 
 For ROS2 example of a quadruped robot dog see [Zuko](https://github.com/reubenstr/zuko).
 
@@ -249,4 +249,6 @@ There are many excellent open source quadruped robot projects at various sizes, 
 - https://grabcad.com/library/diy-quadruped-robot-1
 - https://github.com/Jerome-Graves/yertle
 - https://www.youtube.com/@Jorgefer88
+- https://www.youtube.com/watch?v=oYnsCE2H6ss
+- https://github.com/JackDemeter/quadruped-robot
 - https://github.com/reubenstr/zuko

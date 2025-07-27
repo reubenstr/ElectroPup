@@ -10,6 +10,26 @@ python3 -m mujoco.viewer --mjcf=./scene.xml
 https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 
 
+
+###############################################################################
+ENV
+###############################################################################
+
+sudo apt update
+sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev \
+xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev git
+
+curl https://pyenv.run | bash
+
+Add the following lines to your shell startup file (~/.bashrc, ~/.zshrc, etc.):
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+pyenv install 3.13
+
 ###############################################################################
 Raspberry Pi
 ###############################################################################

@@ -199,11 +199,11 @@ class Live():
             pass
         
         elif self.kinetic_state == KineticState.STAND:                       
-            if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
+            if self.motor_interface_front.is_all_motor_angles_within_range(0.5):
                 self.kinetic_state = KineticState.POSE
                 
         elif self.kinetic_state == KineticState.LIE_DOWN:                       
-            if self.motor_interface_front.op_is_all_motor_angles_within_range(0.5):
+            if self.motor_interface_front.is_all_motor_angles_within_range(0.5):
                 self.kinetic_state = KineticState.HALT        
         
         elif self.kinetic_state == KineticState.POSE:    

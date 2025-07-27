@@ -105,7 +105,7 @@ def main(stdscr):
                     if offset:
                         motor_info[motor_tag]['offset'] = offset
                         motor_interface = get_motor_interface_from_tag(motor_tag)
-                        success = motor_interface.cmd_motor_set_zero_to_current_position(motor_tag=motor_tag)
+                        success = motor_interface.set_zero_to_current_position(motor_tag=motor_tag)
                         if success:                            
                             motor_info[motor_tag]['zeroed'] = True   
                         else:

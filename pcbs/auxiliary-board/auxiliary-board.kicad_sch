@@ -2322,10 +2322,10 @@
 						)
 					)
 				)
-				(pin bidirectional line
-					(at -8.89 5.08 0)
+				(pin input line
+					(at -8.89 7.62 0)
 					(length 2.54)
-					(name "SDA"
+					(name "SCL"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2340,10 +2340,10 @@
 						)
 					)
 				)
-				(pin input line
-					(at -8.89 7.62 0)
+				(pin bidirectional line
+					(at -8.89 5.08 0)
 					(length 2.54)
-					(name "SCL"
+					(name "SDA"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -9487,100 +9487,6 @@
 		)
 	)
 	(symbol
-		(lib_id "General:BNO055_Module")
-		(at 165.1 218.44 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "26b70c26-ab95-4917-8922-c440dd6475f9")
-		(property "Reference" "MOD1"
-			(at 168.5641 201.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "BNO055_Module"
-			(at 168.5641 204.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "general:BNO055 Module"
-			(at 180.34 224.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 165.1 218.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 165.1 218.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "5cae59a6-8adb-4413-9fd0-d2ea03788dc5")
-		)
-		(pin "7"
-			(uuid "60e1ca9d-ade8-45a1-bec5-2e839c3d5d6e")
-		)
-		(pin "10"
-			(uuid "d38f35e9-b737-4699-b187-85f987ee89de")
-		)
-		(pin "9"
-			(uuid "95ff4a48-1139-4acb-ad06-be73bbf78cef")
-		)
-		(pin "5"
-			(uuid "b4a037d7-611d-4fb9-a0a7-a296fc9f8aaa")
-		)
-		(pin "1"
-			(uuid "ac8049f4-f77f-482f-a330-591b99ee0399")
-		)
-		(pin "2"
-			(uuid "af620727-c39c-4511-9954-16b64b11b11f")
-		)
-		(pin "3"
-			(uuid "4bf1b1ff-f43d-4cd4-beb7-dc883d138e11")
-		)
-		(pin "6"
-			(uuid "68ee2e53-17d8-4c10-a99d-4ebd996804c9")
-		)
-		(pin "8"
-			(uuid "eff8e7e3-4b5d-470c-9d9a-ecdb58e3150e")
-		)
-		(instances
-			(project ""
-				(path "/312efdca-dfe3-4c27-a2ae-6c196f0be09d"
-					(reference "MOD1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 72.39 57.15 0)
 		(mirror y)
@@ -10393,6 +10299,100 @@
 			(project "auxiliary-pi-hat"
 				(path "/312efdca-dfe3-4c27-a2ae-6c196f0be09d"
 					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "General:BNO055_Module")
+		(at 165.1 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "44d0796b-4192-4ff5-a894-c29a6105e223")
+		(property "Reference" "MOD1"
+			(at 168.5641 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "BNO055_Module"
+			(at 168.5641 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "general:BNO055 Module"
+			(at 180.34 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 165.1 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 165.1 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "4"
+			(uuid "00edf068-9204-4bde-ba4e-9f4c755872e0")
+		)
+		(pin "7"
+			(uuid "db187b27-430b-452a-8488-055479eb6d37")
+		)
+		(pin "10"
+			(uuid "05dd51bc-3da0-4399-834a-dac632a9052a")
+		)
+		(pin "9"
+			(uuid "2fa85a77-c1c2-4c03-813f-37c4e6f2b04f")
+		)
+		(pin "5"
+			(uuid "6be85328-24f7-4893-a564-092536cbdd71")
+		)
+		(pin "1"
+			(uuid "97c1751c-8580-4a0e-b8bd-958991417f07")
+		)
+		(pin "2"
+			(uuid "84dc6bc3-9bfa-416b-8df3-88404a9430ab")
+		)
+		(pin "3"
+			(uuid "e93ca349-e823-4531-8e11-326ed7a6746b")
+		)
+		(pin "6"
+			(uuid "da35312a-8eb2-492c-93fb-28dc08a2174e")
+		)
+		(pin "8"
+			(uuid "c0ceec10-9f2e-4ec8-b7db-1d3d13a2225a")
+		)
+		(instances
+			(project "auxiliary-board"
+				(path "/312efdca-dfe3-4c27-a2ae-6c196f0be09d"
+					(reference "MOD1")
 					(unit 1)
 				)
 			)

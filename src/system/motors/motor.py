@@ -14,10 +14,10 @@ https://wiki.openelab.io/lkmtech/mg4010e-i10-v3-dual-encoder-robot-motor
 
 """
 
-    # Upon startup the motor driver reports angles 0 to 360
-    # To prevent issues of wrong initial directions, this library
-    # uses -180 to 180 conventions. Flag start up angles > 180 requiring
-    # an offset to match the desired convention.
+# Upon startup the motor driver reports angles 0 to 360
+# To prevent issues of wrong initial directions, this library
+# uses -180 to 180 conventions. Flag start up angles > 180 requiring
+# an offset to match the desired convention.
 
 
 class Motor:
@@ -46,10 +46,6 @@ class Motor:
         self.tag = f"[Motor][{name}]"
         self.prints_enabled: bool = True
 
-        # Targets:
-        #self.target_speed: int = 100
-        #self.target_position_degrees: float = 0
-
         # Motor states (from motor driver):
         self.temperature: int = 0
         self.voltage: float = 0
@@ -65,7 +61,6 @@ class Motor:
         self.lost_input_protection: bool = False
 
         # Motor states:
-        self.angle_limit_breached: bool = False
         self.enabled: bool = False
 
         # Communication states:
@@ -93,7 +88,7 @@ class Motor:
         try:
             identifier = 0x140 + motor_id
             if self.prints_enabled:
-                print(f"[{self.tag}] sending message, bus={self.bus.channel_info}, motor_id={motor_id}, arbitration_id={identifier}, data={data}")
+                print(f"{self.tag} sending message, bus={self.bus.channel_info}, motor_id={motor_id}, arbitration_id={identifier}, data={data}")
             msg = can.Message(is_extended_id=False, arbitration_id=identifier, data=data)
             self.bus.send(msg)
             self.send_error = False
@@ -122,7 +117,7 @@ class Motor:
         if success:
             self.enabled = True
         return success
-    
+
     def cmd_motor_off(self):
         if not self.op_can_send_message(self.motor_id, [0x80, 0, 0, 0, 0, 0, 0, 0]):
             return False
@@ -131,7 +126,7 @@ class Motor:
         if success:
             self.enabled = False
         return success
-  
+
     def cmd_clear_motor_errors(self):
         if not self.op_can_send_message(self.motor_id, [0x9B, 0, 0, 0, 0, 0, 0, 0]):
             return False
@@ -173,29 +168,13 @@ class Motor:
         reply = self.op_wait_for_reply()
         return reply and self.motor_id == reply.arbitration_id - 0x140
 
-    '''
-    def cmd_motor_increment_angle(self, motor_id: int, speed: int, angle: float):
-        """
-        Sets speed and angle of the motor.
-        """
-        speed_low_byte = speed & 0x00FF
-        speed_high_byte = speed >> 8 & 0x00FF
-        angle_byte_0 = int(angle * 1000.0) >> 0 & 0x000000FF
-        angle_byte_1 = int(angle * 1000.0) >> 8 & 0x000000FF
-        angle_byte_2 = int(angle * 1000.0) >> 16 & 0x000000FF
-        angle_byte_3 = int(angle * 1000.0) >> 24 & 0x000000FF
-        if not self.op_can_send_message(motor_id, [0xA8, 0, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3]):
-            return False
-        reply = self.op_wait_for_reply()
-        return reply and motor_id == reply.arbitration_id - 0x140
-    '''
 
     ###############################################################################
     # Requests
     ###############################################################################
 
     def req_pid(self):
-        if self.op_can_send_message(self.motor_id, [0x30, 0, 0, 0, 0, 0, 0, 0]):          
+        if self.op_can_send_message(self.motor_id, [0x30, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
                 reply_motor_id = reply.arbitration_id - 0x140
@@ -212,7 +191,7 @@ class Motor:
                         )
 
     def req_state_1(self):
-        if self.op_can_send_message(self.motor_id, [0x9A, 0, 0, 0, 0, 0, 0, 0]):            
+        if self.op_can_send_message(self.motor_id, [0x9A, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
                 reply_motor_id = reply.arbitration_id - 0x140
@@ -229,11 +208,11 @@ class Motor:
                         )
 
     def req_state_2(self):
-        if self.op_can_send_message(self.motor_id, [0x9C, 0, 0, 0, 0, 0, 0, 0]):           
+        if self.op_can_send_message(self.motor_id, [0x9C, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
                 reply_motor_id = reply.arbitration_id - 0x140
-                if self.motor_id == reply_motor_id and reply.data:                 
+                if self.motor_id == reply_motor_id and reply.data:
                     self.temperature = reply.data[1]
                     watts_raw = self.convert_twos_compliment(reply.data[2] | reply.data[3] << 8)
                     self.watts = self.map_range(float(watts_raw), -2048.0, 2048.0, -33.0, 33.0)
@@ -245,9 +224,9 @@ class Motor:
                         )
 
     def req_position(self):
-        '''        
+        """
         Datasheet named as: req_motor_multi_angle
-        '''
+        """
         if not self.op_can_send_message(self.motor_id, [0x92, 0, 0, 0, 0, 0, 0, 0]):
             return None
         reply = self.op_wait_for_reply()
@@ -266,7 +245,7 @@ class Motor:
                     | (reply_data[6] << 48)  # Byte 6
                     | (reply_data[7] << 56)
                 )  # Byte 7
-                
+
                 converted_position_degrees = (self.convert_twos_compliment_64(raw_position) >> 8) / 1000.0
                 self.position_degrees = converted_position_degrees - 360.0 if self.apply_position_offset else converted_position_degrees
 
@@ -280,16 +259,12 @@ class Motor:
     def is_enabled(self) -> bool:
         return self.enabled
 
-    # def is_can_error(self):
-    #    return self.error
 
     def set_apply_position_offset(self, value: bool):
         self.apply_position_offset = value
 
     def is_error(self) -> bool:
         error = False
-        if self.angle_limit_breached:
-            error = True
         if self.under_voltage_protection or self.over_voltage_protection or self.over_temperature_protection or self.lost_input_protection:
             error = True
         if self.is_comms_error():
@@ -304,13 +279,11 @@ class Motor:
             error = True
         return error
 
-
     def clear_all_errors(self):
         self.under_voltage_protection = False
         self.over_voltage_protection = False
         self.over_temperature_protection = False
         self.lost_input_protection = False
-        self.angle_limit_breached = False
         self.reply_timeout_count = 0
 
     ###############################################################################
@@ -347,5 +320,3 @@ class Motor:
     def map_range(x, in_min, in_max, out_min, out_max):
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def enable_prints(self, flag: bool):
-        self.prints_enabled = flag

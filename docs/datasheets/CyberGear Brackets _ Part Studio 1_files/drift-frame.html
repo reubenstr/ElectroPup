@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)https://cad.onshape.com/drift-frame.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script async="true" crossorigin="anonymous" src="./conductor"></script>
+  <script>
+      /** Snippet for the iframe. Initializes the inner Drift iframe and acts as a communcation layer for the parent page. */
+      window.drift=window.drift||function(){(drift.q=drift.q||[]).push(arguments)};
+      // rebroadcast drift widget API events to parent page
+      drift('on', 'iframeResize', function (data) {
+        window.parent.postMessage({ type: 'driftIframeResize', data }, '*');
+      });
+
+      drift('on','ready',function(api, payload) {
+        api.widget.hide();
+      });
+      drift('on','chatClose',function(e){
+        drift.api.widget.hide();
+      });
+
+      window.addEventListener('message', function (event) {
+        if (event.source !== window.parent) {
+          return;
+        }
+
+        var message = event.data
+        if (message && message.type === 'driftUpdateContext') {
+          drift('setContext', message.data.context);
+        }
+        if (message && message.type === 'driftSelectFeature') {
+          drift('setUserAttributes', message.data);
+        }
+        if (message && message.type === 'driftIdentifyUser') {
+          drift('identify', message.data.userid, message.data.userAttributes);
+        }
+        if (message && message.type === 'driftHide') {
+          drift.api.widget.hide();
+        }
+        if (message && message.type === 'driftShow') {
+          drift.api.widget.show();
+        }
+        if (message && message.type === 'driftStartInteraction') {
+          if (drift.api) {
+            drift.api.startInteraction({ interactionId: +(message.data.interactionId || 0) });
+          } else {
+            window.parent.postMessage({ type: 'driftInteractionFailed' }, '*')
+          }
+        }
+
+        // set initial context, put widget in "iframeMode", load widget
+        if (message && message.type === 'driftSetContext') {
+          drift('setContext', message.data.context);
+          drift('config', {
+            iframeMode: true,
+            iframeSandbox: 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms'
+          })
+          drift('page')
+          drift('init', message.data.config.driftId);
+        }
+      })
+      // indicate iframe is ready to receive context
+      window.parent.postMessage({ type: 'driftIframeReady' }, '*')
+  </script>
+<style type="text/css">.drift-conductor-item iframe,
+.drift-frame-controller {
+  display: block;
+  min-width: 0;
+  max-width: none;
+  min-height: 0;
+  max-height: none;
+}
+
+.drift-conductor-item iframe {
+  color-scheme: light only;
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+}
+
+.drift-conductor-item.with-transition {
+  -webkit-transition: opacity .5s ease, -webkit-transform .5s ease;
+  transition: opacity .5s ease, -webkit-transform .5s ease;
+  -o-transition: opacity .5s ease, -o-transform .5s ease;
+  -moz-transition: opacity .5s ease, transform .5s ease, -moz-transform .5s ease;
+  transition: opacity .5s ease, transform .5s ease;
+  transition: opacity .5s ease, transform .5s ease, -webkit-transform .5s ease, -moz-transform .5s ease, -o-transform .5s ease;
+}
+
+.drift-frame-chat.with-transition.drift-frame-chat__takeover {
+  -webkit-transition: opacity .5s ease;
+  -o-transition: opacity .5s ease;
+  -moz-transition: opacity .5s ease;
+  transition: opacity .5s ease;
+}
+
+.drift-conductor-item.with-height-transition {
+  -webkit-transition: max-height .5s ease, opacity .5s ease, -webkit-transform .5s ease;
+  transition: max-height .5s ease, opacity .5s ease, -webkit-transform .5s ease;
+  -o-transition: max-height .5s ease, opacity .5s ease, -o-transform .5s ease;
+  -moz-transition: max-height .5s ease, opacity .5s ease, transform .5s ease, -moz-transform .5s ease;
+  transition: max-height .5s ease, opacity .5s ease, transform .5s ease;
+  transition: max-height .5s ease, opacity .5s ease, transform .5s ease, -webkit-transform .5s ease, -moz-transform .5s ease, -o-transform .5s ease;
+}
+
+.drift-conductor-item {
+  -webkit-transform: translateZ(0);
+     -moz-transform: translateZ(0);
+          transform: translateZ(0);
+}
+
+.drift-frame-controller {
+  bottom: 24px;
+}
+
+.drift-frame-controller-align-left {
+  left: 24px;
+}
+
+.drift-frame-controller-align-right {
+  right: 24px;
+}
+
+.drift-frame-chat:not(iframe) {
+  bottom: -webkit-calc(12px + 52px + 24px);
+  bottom: -moz-calc(12px + 52px + 24px);
+  bottom: calc(12px + 52px + 24px); /* vertical margin x 2 + widget icon size*/
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  opacity: 0;
+  visibility: hidden;
+
+  -webkit-transform: translateY(88px);
+
+     -moz-transform: translateY(88px);
+
+      -ms-transform: translateY(88px);
+
+       -o-transform: translateY(88px);
+
+          transform: translateY(88px);
+}
+
+.drift-frame-chat:not(iframe).drift-chat-open {
+  opacity: 1;
+  visibility: visible;
+  -webkit-transform: translateY(0px);
+     -moz-transform: translateY(0px);
+      -ms-transform: translateY(0px);
+       -o-transform: translateY(0px);
+          transform: translateY(0px);
+}
+
+.drift-frame-chat.drift-frame-chat__takeover:not(iframe):not(.drift-frame--mobile) {
+  min-width: 600px;
+}
+
+.drift-frame-chat-align-left {
+  left: 12px;
+}
+
+.drift-frame-chat-align-right {
+  right: 12px;
+}
+
+.drift-frame-takeover,
+.drift-frame-landingPage,
+.drift-frame-chat__takeover {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  min-width: 100%;
+}
+
+.drift-frame-chat__takeover.hide-frame {
+  visibility: hidden;
+}
+
+.drift-frame-emailCapture {
+  bottom: 0;
+  height: -webkit-calc(100% + 30px);
+  height: -moz-calc(100% + 30px);
+  height: calc(100% + 30px);
+}
+
+.drift-frame-emailCapture-align-left {
+  left: 0;
+}
+
+.drift-frame-emailCapture-align-right {
+  right: 0;
+}
+
+.drift-frame-slider {
+  bottom: 18px;
+  height: -webkit-calc(100% + 20px);
+  height: -moz-calc(100% + 20px);
+  height: calc(100% + 20px);
+}
+
+.drift-frame-slider-align-left {
+  left: 96px;
+}
+
+.drift-frame-slider-align-right {
+  right: 96px;
+}
+
+.drift-frame--mobile.drift-frame-slider-align-left {
+  left: 68px;
+}
+
+.drift-frame--mobile.drift-frame-slider-align-right {
+  right: 68px;
+}
+
+.drift-widget-content-box {
+  background: rgba(0,0,0,.5);
+  width: 100%;
+  height: 100%;
+
+  position: fixed;
+  z-index: 2147483647;
+  top: 0;
+  left: 0;
+}
+
+.drift-widget-content-box > * {
+  margin: 0 auto;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+     -moz-transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+       -o-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  max-height: 80%;
+
+}
+
+/* Site Concierge Classes */
+.drift-frame-chat__sc-loaded:not(.drift-chat-open),
+.drift-frame-controller__sc-loaded {
+  max-height: 0px !important;
+  visibility: hidden !important;
+}
+
+.drift-frame-chat__sc-loaded {
+  bottom: 0px !important;
+}
+
+@media
+(max-height: 685px),
+(min-width: 369px) and (max-width: 380px),
+(max-width: 367px),
+
+(min-device-width: 320px)
+and (max-device-width: 480px)
+and (-webkit-min-device-pixel-ratio: 2)
+and (orientation: portrait)
+
+{
+  .drift-frame--mobile.drift-frame-chat.drift-chat-open {
+    bottom: 0 !important;
+    right: 0;
+    left: 0;
+    z-index: 2147483647 !important;
+  }
+
+  .drift-frame--mobile.drift-frame-controller {
+    bottom: 0;
+  }
+
+  .drift-frame--mobile.drift-frame-controller.drift-frame-controller-align-left {
+    left: 0;
+  }
+
+  .drift-frame--mobile.drift-frame-controller.drift-frame-controller-align-right {
+    right: 0;
+  }
+
+
+  .drift-frame--mobile.drift-frame-controller.drift-chat-open {
+    display: none;
+  }
+
+  .drift-frame--mobile.drift-frame-slider {
+    bottom: 0;
+    max-width: 320px;
+  }
+
+  .drift-frame--mobile iframe.drift-frame-chat {
+    width: 1px !important;
+    min-width: 100%;
+
+    height: 1px !important;
+    min-height: 100%;
+  }
+
+  html.drift-widget-parent--chat-open,
+  html.drift-widget-parent--chat-open > body {
+    height: 100vh !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    position: static !important;
+  }
+}
+
+@media only screen and (orientation: landscape) {
+  .drift-frame--mobile.drift-frame-controller.drift-chat-open {
+    display: none;
+  }
+
+  .drift-frame--mobile.drift-frame-controller {
+    bottom: 0;
+  }
+
+  .drift-frame--mobile.drift-frame-controller-align-right {
+    right: 0;
+  }
+
+  .drift-frame--mobile.drift-frame-controller-align-left {
+    left: 0;
+  }
+}
+
+.drift-frame-chat.widget--xs.drift-chat-open {
+  bottom: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+}
+
+.drift-frame-controller.widget--xs.drift-chat-open {
+  display: none;
+}
+
+</style></head>
+<body>
+
+
+</body></html>
