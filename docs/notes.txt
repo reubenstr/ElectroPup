@@ -123,6 +123,9 @@ sudo apt-get install python3-spidev
 sudo apt-get install python3-python-can
 sudo apt-get install can-utils
 
+python3 -m pip install pyzmq
+
+
 Append these statements to /boot/firmware/config.txt:
 dtparam=spi=on
 dtoverlay=mcp2515-can1,oscillator=16000000,interrupt=25
@@ -170,6 +173,8 @@ Should show 3 Wireless Controller event types
 ###############################################################################
 # Serial 
 ###############################################################################
+
+python3 -m pip install pyserial
 
 sudo raspi-config
 3) Interface Options

@@ -18,14 +18,14 @@ from time import sleep
 # Local source.
 from system.quadruped.body import Body
 from system.gamepad.gamepad import Gamepad
-from system.parameters.frame_parameters import FrameParameters
-from system.parameters.motion_parameters import MotionParameters, KineticState
+from system.quadruped.parameters.frame_parameters import FrameParameters
+from system.quadruped.parameters.motion_parameters import MotionParameters, KineticState
 
 
 class Plot:
-    def __init__(self, frame_parameters: FrameParameters):
+    def __init__(self):
 
-        self.body = Body(frame_parameters=frame_parameters)
+        self.body = Body()
 
     def create_plot(self):
         """Create the 3D plot"""
@@ -52,15 +52,25 @@ class Plot:
         for text in plt.gca().texts:
             text.remove()
 
-        error_state = self.body.set_body_pose_by_transform_inputs(
+        '''error_state = self.body.set_body_pose_by_transform_inputs(
             phi=motion_parameters.roll,
             theta=motion_parameters.pitch,
             psi=motion_parameters.yaw,
             x=motion_parameters.side_translation,
             y=motion_parameters.height_translation,
             z=motion_parameters.forward_translation,
+        )'''
+        error_state = self.body.set_body_pose_by_transform_inputs(
+            phi=0,
+            theta=0,
+            psi=0,
+            x=0,
+            y=.2,
+            z=0,
         )
         if error_state == Body.ErrorState.NONE:
+
+            
 
             for line in plt.gca().lines:
                 line.remove()
@@ -114,16 +124,14 @@ class Plot:
 ###############################################################################
 if __name__ == "__main__":
 
-    motion_parameters_filepath = "./system/parameters/motion_parameters.yaml"
-    frame_parameters_filepath = "./system/parameters/frame_parameters.yaml"
-
-    frame_parameters = FrameParameters(frame_parameters_filepath)
-    motion_parameters = MotionParameters(motion_parameters_filepath)
+  
+    frame_parameters = FrameParameters()
+    motion_parameters = MotionParameters()
    
     gamepad = Gamepad(motion_parameters) 
     gamepad.set_kinetic_state(KineticState.POSE) 
    
-    plot = Plot(frame_parameters)
+    plot = Plot()
     plot.create_plot()
     
     try:   

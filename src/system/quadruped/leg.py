@@ -101,6 +101,14 @@ class Leg(object):
         self.set_foot_position_in_local_coords(p4_in_leg_coords[0],p4_in_leg_coords[1],p4_in_leg_coords[2])
 
 
+    def get_hip_point(self) -> Point:
+        '''
+        
+        '''
+        p1 = Point(*self._ht_leg_start[0:3, 3])
+        return p1
+
+
     def get_leg_points(self) -> List[Point]:
         '''Get coordinates of 4 points that define a wireframe of the leg:
             Point 1: hip/body point

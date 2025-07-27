@@ -71,8 +71,8 @@ class Body(object):
             theta=0,
             psi=0,
             x=0,
-            y=0,
-            z=z_avg,
+            y=z_avg/2,
+            z=0,
         )
 
     def create_default_global_foot_positions(self):
@@ -173,12 +173,25 @@ class Body(object):
             return Body.ErrorState.KINEMATICS
 
         return Body.ErrorState.NONE
+    
+
+    def get_body_coordinates(self) -> dict[str, Point]:
+        """
+        Return coordinates of each hip as a list of 4 points
+        """
+         
+        return {
+            'BR': self.legs["back_right"].get_hip_point(),
+            'FR': self.legs["front_right"].get_hip_point(),
+            'FL': self.legs["front_left"].get_hip_point(),
+            'BL': self.legs["back_left"].get_hip_point(),
+        }
 
     def get_leg_coordinates(self) -> dict[str, list[Point]]:
         """
         Return coordinates of each leg as a dict containing 4 sets of 4 leg points
         """
-
+         
         return {
             'BR': self.legs["back_right"].get_leg_points(),
             'FR': self.legs["front_right"].get_leg_points(),

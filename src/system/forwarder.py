@@ -22,14 +22,15 @@ from system.quadruped.parameters.ik_parameters import IKParameters
     Collects system data and fowards the data to API server (server.py)
 """
 
+
 class Forwarder:
     def __init__(self):
-        self.tag = 'FORWARDER'
+        self.tag = "FORWARDER"
 
         context = zmq.Context()
         self.socket = context.socket(zmq.PUSH)
         self.socket.bind("tcp://127.0.0.1:5559")
-   
+
         self.sim_quad = None
         self.live_quad = None
         self.ik_parameters = None
@@ -113,11 +114,12 @@ class Forwarder:
                 data["ikParameters"] = None if self.ik_parameters is None else asdict(self.ik_parameters)
 
             converted_data = KeyConverter.convert_keys_to_camel_case(data)
-            try:             
+            try:
+                # print(json.dumps(converted_data))
                 self.socket.send_string(json.dumps(converted_data), flags=zmq.NOBLOCK)
             except zmq.Again:
                 pass
-                        
+
             time.sleep(self.message_send_rate_seconds)
 
         print(f"[{self.tag}] worker thread exiting")
@@ -125,18 +127,18 @@ class Forwarder:
     ###############################################################################
     # Private Methods
     ###############################################################################
-    
+
     def _create_plot_data(self, quad: Body):
         """
         Convert a hexapod object into points for the UI.
         """
         plot = {}
         if quad:
-            #plot["cog"] = {}
-            #plot["cog"]["name"] = "cog"
-            #plot["cog"]["x"] = round(quad.body.cog.x, 2)
-            #plot["cog"]["y"] = round(quad.body.cog.y, 2)
-            #plot["cog"]["z"] = round(quad.body.cog.z, 2)
+            # plot["cog"] = {}
+            # plot["cog"]["name"] = "cog"
+            # plot["cog"]["x"] = round(quad.body.cog.x, 2)
+            # plot["cog"]["y"] = round(quad.body.cog.y, 2)
+            # plot["cog"]["z"] = round(quad.body.cog.z, 2)
 
             # plot["head"] = {}
             # plot["head"]["name"] = "head"
@@ -144,32 +146,38 @@ class Forwarder:
             # plot["head"]["y"] = round(hexapod.body.head.y, 2)
             # plot["head"]["z"] = round(hexapod.body.head.z, 2)
 
-            #plot["body"] = {}
-            #points = quad.body.vertices + [quad.body.vertices[0]]
-            #plot["body"]["name"] = "body"
-            #plot["body"]["x"] = [round(point.x, 2) for point in points]
-            #plot["body"]["y"] = [round(point.y, 2) for point in points]
-            #plot["body"]["z"] = [round(point.z, 2) for point in points]
+            # plot["body"] = {}
+            # points = quad.body.vertices + [quad.body.vertices[0]]
+            # plot["body"]["name"] = "body"
+            # plot["body"]["x"] = [round(point.x, 2) for point in points]
+            # plot["body"]["y"] = [round(point.y, 2) for point in points]
+            # plot["body"]["z"] = [round(point.z, 2) for point in points]
 
-       
-            print(quad.get_leg_coordinates())
+            plot["body"] = []
+            
+            data = {}
+            data["name"] = "body"
+            data["points"] = []
+            for key, point in quad.get_body_coordinates().items():
+                data["points"].append({"x": round(point.x, 3), "y": round(point.y, 3), "z": round(point.z, 3)})            
+            plot["body"] = data
 
 
             plot["legs"] = []
             for key, points in quad.get_leg_coordinates().items():
-                leg_data = {}
-                leg_data["name"] = key
+                data = {}
+                data["name"] = key
+                data["points"] = [{"x": round(point.x, 3), "y": round(point.y, 3), "z": round(point.z, 3)} for point in points]
+                plot["legs"].append(data)
 
-                print('key', key)
-                print('points', points)
+            """
 
-                leg_data["x"] = [round(point.x, 2) for point in points]
+
+            leg_data["x"] = [round(point.x, 2) for point in points]
                 leg_data["y"] = [round(point.y, 2) for point in points]
                 leg_data["z"] = [round(point.z, 2) for point in points]
-                plot["legs"].append(leg_data)
-            
 
-            '''
+
             plot["mesh"] = {}
             dz = -1
             ground_contacts = quad.ground_contacts()
@@ -177,7 +185,7 @@ class Forwarder:
             plot["mesh"]["x"] = [round(point.x, 2) for point in ground_contacts]
             plot["mesh"]["y"] = [round(point.y, 2) for point in ground_contacts]
             plot["mesh"]["z"] = [(round(point.z, 2) + dz) for point in ground_contacts]
-            '''
+          
 
         if self.trajectories:
             plot["trajectories"] = []
@@ -208,5 +216,5 @@ class Forwarder:
                 ring_set["y"] = [round(point.y, 2) for point in points]
                 ring_set["z"] = [round(point.z, 2) for point in points]
                 plot["rings"].append(ring_set)
-
+  """
         return plot

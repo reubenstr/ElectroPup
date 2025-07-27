@@ -16,7 +16,7 @@ import MotorTable from '@/components/MotorTable';
 
 export default function Viewer() {
     const router = useRouter();
-    const { hexData, connected, sendMessage } = useDataTransfer();
+    const { hexData: quadData, connected, sendMessage } = useDataTransfer();
 
     const [showMotorInfo, setShowMotorInfo] = useState(false);
 
@@ -93,8 +93,8 @@ export default function Viewer() {
     });
 
     const getMotor = (motorName: string) => {
-        if (hexData?.motors && motorName in hexData?.motors) {
-            return hexData.motors[motorName]
+        if (quadData?.motors && motorName in quadData?.motors) {
+            return quadData.motors[motorName]
         }
     }
 
@@ -180,67 +180,67 @@ export default function Viewer() {
                         <View style={styles.verticalLine} />
                         <StatusIndicator
                             name='OpMode'
-                            value={hexData?.status?.opMode?.state}
+                            value={quadData?.status?.opMode?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='System'
-                            value={hexData?.status?.system?.state}
+                            value={quadData?.status?.system?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='Target'
-                            value={hexData?.status?.motion?.state}
+                            value={quadData?.status?.motion?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='Motion'
-                            value={hexData?.status?.targetMotion?.state}
+                            value={quadData?.status?.targetMotion?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='Gait'
-                            value={hexData?.status?.gait?.state}
+                            value={quadData?.status?.gait?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='Input'
-                            value={hexData?.status?.input?.state}
+                            value={quadData?.status?.input?.state}
                             style={{ width: 100 }}
                         />
                     </View>
 
                     <View style={styles.centerColumnPlotRow}>
                         <View style={styles.plotContainer}>
-                            <Plot3D hexData={hexData} />
+                            <Plot3D quadData={quadData} />
 
                             <View style={OverlayStyles.leftContacts}>
                                 <ContactIndicator
                                     name='LF'
-                                    state={hexData?.contacts?.leftFront}
+                                    state={quadData?.contacts?.leftFront}
                                 />
                                 <ContactIndicator
                                     name='LM'
-                                    state={hexData?.contacts?.leftMiddle}
+                                    state={quadData?.contacts?.leftMiddle}
                                 />
                                 <ContactIndicator
                                     name='LB'
-                                    state={hexData?.contacts?.leftBack}
+                                    state={quadData?.contacts?.leftBack}
                                 />
                             </View>
 
                             <View style={OverlayStyles.rightContacts}>
                                 <ContactIndicator
                                     name='RF'
-                                    state={hexData?.contacts?.rightFront}
+                                    state={quadData?.contacts?.rightFront}
                                 />
                                 <ContactIndicator
                                     name='RM'
-                                    state={hexData?.contacts?.rightMiddle}
+                                    state={quadData?.contacts?.rightMiddle}
                                 />
                                 <ContactIndicator
                                     name='RB'
-                                    state={hexData?.contacts?.rightBack}
+                                    state={quadData?.contacts?.rightBack}
                                 />
                             </View>
 
@@ -268,10 +268,10 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text>
-                                            Roll: {isNaN(Number(hexData?.status?.imu?.roll)) ? 'N/A' : Number(hexData?.status?.imu?.roll).toFixed(2)}°
+                                            Roll: {isNaN(Number(quadData?.status?.imu?.roll)) ? 'N/A' : Number(quadData?.status?.imu?.roll).toFixed(2)}°
                                         </Text>
                                         <Text>
-                                            Pitch: {isNaN(Number(hexData?.status?.imu?.pitch)) ? 'N/A' : Number(hexData?.status?.imu?.pitch).toFixed(2)}°
+                                            Pitch: {isNaN(Number(quadData?.status?.imu?.pitch)) ? 'N/A' : Number(quadData?.status?.imu?.pitch).toFixed(2)}°
                                             </Text>
                                     </View>
                                 </View>
@@ -282,9 +282,9 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikLine} />
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
-                                        <Text>Main: {hexData?.status?.loopTimes.mainLoop.toFixed(2)} ms</Text>
-                                        <Text>CAN 0: {hexData?.status?.loopTimes.can0.toFixed(2)} ms</Text>
-                                        <Text>CAN 1: {hexData?.status?.loopTimes.can1.toFixed(2)} ms</Text>
+                                        <Text>Main: {quadData?.status?.loopTimes.mainLoop.toFixed(2)} ms</Text>
+                                        <Text>CAN 0: {quadData?.status?.loopTimes.can0.toFixed(2)} ms</Text>
+                                        <Text>CAN 1: {quadData?.status?.loopTimes.can1.toFixed(2)} ms</Text>
                                     </View>
                                 </View>
                             </View>
@@ -295,15 +295,15 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Translation</Text>
-                                        <Text>X: {hexData?.ikParameters?.translateX?.toFixed(2)}</Text>
-                                        <Text>Y: {hexData?.ikParameters?.translateY?.toFixed(2)}</Text>
-                                        <Text>Z: {hexData?.ikParameters?.translateZ?.toFixed(2)}</Text>
+                                        <Text>X: {quadData?.ikParameters?.translateX?.toFixed(2)}</Text>
+                                        <Text>Y: {quadData?.ikParameters?.translateY?.toFixed(2)}</Text>
+                                        <Text>Z: {quadData?.ikParameters?.translateZ?.toFixed(2)}</Text>
                                     </View>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Rotation</Text>
-                                        <Text>X: {hexData?.ikParameters?.rotateX?.toFixed(2)}</Text>
-                                        <Text>Y: {hexData?.ikParameters?.rotateY?.toFixed(2)}</Text>
-                                        <Text>Z: {hexData?.ikParameters?.rotateZ?.toFixed(2)}</Text>
+                                        <Text>X: {quadData?.ikParameters?.rotateX?.toFixed(2)}</Text>
+                                        <Text>Y: {quadData?.ikParameters?.rotateY?.toFixed(2)}</Text>
+                                        <Text>Z: {quadData?.ikParameters?.rotateZ?.toFixed(2)}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -326,56 +326,56 @@ export default function Viewer() {
                     <View style={styles.centerColumnIndicatorRow}>
                         <StatusIndicator
                             name='MPWR'
-                            status={hexData?.status?.motorPower?.status}
+                            status={quadData?.status?.motorPower?.status}
                         />
                         <StatusIndicator
                             name='IK'
-                            status={hexData?.status?.ik?.status}
+                            status={quadData?.status?.ik?.status}
                         />
                         <View style={styles.verticalLine} />
                         <StatusIndicator
                             name='GPIO'
-                            status={hexData?.status?.gpio?.status}
+                            status={quadData?.status?.gpio?.status}
                         />
                         <StatusIndicator
                             name='I2C'
-                            status={hexData?.status?.smbus?.status}
+                            status={quadData?.status?.smbus?.status}
                         />
                         <StatusIndicator
                             name='PWR'
-                            status={hexData?.status?.powerSensor?.status}
+                            status={quadData?.status?.powerSensor?.status}
                         />
                         <StatusIndicator
                             name='IMU'
-                            status={hexData?.status?.imu?.status}
+                            status={quadData?.status?.imu?.status}
                         />
                         <StatusIndicator
                             name='EXP'
-                            status={hexData?.status?.expander?.status}
+                            status={quadData?.status?.expander?.status}
                         />
                         <StatusIndicator
                             name='CAN0'
-                            status={hexData?.status?.can0?.status}
+                            status={quadData?.status?.can0?.status}
                         />
                         <StatusIndicator
                             name='CAN1'
-                            status={hexData?.status?.can1?.status}
+                            status={quadData?.status?.can1?.status}
                         />
                         <View style={styles.verticalLine} />
                         <StatusIndicator
                             name='JOY'
-                            value={hexData?.status?.gamepad?.battery}
-                            status={hexData?.status?.gamepad?.status}
+                            value={quadData?.status?.gamepad?.battery}
+                            status={quadData?.status?.gamepad?.status}
                         />
                         <StatusIndicator
                             name='Voltage'
-                            value={hexData?.status?.voltage?.voltage}
-                            status={hexData?.status?.voltage?.status}
+                            value={quadData?.status?.voltage?.voltage}
+                            status={quadData?.status?.voltage?.status}
                         />
                         <StatusIndicator
                             name='Current'
-                            value={hexData?.status?.current?.current}
-                            status={hexData?.status?.current?.status}
+                            value={quadData?.status?.current?.current}
+                            status={quadData?.status?.current?.status}
                         />
                     </View>
 
