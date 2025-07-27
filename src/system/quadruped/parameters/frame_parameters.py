@@ -1,0 +1,38 @@
+from dataclasses import dataclass
+
+"""
+Class containing frame parameters for quadruped rotation, translation, and states.
+"""
+
+@dataclass
+class FrameParameters:  
+
+    # Frame dimensions (meters):
+    # L1, distance hip pivot center of rotation to upper leg rotation joint
+    hip_length = 0.036
+
+    # L2, upper leg length between both pivot points
+    upper_leg_length = 0.140
+
+    # L3, lower leg length from pivot point to foot ground contact point
+    lower_leg_length = 0.140
+
+    # distance between left and right hip pivot center of rotation
+    body_width = 0.150
+
+    # distance between front and rear hip pivot center of rotation
+    body_length = 0.338
+
+    # distance between front and back foot centers at ground touch
+    foot_length = 0.338
+
+    # distance between left and right foot centers at ground touch
+    foot_width = 0.261
+
+    # Joint bounds (degrees):
+    abduction_joint_lower_bounds = -45.0
+    abduction_joint_upper_bounds = 45.0
+    hip_joint_lower_bounds = -100.0
+    hip_joint_upper_bounds = 90.0
+    knee_joint_lower_bounds = -180.0
+    knee_joint_upper_bounds = 180.0

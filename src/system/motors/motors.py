@@ -13,9 +13,9 @@ from typing import Dict
 from enum import Enum
 
 # Local
-from motor import Motor
-from interfaces import Status, CanInfo
-from motor_list import motor_list
+from system.motors.motor import Motor
+from system.motors.motor_list import motor_list
+from system.interfaces import Status, CanInfo
 
 
 """
@@ -342,8 +342,19 @@ class Motors:
         self.disable_all_motors()
         self.deinit_can_buses(self.can_infos)
 
-    def is_can_error(self):
-        return self.can_interface.is_can_error()
+    def is_error(self) -> bool:
+        for can_info in self.can_infos.values():
+            if can_info.status == Status.ERROR:
+                return True
+
+            if can_info.thread_handle:
+                if not can_info.thread_handle.is_alive():
+                    return True
+
+        for key, motor in self.motors.items():
+            if motor.is_error():
+                return True
+        return False
 
     ###############################################################################
     # Helpers

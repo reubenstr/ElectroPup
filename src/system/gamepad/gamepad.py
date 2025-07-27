@@ -13,7 +13,7 @@ from time import sleep
 from typing import Callable, Optional
 
 from .gamepad_interface import PS4
-from ..parameters.motion_parameters import (
+from ..quadruped.parameters.motion_parameters import (
     MotionParameters,
     KineticState,
     ControllerEvent,

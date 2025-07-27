@@ -1,8 +1,9 @@
 
 from typing import List
-from interfaces import MotorInfo
 
-from frame_parameters import FrameParameters
+
+from system.interfaces import MotorInfo
+from system.quadruped.parameters.frame_parameters import FrameParameters
 
 def motor_list() -> List[MotorInfo]:
     fp = FrameParameters()

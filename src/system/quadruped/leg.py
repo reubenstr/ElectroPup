@@ -1,7 +1,10 @@
 from math import pi, degrees
 import numpy as np
+from typing import List
+
 from . import kinematics
 from . import transformations
+from system.quadruped.point import Point
 
 class Leg(object):
     '''Encapsulates a leg that consists of 3 links and 3 joint angles
@@ -73,7 +76,8 @@ class Leg(object):
         self.set_angles(leg_angs[0],leg_angs[1],leg_angs[2])
 
     def set_foot_position_in_global_coords(self,x4,y4,z4):
-        ''' Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
+        ''' 
+        Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
         Inputted coordinates in the global coordinate frame
 
         Args:
@@ -97,7 +101,7 @@ class Leg(object):
         self.set_foot_position_in_local_coords(p4_in_leg_coords[0],p4_in_leg_coords[1],p4_in_leg_coords[2])
 
 
-    def get_leg_points(self):
+    def get_leg_points(self) -> List[Point]:
         '''Get coordinates of 4 points that define a wireframe of the leg:
             Point 1: hip/body point
             Point 2: upper leg/hip joint
@@ -105,28 +109,26 @@ class Leg(object):
             Point 4: Foot, leg end
         
         Returns:
-            A length 4 tuple consisting of 4 length 3 numpy arrays representing the 
+            A length 4 list consisting of 4 length 3 numpy arrays representing the 
             x,y,z coordinates in the global frame of the 4 leg points
         '''
         # Build up the total homogeneous transformation incrementally, saving each leg
         # point along the way
         # The total homogeneous transformation buildup is:
         # ht = ht_leg_start @ t01 @ t12 @ t23 @ t34 
-        p1 = self._ht_leg_start[0:3,3]
+
+        p1 = Point(*self._ht_leg_start[0:3, 3])
 
         ht_buildup = np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12)
-
-        p2 = ht_buildup[0:3,3]
+        p2 = Point(*ht_buildup[0:3, 3])
       
-        ht_buildup = np.matmul(ht_buildup, self._t23)
-        
-        p3 = ht_buildup[0:3,3]
+        ht_buildup = np.matmul(ht_buildup, self._t23)        
+        p3 = Point(*ht_buildup[0:3, 3])
         
         ht_buildup = np.matmul(ht_buildup, self._t34)
+        p4 = Point(*ht_buildup[0:3, 3])  
 
-        p4 = ht_buildup[0:3,3]
-
-        return (p1,p2,p3,p4)
+        return [p1,p2,p3,p4]
 
     def get_foot_position_in_global_coords(self):
         ''' Return coordinates of the foot in the leg's local coordinate frame'''
