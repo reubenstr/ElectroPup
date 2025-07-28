@@ -80,7 +80,7 @@ class Main:
         self.ik_status = Status.STANDBY
         self.joint_angle_status = Status.STANDBY
 
-        self.main_loop_rate_ms = 0.020
+        self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
         self.loop_completion_time_ms: float = 0
 
@@ -115,13 +115,13 @@ class Main:
             self.motion.set_target_motion_state(MotionState.POSE)
 
         if event == InputCommand.BIAS_WALK:
-            self.motion.set_target_motion_state(MotionState.BIAS_WALK)
+            self.motion.set_target_motion_state(MotionState.WALK)
 
         if event == InputCommand.ROTATE:
             self.motion.set_target_motion_state(MotionState.ROTATE)
 
         if event == InputCommand.VECTOR_WALK:
-            self.motion.set_target_motion_state(MotionState.VECTOR_WALK)
+            self.motion.set_target_motion_state(MotionState.WALK)
 
     ###############################################################################
     # Main Loop
@@ -175,7 +175,7 @@ class Main:
                 self.apply_controller_input(self.motion_parameters.get_pose_lie_down())
 
             elif self.system_state == SystemStates.MOTION:
-                self.motion.set_target_motion_state(MotionState.BIAS_WALK)
+                self.motion.set_target_motion_state(MotionState.WALK)
 
             elif self.system_state == SystemStates.POWER_DOWN:
                 pass
@@ -302,8 +302,8 @@ class Main:
         if sleep_time > 0:
             sleep(sleep_time)
 
-        if delta > self.main_loop_rate_ms:
-            print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
+        #if delta > self.main_loop_rate_ms:
+        #    print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
         # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
         self.loop_completion_time_ms = delta * 1000

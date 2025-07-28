@@ -38,7 +38,7 @@ class IKParameters:
     ###############################################################################
     forward_translation: float = 0
     side_translation: float = 0
-    height_translation: float = 0
+    height_translation: float = (height_translation_min + height_translation_max) / 2.0
     roll: float = 0
     pitch: float = 0
     yaw: float = 0

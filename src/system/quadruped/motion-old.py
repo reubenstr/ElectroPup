@@ -34,8 +34,8 @@ class Motion:
         self.soft_trajectory_index: int = 0
         self.soft_trajectories: Trajectories = []
 
-        self.motion_state = MotionState.BIAS_WALK
-        self.target_motion_state: MotionState = MotionState.VECTOR_WALK
+        self.motion_state = MotionState.WALK
+        self.target_motion_state: MotionState = MotionState.WALK
         self.previous_motion_state = None
 
         self.trajectory_planner = TrajectoryPlanner()
@@ -124,7 +124,7 @@ class Motion:
             self.trajectories = self.generate_trajectory(quad, motion_parameters, self.motion_state)
 
         # Process every loop:
-        if self.motion_state in [MotionState.VECTOR_WALK, MotionState.BIAS_WALK]:
+        if self.motion_state in [MotionState.WALK, MotionState.WALK]:
             self.trajectories = self.generate_trajectory(quad, motion_parameters, self.motion_state)
 
     def generate_trajectory(
@@ -137,8 +137,8 @@ class Motion:
         if motion_state == MotionState.TRANSITION:
             if self.target_motion_state in [
                 MotionState.ROTATE,
-                MotionState.VECTOR_WALK,
-                MotionState.BIAS_WALK,
+                MotionState.WALK,
+                MotionState.WALK,
             ]:
                 transition_type = TransitionType.STRAIGHT
             elif self.target_motion_state == MotionState.POSE:
@@ -154,10 +154,10 @@ class Motion:
         elif motion_state == MotionState.ROTATE:
             trajectories = self.trajectory_planner.generate_rotation(quad)
 
-        elif motion_state == MotionState.VECTOR_WALK:
+        elif motion_state == MotionState.WALK:
             trajectories = self.trajectory_planner.generate_vector_walk(quad, motion_parameters)
 
-        elif motion_state == MotionState.BIAS_WALK:
+        elif motion_state == MotionState.WALK:
             trajectories = self.trajectory_planner.generate_bias_walk(quad, motion_parameters)
 
         return trajectories
@@ -181,7 +181,7 @@ class Motion:
         return self.target_motion_state
 
     def get_visual_rings(self) -> Trajectories:
-        if self.motion_state == MotionState.BIAS_WALK:
+        if self.motion_state == MotionState.WALK:
             return self.trajectory_planner.get_rings()
         else:
             return None

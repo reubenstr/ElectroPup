@@ -21,11 +21,9 @@ from system.interfaces import LegName
 class Motion:
     def __init__(self):
 
-        self.tag = 'Motion'
+        self.tag = "Motion"
 
-
-
-        self.motion_state: MotionState = MotionState.NONE
+        self.motion_state: MotionState = MotionState.WALK
         self.trajectories: Trajectories = None
 
         self.ik_parameters = IKParameters()
@@ -35,12 +33,10 @@ class Motion:
 
         self.quad = Quad()
 
+        self.gait_time: float = 0
+
         self.tick_rate_seconds: float = 0.050
         self._start()
-
-    
-         
-       
 
     ###############################################################################
     # Thread
@@ -52,13 +48,11 @@ class Motion:
         self.thread_handle = Thread(target=self._worker)
         self.thread_handle.start()
 
-
     def _stop(self):
         print(f"[{self.tag}] stoping worker thread")
         if self.thread_handle and self.thread_handle.is_alive():
             self.exit_event.set()
             self.thread_handle.join()
-
 
     def _worker(self):
         self.exit_event.clear()
@@ -66,28 +60,31 @@ class Motion:
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
             with self.lock:
-                #foot_points = self.quad.get_base_foot_points()
+                if self.motion_state == MotionState.POSE:
+                    base_foot_points = self.quad.get_base_foot_points()
+                    self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
 
-                foot_points: Dict[LegName, Point] = {}
-                for leg_name in LegName:
-                    base_foot_point = self.quad.get_base_foot_point(leg_name)
-                    foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point, time())
-                    foot_points[leg_name] = foot_point
+                elif self.motion_state == MotionState.WALK:
+                    period = scale_value(self.motion_parameters.forward_raw, -1, 1, 10, 1)
 
-                self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, foot_points)
+                    self.trajector_planner.set_period(period)
+                    self.trajector_planner.tick_gait_time(self.tick_rate_seconds)
 
+                    foot_points: Dict[LegName, Point] = {}
+                    for leg_name in LegName:
+                        base_foot_point = self.quad.get_base_foot_point(leg_name)
+                        foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point)
+                        foot_points[leg_name] = foot_point
+
+                    self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
+                    self.gait_time += self.tick_rate_seconds
 
             sleep(self.tick_rate_seconds)
-
-            
-
- 
 
     ###############################################################################
     # Methods
     ###############################################################################
 
-   
     def generate_trajectory(
         self,
         quad: Quad,
@@ -103,13 +100,11 @@ class Motion:
         elif motion_state == MotionState.ROTATE:
             pass
 
-        elif motion_state == MotionState.VECTOR_WALK:
+        elif motion_state == MotionState.WALK:
             pass
 
-        elif motion_state == MotionState.BIAS_WALK:
+        elif motion_state == MotionState.WALK:
             pass
-
-     
 
     def shutdown(self):
         self._stop()
@@ -130,11 +125,11 @@ class Motion:
         with self.lock:
             return self.quad
 
-
     ### OLD?
 
     def get_trajectories(self) -> Trajectories:
-        return self.trajector_planner.get_trajectories()
+        base_foot_points = self.quad.get_base_foot_points()
+        return self.trajector_planner.get_trajectories(base_foot_points)
 
     def get_soft_trajectories(self) -> Trajectories:
         return
@@ -150,7 +145,7 @@ class Motion:
 
     def get_visual_rings(self) -> Trajectories:
         return
-        if self.motion_state == MotionState.BIAS_WALK:
+        if self.motion_state == MotionState.WALK:
             return self.trajectory_planner.get_rings()
         else:
             return None
@@ -160,4 +155,3 @@ class Motion:
 
     def is_in_motion(self) -> bool:
         return self.motion_state != MotionState.POSE
-  

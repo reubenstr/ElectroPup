@@ -75,6 +75,7 @@ class Quad(object):
     ###############################################################################
 
     def get_base_foot_point(self, name: LegName) -> Point:
+        """ """
         base_foot_positions = self.get_base_foot_points()     
         if name in base_foot_positions:
             return base_foot_positions[name]

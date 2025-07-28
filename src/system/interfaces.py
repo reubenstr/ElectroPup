@@ -75,8 +75,7 @@ class MotionState(StrEnum):
     TRANSITION = 'transition'
     POSE = 'pose'
     ROTATE = 'rotate'
-    VECTOR_WALK = 'vector_walk'
-    BIAS_WALK = 'bias_walk'
+    WALK = 'walk'
     STAND = 'stand'
     SIT = 'sit'
 
