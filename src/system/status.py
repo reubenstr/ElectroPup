@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass, field, is_dataclass
-from system.interfaces import MotionStates, SystemStates, OpModes, Status, Gaits, InputMode
+from system.interfaces import MotionState, SystemStates, OpModes, Status, Gaits, InputMode
 
 
 @dataclass
@@ -38,7 +38,7 @@ class IMU:
 
 @dataclass
 class Motion:
-    state: MotionStates = MotionStates.NONE
+    state: MotionState = MotionState.NONE
 
 
 @dataclass

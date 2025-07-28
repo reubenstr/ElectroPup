@@ -62,7 +62,7 @@ class SystemStates(StrEnum):
     POWER_DOWN = 'power_down'
 
 
-class MotionStates(StrEnum):
+class MotionState(StrEnum):
     NONE = 'none'
     TRANSITION = 'transition'
     POSE = 'pose'
@@ -87,7 +87,6 @@ class StandStates(StrEnum):
 class Gaits(StrEnum):
     NONE = 'none'
     TRIPOD = 'tripod'
-
 
 
 class Contacts:

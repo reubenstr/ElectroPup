@@ -71,7 +71,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
     }
   }, [quadData, hold, computePlotData]);
 
-  const defaultZoomLevel = 0.5;
+  const defaultZoomLevel = 0.1;
   const layout = useMemo(() => ({
     scene: {
       //xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },

@@ -25,7 +25,7 @@ from system.quadruped.parameters.ik_parameters import IKParameters
 
 class Forwarder:
     def __init__(self):
-        self.tag = "FORWARDER"
+        self.tag = "Forwarder"
 
         context = zmq.Context()
         self.socket = context.socket(zmq.PUSH)
@@ -169,7 +169,8 @@ class Forwarder:
             plot["mesh"]["z"] = [(scale(point.z) + dz) for point in ground_contacts]
             """
    
-        if self.trajectories:
+
+        if self.trajectories:           
             plot["trajectories"] = []
             for i, points in enumerate(self.trajectories):
                 trajectory_data = {}

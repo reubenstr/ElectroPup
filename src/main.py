@@ -22,7 +22,7 @@ from system.motors.motors import Motor, Motors
 from system.auxiliary.aux import Aux, StatusMessage
 from system.utilities.utilities import *
 
-from system.interfaces import SystemStates, OpModes, MotorSpeeds, MotorCurrents, Status, InputCommand, MotionStates
+from system.interfaces import SystemStates, OpModes, MotorSpeeds, MotorCurrents, Status, InputCommand, MotionState
 from system.status import SystemStatus
 from system.forwarder import Forwarder
 
@@ -112,16 +112,16 @@ class Main:
             self.clear_all_errors()
 
         if event == InputCommand.POSE:
-            self.motion.set_target_motion_state(MotionStates.POSE)
+            self.motion.set_target_motion_state(MotionState.POSE)
 
         if event == InputCommand.BIAS_WALK:
-            self.motion.set_target_motion_state(MotionStates.BIAS_WALK)
+            self.motion.set_target_motion_state(MotionState.BIAS_WALK)
 
         if event == InputCommand.ROTATE:
-            self.motion.set_target_motion_state(MotionStates.ROTATE)
+            self.motion.set_target_motion_state(MotionState.ROTATE)
 
         if event == InputCommand.VECTOR_WALK:
-            self.motion.set_target_motion_state(MotionStates.VECTOR_WALK)
+            self.motion.set_target_motion_state(MotionState.VECTOR_WALK)
 
     ###############################################################################
     # Main Loop
@@ -175,7 +175,7 @@ class Main:
                 self.apply_controller_input(self.motion_parameters.get_pose_lie_down())
 
             elif self.system_state == SystemStates.MOTION:
-                self.motion.set_target_motion_state(MotionStates.BIAS_WALK)
+                self.motion.set_target_motion_state(MotionState.BIAS_WALK)
 
             elif self.system_state == SystemStates.POWER_DOWN:
                 pass
@@ -260,7 +260,6 @@ class Main:
         system_status.target_motion.state = self.motion.get_target_motion_state()
         #system_status.ik.status = self.ik_status
         #system_status.joint_angle.status = self.joint_angle_status
-        system_status.gait.state = self.motion.get_gait()
         system_status.input.state = self.input.get_input_mode()
         #system_status.loopTimes.mainLoop = self.loop_completion_time_ms
         #system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
@@ -321,7 +320,7 @@ class Main:
         motion_parameters = self.input.get_motion_parameters()
         ik_parameters = self.input.get_ik_parameters()
 
-        self.motion.tick(self.quad_sim, ik_parameters, motion_parameters)  
+        #self.motion.tick(self.quad_sim, ik_parameters, motion_parameters)  
         self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
 
         return
@@ -375,6 +374,7 @@ class Main:
         # self.hardware.power_motors_off()
         # self.hardware.shutdown()
         # self.input.shutdown()
+        self.motion.shutdown()
         self.forwarder.shutdown()
 
         if full_shutdown_flag:
