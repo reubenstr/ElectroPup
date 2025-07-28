@@ -14,7 +14,7 @@ from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.point import Point
-
+from system.interfaces import LegName
 
 class Quad(object):
     """
@@ -69,6 +69,35 @@ class Quad(object):
         ik_parameters.height_translation = (IKParameters().height_translation_min + IKParameters().height_translation_max) / 2
         self.set_body_pose_by_transform_inputs(ik_parameters)
 
+        #self.base_foot_positions: Dict[str, Point] = self.create_base_foot_positions()
+
+    ###############################################################################
+    # Methods
+    ###############################################################################
+
+    def get_base_foot_position(self, name: LegName) -> Point:
+        base_foot_positions = self.get_base_foot_positions()     
+        if name in base_foot_positions:
+            return base_foot_positions[name]
+       
+
+    def get_base_foot_positions(self) -> Dict[LegName, Point]:
+        """
+        Creates default foot positions in Z up coord system
+        """
+        l = self.body_length
+        w = self.body_width
+        l1 = self.hip_length
+        offset = 0
+
+        global_foot_positions = {}  
+        global_foot_positions[LegName.FL] = Point(l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.FR] = Point(l / 2, w / 2 + l1 + offset, 0)
+        global_foot_positions[LegName.BL] = Point(-l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.BR] = Point(-l / 2, w / 2 + l1 + offset, 0)
+
+        return global_foot_positions
+
     def create_default_global_foot_positions(self):
         """
         Creates a default global foot positions dict for reference and testing.
@@ -112,6 +141,8 @@ class Quad(object):
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
 
+            base_foot_positions = self.get_base_foot_positions()
+
             self.legs["front_left"] = Leg(
                 0,
                 0,
@@ -120,6 +151,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_front_left(ht_body, self.body_length, self.body_width),
+                base_foot_positions[LegName.FL],
                 leg12=False,
             )
             self.legs["front_right"] = Leg(
@@ -130,6 +162,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_front_right(ht_body, self.body_length, self.body_width),
+                base_foot_positions[LegName.FR],
                 leg12=True,
             )
             self.legs["back_left"] = Leg(
@@ -140,6 +173,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_back_left(ht_body, self.body_length, self.body_width),
+                base_foot_positions[LegName.BL],
                 leg12=False,
             )
             self.legs["back_right"] = Leg(
@@ -150,16 +184,17 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_back_right(ht_body, self.body_length, self.body_width),
+                base_foot_positions[LegName.BR],
                 leg12=True,
             )
 
-            global_foot_positions = self.create_default_global_foot_positions()
+            '''global_foot_positions = self.create_default_global_foot_positions()
 
             for key in self.legs.keys():
                 x4 = global_foot_positions[key][0]
                 y4 = global_foot_positions[key][1]
                 z4 = global_foot_positions[key][2]
-                self.legs[key].set_foot_position_in_global_coords(x4, y4, z4)
+                self.legs[key].set_foot_position_in_global_coords(x4, y4, z4)'''
 
             error_string = self.check_joint_angles(self.legs)
             if error_string != None:
@@ -272,3 +307,6 @@ class Quad(object):
 
     def get_num_legs(self) -> int:
         return len(self.legs)
+
+    #def get_base_foot_positions(self) -> Dict[str, Point]:
+    #    return self.base_foot_positions

@@ -24,7 +24,7 @@ class Leg(object):
                 or 3 or 4 (leftfront or leftback)
     """
 
-    def __init__(self, q1, q2, q3, l1, l2, l3, ht_leg_start, leg12):
+    def __init__(self, q1, q2, q3, l1, l2, l3, ht_leg_start, foot: Point, leg12):
         """Constructor"""
         self._q1 = q1
         self._q2 = q2
@@ -33,6 +33,7 @@ class Leg(object):
         self._l2 = l2
         self._l3 = l3
         self._ht_leg_start = ht_leg_start
+        self._base_foot_position: Point = self.swap_point(foot)
         self._leg12 = leg12
 
         # Create homogeneous transformation matrices for each joint
@@ -40,6 +41,9 @@ class Leg(object):
         self._t12 = kinematics.t_1_to_2()
         self._t23 = kinematics.t_2_to_3(self._q2, self._l2)
         self._t34 = kinematics.t_3_to_4(self._q3, self._l3)
+
+        self.calculate_ik()
+        #self.set_foot_position_in_global_coords(self._base_foot_position.x, self._base_foot_position.y, self._base_foot_position.z)
 
     def set_angles(self, q1, q2, q3):
         """Set the three leg angles and update transformation matrices as needed"""
@@ -50,13 +54,14 @@ class Leg(object):
         self._t23 = kinematics.t_2_to_3(self._q2, self._l2)
         self._t34 = kinematics.t_3_to_4(self._q3, self._l3)
 
-    def set_homog_transf(self, ht_leg_start):
+    '''def set_homog_transf(self, ht_leg_start):
         """Set the homogeneous transformation of the leg start position"""
         self._ht_leg_start = ht_leg_start
 
     def get_homog_transf(self):
         """Return this leg's homogeneous transformation of the leg start position"""
         return self._ht_leg_start
+        '''
 
     def set_foot_position_in_local_coords(self, x4, y4, z4):
         """Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
@@ -75,6 +80,9 @@ class Leg(object):
         # Call method to set joint angles for leg
         self.set_angles(leg_angs[0], leg_angs[1], leg_angs[2])
 
+   
+   
+   
     def set_foot_position_in_global_coords(self, x4, y4, z4):
         """
         Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
@@ -100,6 +108,24 @@ class Leg(object):
         # Call this leg's position set function for coordinates in local frame
         self.set_foot_position_in_local_coords(p4_in_leg_coords[0], p4_in_leg_coords[1], p4_in_leg_coords[2])
 
+    #### NEW
+    def calculate_ik(self):       
+        # Get inverse of leg's homogeneous transform
+        ht_leg_inv = transformations.ht_inverse(self._ht_leg_start)
+
+        # Convert the foot coordinates for use with homogeneous transforms, e.g.:
+        # p4 = [x4, y4, z4, 1]
+        p4_global_coord = np.block([np.array([self._base_foot_position.x, self._base_foot_position.y, self._base_foot_position.z]), np.array([1])])
+
+        # Calculate foot coordinates in each leg's coordinate system
+        p4_in_leg_coords = ht_leg_inv.dot(p4_global_coord)
+
+         # Call this leg's position set function for coordinates in local frame
+        self.set_foot_position_in_local_coords(p4_in_leg_coords[0], p4_in_leg_coords[1], p4_in_leg_coords[2])
+
+      
+   
+   
     def get_hip_point(self) -> Point:
         p1 = Point(*self._ht_leg_start[0:3, 3])
         return self.swap_points([p1])[0]
@@ -146,11 +172,20 @@ class Leg(object):
         """Return leg angles in degrees as a dictionary as q1,q2,q3"""
         return {"abduction": degrees(self._q1), "hip": degrees(self._q2), "knee": degrees(self._q3)}
 
+    
+    
     def swap_points(self, point_list: List[Point]) -> List[Point]:
         """
         Swap values of a list of Point objects to convert Y up to Z up.
         """
         swapped = []
         for pt in point_list:
-            swapped.append(Point(pt.z, pt.x, pt.y, pt.name))
+            swapped.append(Point(pt.x, pt.z, pt.y, pt.name))
         return swapped
+    
+    def swap_point(self, point: Point) -> Point:
+        """
+        Swap values of a list of Point objects to convert Y up to Z up.
+        """
+        return Point(point.x, point.z, point.y, point.name)
+      

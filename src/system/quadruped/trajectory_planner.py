@@ -5,15 +5,12 @@ import matplotlib.pyplot as plt
 from typing import List, Dict, TypeAlias
 
 from system.quadruped.point import Point
+from system.quadruped.quad import Quad
+from system.interfaces import LegName
 
 Trajectory: TypeAlias = List[Point]
 Trajectories: TypeAlias = List[Trajectory]
 
-class LegName(Enum):
-    LF = "LF"
-    RF = "RF"
-    LR = "LR"
-    RR = "RR"
 
 
 class Phase(Enum):
@@ -61,10 +58,10 @@ class TrajectoryPlanner:
             period=1.0,
             duty_factor=0.75,
             phase_offsets={
-                LegName.LF: 0.0,
-                LegName.RR: 0.25,
-                LegName.RF: 0.5,
-                LegName.LR: 0.75,
+                LegName.FL: 0.0,
+                LegName.BR: 0.25,
+                LegName.FR: 0.5,
+                LegName.BL: 0.75,
             },
         )
 
@@ -73,10 +70,10 @@ class TrajectoryPlanner:
             period=0.6,
             duty_factor=0.5,
             phase_offsets={
-                LegName.LF: 0.0,
-                LegName.RR: 0.0,
-                LegName.RF: 0.5,
-                LegName.LR: 0.5,
+                LegName.FL: 0.0,
+                LegName.BR: 0.0,
+                LegName.FR: 0.5,
+                LegName.BL: 0.5,
             },
         )
 
@@ -91,24 +88,38 @@ class TrajectoryPlanner:
     ###############################################################################
 
 
-    def get_trajectories(self) -> Trajectories:
-
-        def generate_trajectories(gait: GaitPattern, duration=1.5, timestep=0.02):
+    def _generate_trajectories(self, gait: GaitPattern, duration=1.5, timestep=0.02):
             times = np.arange(0, duration, timestep) 
+
+
+            quad = Quad()
+
            
             trajectories: Trajectories = []           
-            for leg in LegName:
+            for leg_name in LegName:
                 trajectory: Trajectory = []
                 for t in times:
-                    phase, phase_time = gait.get_leg_phase_time(leg, t)
-                    d, h = foot_trajectory_bezier(phase, phase_time, stride_length=0.2)                   
-                    trajectory.append(Point(0, d, h))
+                    phase, phase_time = gait.get_leg_phase_time(leg_name, t)
+                    d, h = foot_trajectory_bezier(phase, phase_time, stride_length=0.2)  
+
+                    t_point = Point(d, 0, h)
+                    foot_position = quad.get_base_foot_position(leg_name)
+                    #t_point.move_xyz(foot_position.x, foot_position.y, foot_position.z)
+                    print(leg_name, foot_position)
+                    t_point.move_xyz(0.0, .2, 0)
+
+                    trajectory.append(t_point)
                 
                 trajectories.append(trajectory)
             
             return trajectories
+    
 
-        return generate_trajectories(self.gait, self.duration, self.timestep)
+
+
+
+    def get_trajectories(self) -> Trajectories:        
+        return self._generate_trajectories(self.gait, self.duration, self.timestep)
 
 
 
@@ -164,7 +175,7 @@ def foot_trajectory_sin(phase: Phase, phase_time: float, stride_length=0.2, step
     return x, z
 
 
-walk_gait = GaitPattern(
+'''walk_gait = GaitPattern(
     name="Walk",
     period=1.0,
     duty_factor=0.75,
@@ -186,7 +197,7 @@ trot_gait = GaitPattern(
         LegName.RF: 0.5,
         LegName.LR: 0.5,
     },
-)
+)'''
 
 
 def simulate(gait: GaitPattern, duration: float, timestep: float = 0.1):
@@ -233,8 +244,10 @@ if __name__ == "__main__":
 
     #plot_foot_trajectories(walk_gait, duration=1, timestep=0.005)
 
-    print(F"Simulating {walk_gait.name}")
-    simulate(walk_gait, duration=30.0, timestep=0.05)
+    #print(F"Simulating {walk_gait.name}")
+    #simulate(walk_gait, duration=30.0, timestep=0.05)
 
     # print("\nSimulating Trot...")
     # simulate(trot_gait, duration=3.0)
+
+    pass

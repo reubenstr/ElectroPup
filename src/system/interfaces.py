@@ -4,6 +4,14 @@ from threading import Thread, Lock, Event
 from dataclasses import dataclass
 from enum import Enum, StrEnum, IntEnum
 
+
+class LegName(Enum):
+    FL = "FL"
+    FR = "FR"
+    BL = "BL"
+    BR = "BR"
+
+
 class OpModes(StrEnum):
     NA = 'N/A'
     LIVE = 'live'
