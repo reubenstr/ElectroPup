@@ -35,7 +35,10 @@ class Motion:
 
         self.gait_time: float = 0
 
-        self.tick_rate_seconds: float = 0.050
+        self.tick_rate_seconds: float = 0.025
+        self.slow_gait_time: float = 0.001
+        self.fast_gait_time: float = 0.025
+
         self._start()
 
     ###############################################################################
@@ -60,16 +63,21 @@ class Motion:
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
             with self.lock:
+                
                 if self.motion_state == MotionState.POSE:
                     base_foot_points = self.quad.get_base_foot_points()
                     self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
 
                 elif self.motion_state == MotionState.WALK:
-                    period = scale_value(self.motion_parameters.forward_raw, -1, 1, 10, 1)
-
-                    self.trajector_planner.set_period(period)
-                    self.trajector_planner.tick_gait_time(self.tick_rate_seconds)
-
+                   
+                    if self.motion_parameters.forward_raw > 0:
+                        scaled_dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.slow_gait_time, self.fast_gait_time)   
+                        self.trajector_planner.tick_gait_time(scaled_dt)                     
+                    elif self.motion_parameters.forward_raw < 0:
+                        scaled_dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.fast_gait_time, -self.slow_gait_time)
+                        self.trajector_planner.tick_gait_time(scaled_dt)
+                                    
+                  
                     foot_points: Dict[LegName, Point] = {}
                     for leg_name in LegName:
                         base_foot_point = self.quad.get_base_foot_point(leg_name)

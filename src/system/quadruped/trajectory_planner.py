@@ -10,7 +10,6 @@ from system.quadruped.gait import GaitPlanner
 from system.interfaces import LegName
 from system.quadruped.gait import Gait
 
-
 Trajectory: TypeAlias = List[Point]
 Trajectories: TypeAlias = List[Trajectory]
 
@@ -60,15 +59,7 @@ class TrajectoryPlanner:
 
     def tick_gait_time(self, dt: float):
         self.gait_time += dt
-
-    def set_period(self, period):
-        current_phase = (self.gait_time / self.gait_planner.period) % 1.0
-
-        self.gait_planner.period = period
-
-        # Adjust gait_time to preserve phase
-        self.gait_time = current_phase * self.gait_planner.period
-
+   
     def get_foot_point(self, leg_name: LegName, base_foot_point: Point):
         phase, phase_time = self.gait_planner.get_leg_phase_time(leg_name, self.gait_time)
         d, h = self.gait_planner.foot_trajectory_bezier(phase, phase_time, stride_length=0.15)
