@@ -46,8 +46,8 @@ class Main:
 
         self.forwarder = Forwarder()
 
-        self.quad_sim = Quad()
-        self.quad_live = Quad()
+        #self.quad_sim = Quad()
+        #self.quad_live = Quad()
 
         ######################################################################
 
@@ -278,7 +278,7 @@ class Main:
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
  
-        self.forwarder.set_sim_quad(self.quad_sim)
+        self.forwarder.set_sim_quad(self.motion.get_quad())
         # self.forwarder.set_live_quad(self.quad_live)
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
@@ -320,8 +320,16 @@ class Main:
         motion_parameters = self.input.get_motion_parameters()
         ik_parameters = self.input.get_ik_parameters()
 
+        self.motion.set_ik_parameters(ik_parameters)
+        self.motion.set_motion_parameters(motion_parameters)
+
+
+
         #self.motion.tick(self.quad_sim, ik_parameters, motion_parameters)  
-        self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
+        #self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
+
+
+
 
         return
 

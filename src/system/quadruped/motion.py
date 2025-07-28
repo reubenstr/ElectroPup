@@ -1,6 +1,7 @@
 from time import time, sleep
 from typing import List
 from threading import Thread, Lock, Event
+from typing import List, Dict
 
 from system.quadruped.point import Point, add_vectors, get_distance_xy, get_distance_statistics
 from system.quadruped.quad import Quad
@@ -9,6 +10,7 @@ from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.interfaces import MotionState, Gaits
 from system.utilities.utilities import safe_divide, scale_value
 from system.quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
+from system.interfaces import LegName
 
 """
     Generates trajectories for walking and rotation.
@@ -31,7 +33,7 @@ class Motion:
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
 
-        self.quad_sim = Quad()
+        self.quad = Quad()
 
         self.tick_rate_seconds: float = 0.050
         self._start()
@@ -63,8 +65,16 @@ class Motion:
 
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
+            with self.lock:
+                #foot_points = self.quad.get_base_foot_points()
 
-            print('motion')
+                foot_points: Dict[LegName, Point] = {}
+                for leg_name in LegName:
+                    base_foot_point = self.quad.get_base_foot_point(leg_name)
+                    foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point, time())
+                    foot_points[leg_name] = foot_point
+
+                self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, foot_points)
 
 
             sleep(self.tick_rate_seconds)
@@ -116,10 +126,12 @@ class Motion:
         with self.lock:
             self.motion_parameters = motion_parameters
 
+    def get_quad(self) -> Quad:
+        with self.lock:
+            return self.quad
 
 
-
-
+    ### OLD?
 
     def get_trajectories(self) -> Trajectories:
         return self.trajector_planner.get_trajectories()

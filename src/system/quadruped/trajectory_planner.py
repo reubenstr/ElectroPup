@@ -87,40 +87,45 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
+    def get_foot_point(self, leg_name: LegName, base_foot_point: Point, time: float):
+
+        phase, phase_time = self.gait.get_leg_phase_time(leg_name, time)
+        d, h = foot_trajectory_bezier(phase, phase_time, stride_length=0.15)  
+        point = Point(d, 0, h)
+
+        # Move point foot location.
+        point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
+        
+        return point
+
 
     def _generate_trajectories(self, gait: GaitPattern, duration=1.5, timestep=0.02):
             times = np.arange(0, duration, timestep) 
 
-
             quad = Quad()
-
            
             trajectories: Trajectories = []           
             for leg_name in LegName:
                 trajectory: Trajectory = []
-                for t in times:
+
+                 # Generate points.
+                for t in times:                   
                     phase, phase_time = gait.get_leg_phase_time(leg_name, t)
-                    d, h = foot_trajectory_bezier(phase, phase_time, stride_length=0.2)  
-
+                    d, h = foot_trajectory_bezier(phase, phase_time, stride_length=0.15)  
                     t_point = Point(d, 0, h)
-                    foot_position = quad.get_base_foot_position(leg_name)
-                    #t_point.move_xyz(foot_position.x, foot_position.y, foot_position.z)
-                    print(leg_name, foot_position)
-                    t_point.move_xyz(0.0, .2, 0)
 
+                    # Move point foot location.                   
+                    foot_position = quad.get_base_foot_point(leg_name)
+                    t_point.move_xyz(foot_position.x, foot_position.y, foot_position.z)
+                   
                     trajectory.append(t_point)
                 
-                trajectories.append(trajectory)
-            
+                trajectories.append(trajectory)            
             return trajectories
     
 
-
-
-
     def get_trajectories(self) -> Trajectories:        
         return self._generate_trajectories(self.gait, self.duration, self.timestep)
-
 
 
     ###############################################################################
