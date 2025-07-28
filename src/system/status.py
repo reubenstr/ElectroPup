@@ -88,7 +88,8 @@ class Gpio:
 
 @dataclass
 class LoopTimes:
-    mainLoop: float = 0
+    main: float = 0
+    motion: float = 0
     can0: float = 0
     can1: float = 0
 

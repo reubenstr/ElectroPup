@@ -274,7 +274,8 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikLine} />
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
-                                        <Text>Main: {quadData?.status?.loopTimes.mainLoop.toFixed(2)} ms</Text>
+                                        <Text>Main: {quadData?.status?.loopTimes.main.toFixed(2)} ms</Text>
+                                        <Text>Motion: {quadData?.status?.loopTimes.motion.toFixed(2)} ms</Text>
                                         <Text>CAN 0: {quadData?.status?.loopTimes.can0.toFixed(2)} ms</Text>
                                         <Text>CAN 1: {quadData?.status?.loopTimes.can1.toFixed(2)} ms</Text>
                                     </View>

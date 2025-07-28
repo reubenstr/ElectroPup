@@ -117,9 +117,10 @@ interface SystemStatus {
         state: string;
     };
     loopTimes: {
-        mainLoop: number;
+        main: number;
+        motion: number;
         can0: number;
-        can1: number;
+        can1: number;        
     };
 
     gpio: {

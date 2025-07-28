@@ -258,12 +258,15 @@ class Main:
 
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
+        system_status.gait.state = self.motion.get_gait()
         #system_status.ik.status = self.ik_status
         #system_status.joint_angle.status = self.joint_angle_status
         system_status.input.state = self.input.get_input_mode()
-        #system_status.loopTimes.mainLoop = self.loop_completion_time_ms
+        system_status.loopTimes.main = self.loop_completion_time_ms
+        system_status.loopTimes.motion = self.motion.get_loop_time_ms()
         #system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
         #system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
+        
 
         #system_status.gpio.status = self.hardware.get_gpio_status()
         #system_status.smbus.status = self.hardware.get_smbus_status()

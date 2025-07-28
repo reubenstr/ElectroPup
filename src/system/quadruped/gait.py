@@ -5,9 +5,9 @@ from system.interfaces import LegName
 
 
 class Gait(StrEnum):
-    NONE = 'none'
-    WALK = 'walk'
-    TROT = 'trot'
+    NONE = "none"
+    WALK = "walk"
+    TROT = "trot"
 
 
 class Phase(Enum):
@@ -16,11 +16,10 @@ class Phase(Enum):
 
 
 class GaitPlanner:
-    def __init__(self, name: str, period: float, duty_factor: float, phase_offsets: Dict[LegName, float]):
-        self.name = name
+    def __init__(self, gait: Gait, period: float, duty_factor: float, phase_offsets: Dict[LegName, float]):
+        self.gait = gait
 
-        # Duration of one complete gait cycle.
-        # Units in seconds
+        # Duration of one complete gait cycle (seconds).
         self.period = period
 
         # Percent of time in stand (power stroke).
@@ -71,8 +70,6 @@ class GaitPlanner:
                     [stride_length / 2, 0],
                 ]
             )
-            # [p0, p1, p2, p3]
-
             d, h = self.bezier_curve(phase_time, control_points)
         return d, h
 
@@ -87,3 +84,4 @@ class GaitPlanner:
             f = phase_time * stride_length - stride_length / 2
             h = step_height * np.sin(np.pi * phase_time)
         return d, h
+

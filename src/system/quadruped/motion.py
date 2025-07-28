@@ -3,11 +3,12 @@ from typing import List
 from threading import Thread, Lock, Event
 from typing import List, Dict
 
-from system.quadruped.point import Point, add_vectors, get_distance_xy, get_distance_statistics
+from system.quadruped.point import Point
 from system.quadruped.quad import Quad
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.interfaces import MotionState, Gaits
+from system.quadruped.gait import Gait
+from system.interfaces import MotionState
 from system.utilities.utilities import safe_divide, scale_value
 from system.quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
 from system.interfaces import LegName
@@ -33,9 +34,10 @@ class Motion:
 
         self.quad = Quad()
 
-        self.gait_time: float = 0
+        self.min_loop_rate_seconds: float = 0.050
+        self.loop_completion_time_ms: float = 0.0
 
-        self.tick_rate_seconds: float = 0.025
+
         self.slow_gait_time: float = 0.001
         self.fast_gait_time: float = 0.025
 
@@ -62,8 +64,9 @@ class Motion:
 
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
-            with self.lock:
+            loop_time = time()
 
+            with self.lock:
                 if self.motion_state == MotionState.POSE:
                     base_foot_points = self.quad.get_base_foot_points()
                     self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
@@ -77,10 +80,8 @@ class Motion:
                         scaled_dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.fast_gait_time, -self.slow_gait_time)
                         self.trajector_planner.tick_gait_time(scaled_dt)
                                     
-
                     heading = self.motion_parameters.get_heading_raw()    
-                    #print(heading)             
-                  
+                                         
                     foot_points: Dict[LegName, Point] = {}
                     for leg_name in LegName:
                         base_foot_point = self.quad.get_base_foot_point(leg_name)
@@ -88,9 +89,16 @@ class Motion:
                         foot_points[leg_name] = foot_point
 
                     self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
-                    self.gait_time += self.tick_rate_seconds
+                    
 
-            sleep(self.tick_rate_seconds)
+            delta = time() - loop_time
+
+            if delta < self.min_loop_rate_seconds:
+                sleep(self.min_loop_rate_seconds - delta)
+
+            with self.lock:
+                self.loop_completion_time_ms = (time() - loop_time) * 1000            
+            
 
     ###############################################################################
     # Methods
@@ -132,39 +140,49 @@ class Motion:
         with self.lock:
             self.motion_parameters = motion_parameters
 
+    def get_motion_state(self) -> MotionState:
+        with self.lock:
+            return self.motion_state
+        
+    def get_gait(self) -> Gait:
+        with self.lock:
+            return self.trajector_planner.get_gait()
+
     def get_quad(self) -> Quad:
         with self.lock:
             return self.quad
         
-    def get_visual_rings(self) -> Trajectories:        
-        if self.motion_state == MotionState.WALK:
-            return self.trajector_planner.get_visual_rings()
-        else:
-            return None    
+    def get_visual_rings(self) -> Trajectories:       
+        with self.lock: 
+            if self.motion_state == MotionState.WALK:
+                return self.trajector_planner.get_visual_rings()
+            else:
+                return None    
         
     def get_trajectories(self) -> Trajectories:
-        base_foot_points = self.quad.get_base_foot_points()
+        with self.lock:
+            base_foot_points = self.quad.get_base_foot_points()
+            return self.trajector_planner.get_trajectories(base_foot_points, self.motion_parameters.heading_raw)
 
-        return self.trajector_planner.get_trajectories(base_foot_points, self.motion_parameters.heading_raw)
-
+    def get_loop_time_ms(self) -> float:
+        with self.lock:
+            return self.loop_completion_time_ms
+        
+    
+    
     ### OLD?
 
     
-
     def get_soft_trajectories(self) -> Trajectories:
         return
         if self.soft_transition_flag:
             return self.soft_trajectories
         return []
 
-    def get_motion_state(self) -> MotionState:
-        return self.motion_state
-
+ 
     def get_target_motion_state(self) -> MotionState:
         return self.target_motion_state
-
    
-
     def set_target_motion_state(self, state: MotionState):
         self.target_motion_state = state
 

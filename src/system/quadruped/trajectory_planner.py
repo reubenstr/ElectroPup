@@ -30,7 +30,7 @@ class TrajectoryPlanner:
     def gait_factory(self, gait: Gait) -> GaitPlanner:
         if gait == Gait.WALK:
             return GaitPlanner(
-                name="Walk",
+                gait=Gait.WALK,
                 period=1.0,
                 duty_factor=0.75,
                 phase_offsets={
@@ -42,7 +42,7 @@ class TrajectoryPlanner:
             )
         elif gait == Gait.TROT:
             return GaitPlanner(
-                name="Trot",
+                gait=Gait.TROT,
                 period=0.6,
                 duty_factor=0.5,
                 phase_offsets={
@@ -156,3 +156,6 @@ class TrajectoryPlanner:
 
     def get_visual_rings(self) -> Trajectories:
         return self.visual_rings
+
+    def get_gait(self) -> Gait: 
+        return self.gait_planner.gait
