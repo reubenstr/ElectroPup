@@ -63,14 +63,16 @@ class Quad(object):
         self.foot_width = self.frame_parameters.foot_width
 
         self.legs: Dict[str, Leg] = {}
-       
+
         # Initialize legs at the neutral position
         ik_parameters = IKParameters()
         ik_parameters.height_translation = (IKParameters().height_translation_min + IKParameters().height_translation_max) / 2
         self.set_body_pose_by_transform_inputs(ik_parameters)
 
     def create_default_global_foot_positions(self):
-        """Creates a default global foot positions dict for reference and testing."""
+        """
+        Creates a default global foot positions dict for reference and testing.
+        """
         l = self.body_length
         w = self.body_width
         l1 = self.hip_length
@@ -109,7 +111,7 @@ class Quad(object):
 
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
-   
+
             self.legs["front_left"] = Leg(
                 0,
                 0,
@@ -175,11 +177,12 @@ class Quad(object):
         Return coordinates of each hip as a list of 4 points
         """
 
-        return [ self.legs["back_right"].get_hip_point(),
-           self.legs["front_right"].get_hip_point(),
-             self.legs["front_left"].get_hip_point(),
-             self.legs["back_left"].get_hip_point()]
-       
+        return [
+            self.legs["back_right"].get_hip_point(),
+            self.legs["front_right"].get_hip_point(),
+            self.legs["front_left"].get_hip_point(),
+            self.legs["back_left"].get_hip_point(),
+        ]
 
     def get_leg_coordinates(self) -> dict[str, list[Point]]:
         """
@@ -192,6 +195,12 @@ class Quad(object):
             "FL": self.legs["front_left"].get_leg_points(),
             "BL": self.legs["back_left"].get_leg_points(),
         }
+
+    def get_all_foot_points(self) -> List[Point]:
+        return [leg.get_foot_position_in_global_coords() for key, leg in self.legs.items()]
+
+    def get_all_base_foot_points(self) -> List[Point]:
+        return [leg.get_foot_position_in_global_coords() for key, leg in self.legs.items()]
 
     def set_joint_angles(self, leg_angs):
         """Set the joint angles for all four legs
@@ -257,6 +266,9 @@ class Quad(object):
             if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
 
-    def print_joint_angles(self):
-        """Print the joint angles for all four legs"""
-        return None
+    ###############################################################################
+    # Getters / Setters
+    ###############################################################################
+
+    def get_num_legs(self) -> int:
+        return len(self.legs)

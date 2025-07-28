@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-
-"""
-ElectroPup main application to control the physical quadruped with live input from the gamepad.
-"""
-
 import os
 import time
 import argparse
@@ -19,18 +14,22 @@ from typing import List, Dict
 
 from system.quadruped.quad import Quad
 from system.input.input import Input
+from system.quadruped.motion import Motion
 from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
+from system.quadruped.parameters.ik_parameters import IKParameters
 from system.motors.motors import Motor, Motors
 from system.auxiliary.aux import Aux, StatusMessage
 from system.utilities.utilities import *
 
-from system.quadruped.parameters.ik_parameters import IKParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
-
 from system.interfaces import SystemStates, OpModes, MotorSpeeds, MotorCurrents, Status, InputCommand, MotionStates
 from system.status import SystemStatus
 from system.forwarder import Forwarder
+
+"""
+    ElectroPup main application.
+"""
+
 
 
 class Main:
@@ -42,6 +41,9 @@ class Main:
         allow_enable = True if self.op_mode == OpModes.LIVE else False
 
         self.input = Input(callback=self.controller_event_callback)
+
+        self.motion = Motion()
+
         self.forwarder = Forwarder()
 
         self.quad_sim = Quad()
@@ -173,7 +175,7 @@ class Main:
                 self.apply_controller_input(self.motion_parameters.get_pose_lie_down())
 
             elif self.system_state == SystemStates.MOTION:
-                self.speed = 1000
+                self.motion.set_target_motion_state(MotionStates.BIAS_WALK)
 
             elif self.system_state == SystemStates.POWER_DOWN:
                 pass
@@ -254,15 +256,41 @@ class Main:
         system_status.opMode.state = self.op_mode
         system_status.system.state = self.system_state
 
+        system_status.motion.state = self.motion.get_motion_state()
+        system_status.target_motion.state = self.motion.get_target_motion_state()
+        #system_status.ik.status = self.ik_status
+        #system_status.joint_angle.status = self.joint_angle_status
+        system_status.gait.state = self.motion.get_gait()
         system_status.input.state = self.input.get_input_mode()
+        #system_status.loopTimes.mainLoop = self.loop_completion_time_ms
+        #system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
+        #system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
 
+        #system_status.gpio.status = self.hardware.get_gpio_status()
+        #system_status.smbus.status = self.hardware.get_smbus_status()
+        #ystem_status.power_sensor.status = self.hardware.get_power_sensor_status()
+        #system_status.imu.status = self.hardware.get_imu_status()
+        #system_status.imu.roll = self.hardware.get_imu_data().roll
+        #system_status.imu.pitch = self.hardware.get_imu_data().pitch
+        #system_status.expander.status = self.hardware.get_port_expander_status()
+        #system_status.can0.status = self.motors.get_can_status("can0")
+        #system_status.can1.status = self.motors.get_can_status("can1")
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
+ 
         self.forwarder.set_sim_quad(self.quad_sim)
-        #self.forwarder.set_live_quad(self.quad_live)
-
+        # self.forwarder.set_live_quad(self.quad_live)
+        self.forwarder.set_system_status(system_status)
+        # self.forwarder.set_contacts(self.hardware.get_contacts())
+        # self.forwarder.set_motors_states(self.motors.get_all_motor_states())
+        self.forwarder.set_trajectories(self.motion.get_trajectories())
+        self.forwarder.set_soft_trajectories(self.motion.get_soft_trajectories())
+        self.forwarder.set_rings(self.motion.get_visual_rings())
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
+
+
+
 
     def sleep_loop(self):
         """
@@ -293,7 +321,10 @@ class Main:
         motion_parameters = self.input.get_motion_parameters()
         ik_parameters = self.input.get_ik_parameters()
 
+        self.motion.tick(self.quad_sim, ik_parameters, motion_parameters)  
         self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
+
+        return
 
         if self.body_error_state == Quad.ErrorState.NONE:
             joint_angles = self.quad_sim.get_joint_angles(units="DEGREES")

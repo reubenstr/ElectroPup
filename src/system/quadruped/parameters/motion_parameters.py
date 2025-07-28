@@ -8,18 +8,25 @@ from enum import Enum
 from dataclasses import dataclass
 from math import degrees, atan2, sqrt
 
-
-@dataclass
 class MotionParameters:
+    def __init__(self):
+        self.forward_raw : float = 0
+        self.heading_degrees: float = 0
+        self.heading_magnitude: float = 0
+        self.heading_raw: float = 0
+        self._heading_x: float = 0
+        self._heading_y: float = 0
+
+
     ###############################################################################
     # Rotation limits parameters (degrees)
     ###############################################################################
-    roll_min: float = -30.0
+    '''roll_min: float = -30.0
     roll_max: float = 30.0
     pitch_min: float = -30.0
     pitch_max: float = 30.0
     yaw_min: float = -30.0
-    yaw_max: float = 30.0
+    yaw_max: float = 30.0'''
 
 
     ###############################################################################
@@ -38,14 +45,14 @@ class MotionParameters:
     ###############################################################################
     # Running values, do not change, will be overwritten
     ###############################################################################
-    roll: float = 0
+    '''roll: float = 0
     pitch: float = 0
     yaw: float = 0
     side_translation: float = 0
     forward_translation: float = 0
     height_translation: float = 0
     step_length: float = 0
-    yaw_rate: float = 0
+    yaw_rate: float = 0'''
 
 
     ###############################################################################

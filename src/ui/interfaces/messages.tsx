@@ -166,33 +166,31 @@ interface SystemStatus {
 interface Contacts {
     error: boolean;
     rightFront: boolean;
-    rightMiddle: boolean;
     rightBack: boolean;
     leftFront: boolean;
-    leftMiddle: boolean;
     leftBack: boolean;
 }
 
 
 interface IkParameters {
-    translateX: number;
-    translateY: number;
-    translateZ: number;
-    rotateX: number;
-    rotateY: number;
-    rotateZ: number;
-    translateXMin: number;
-    translateXMax: number;
-    translateYMin: number;
-    translateYMax: number;
-    translateZMin: number;
-    translateZMax: number;
-    rotateXMin: number;
-    rotateXMax: number;
-    rotateYMin: number;
-    rotateYMax: number;
-    rotateZMin: number;
-    rotateZMax: number;
+    forwardTranslation: number;
+    sideTranslation: number;
+    heightTranslation: number;
+    roll: number;
+    pitch: number;
+    yaw: number;
+    forwardTranslationMin: number;
+    forwardTranslationMax: number;
+    sideTranslationMin: number;
+    sideTranslationMax: number;
+    heightTranslationMin: number;
+    heightTranslationMax: number;
+    rollMin: number;
+    rollMax: number;
+    pitchMin: number;
+    pitchMax: number;
+    yawMin: number;
+    yawMax: number;
 }
 
 export interface QuadData {

@@ -6,10 +6,7 @@ import { PlotData } from '@/interfaces/messages';
 
 
 
-const scale = (values: number[]): number[] => {
-  // Convert meters into milimeters
-  return values.map(v => v * 1000);
-}
+
 interface Plot3DProps {
   quadData?: QuadData;
 }
@@ -26,7 +23,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
 
   const max_plot_refresh_rate_ms: number = 50
 
-  const gridBoundry = 600;
+  const gridBoundry = 400;
   const legColor = '#00cd00';
 
   useEffect(() => {
@@ -77,9 +74,33 @@ export default function Plot3D({ quadData }: Plot3DProps) {
   const defaultZoomLevel = 0.5;
   const layout = useMemo(() => ({
     scene: {
-      xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
-      yaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
-      zaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      //xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      //yaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      //zaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+      xaxis: {
+    range: [-gridBoundry, gridBoundry],
+    title: 'X',
+    showline: true,
+    showgrid: true,
+    zeroline: true,
+    showticklabels: true
+  },
+  yaxis: {
+    range: [-gridBoundry, gridBoundry],
+    title: 'Y',
+    showline: true,
+    showgrid: true,
+    zeroline: true,
+    showticklabels: true
+  },
+  zaxis: {
+    range: [-gridBoundry, gridBoundry],
+    title: 'Z',
+    showline: true,
+    showgrid: true,
+    zeroline: true,
+    showticklabels: true
+  },
       camera: {
         eye: { x: checkedValues.x ? defaultZoomLevel : 0, y: checkedValues.y ? defaultZoomLevel : 0, z: checkedValues.z ? defaultZoomLevel : 0 },
         center: {
@@ -121,12 +142,12 @@ export default function Plot3D({ quadData }: Plot3DProps) {
 
   const generatePlotData = (plotData: PlotData): any[] => {
     const newPlotData: any = [];
-    if (plotData.cog) { newPlotData.push({ x: [plotData.cog.x], y: [plotData.cog.y], z: [plotData.cog.z], type: 'scatter3d', mode: 'markers', name: 'cog', showlegend: false, marker: { color: 'blue' } }); }
+   
     if (plotData.body) {
       newPlotData.push({
-        x: scale(plotData.body.x),
-        y: scale(plotData.body.y),
-        z: scale(plotData.body.z),
+        x: plotData.body.x,
+        y: plotData.body.y,
+        z: plotData.body.z,
         type: 'scatter3d',
         mode: 'markers+lines',
         name: 'body',
@@ -142,9 +163,9 @@ export default function Plot3D({ quadData }: Plot3DProps) {
     if (plotData.legs) {
       plotData.legs.map((leg, index) => {
         newPlotData.push({
-          x: scale(leg.x),
-          y: scale(leg.y),
-          z: scale(leg.z),
+          x: leg.x,
+          y: leg.y,
+          z: leg.z,
           type: 'scatter3d',
           mode: 'markers+lines',
           name: leg.name,

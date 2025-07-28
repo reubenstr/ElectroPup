@@ -131,72 +131,52 @@ class Forwarder:
     def _create_plot_data(self, quad: Quad):
         """
         Convert a hexapod object into points for the UI.
-        The kinematics uses a different convention that standard ploting libaries,
-        therefore rotate the points to match the expected convention of the UI plotting library.
         """
+
+        def scale(value: float) -> float:
+            """
+            The kinematics uses a different convention that standard ploting libaries,
+            therefore rotate the points to match the expected convention of the UI plotting library.
+            """
+            return round(value * 1000, 2)
+
         plot = {}
         if quad:
-            # plot["cog"] = {}
-            # plot["cog"]["name"] = "cog"
-            # plot["cog"]["x"] = round(quad.body.cog.x, 2)
-            # plot["cog"]["y"] = round(quad.body.cog.y, 2)
-            # plot["cog"]["z"] = round(quad.body.cog.z, 2)
 
-            # plot["head"] = {}
-            # plot["head"]["name"] = "head"
-            # plot["head"]["x"] = round(hexapod.body.head.x, 2)
-            # plot["head"]["y"] = round(hexapod.body.head.y, 2)
-            # plot["head"]["z"] = round(hexapod.body.head.z, 2)
-
-            # plot["body"] = {}
-            # points = quad.body.vertices + [quad.body.vertices[0]]
-            # plot["body"]["name"] = "body"
-            # plot["body"]["x"] = [round(point.x, 2) for point in points]
-            # plot["body"]["y"] = [round(point.y, 2) for point in points]
-            # plot["body"]["z"] = [round(point.z, 2) for point in points]
-
-            plot["legs"] = []
-            for key, points in quad.get_leg_coordinates().items():              
-                leg_data = {}
-                leg_data["name"] = key
-                leg_data["x"] = [round(point.z, 2) for point in points]
-                leg_data["y"] = [round(point.x, 2) for point in points]
-                leg_data["z"] = [round(point.y, 2) for point in points]
-                plot["legs"].append(leg_data)
-
-             
             plot["body"] = {}
             points = quad.get_body_coordinates() + [quad.get_body_coordinates()[0]]
             plot["body"]["name"] = "body"
-            plot["body"]["x"] = [round(point.z, 2) for point in points]
-            plot["body"]["y"] = [round(point.x, 2) for point in points]
-            plot["body"]["z"] = [round(point.y, 2) for point in points]
+            plot["body"]["x"] = [scale(point.x) for point in points]
+            plot["body"]["y"] = [scale(point.y) for point in points]
+            plot["body"]["z"] = [scale(point.z) for point in points]
 
-        """
+            plot["legs"] = []
+            for key, points in quad.get_leg_coordinates().items():
+                leg_data = {}
+                leg_data["name"] = key
+                leg_data["x"] = [scale(point.x) for point in points]
+                leg_data["y"] = [scale(point.y) for point in points]
+                leg_data["z"] = [scale(point.z) for point in points]
+                plot["legs"].append(leg_data)
 
-
-            leg_data["x"] = [round(point.x, 2) for point in points]
-                leg_data["y"] = [round(point.y, 2) for point in points]
-                leg_data["z"] = [round(point.z, 2) for point in points]
-
-
+            """
             plot["mesh"] = {}
             dz = -1
             ground_contacts = quad.ground_contacts()
             plot["mesh"]["name"] = "mesh"
-            plot["mesh"]["x"] = [round(point.x, 2) for point in ground_contacts]
-            plot["mesh"]["y"] = [round(point.y, 2) for point in ground_contacts]
-            plot["mesh"]["z"] = [(round(point.z, 2) + dz) for point in ground_contacts]
-          
-
+            plot["mesh"]["x"] = [scale(point.x) for point in ground_contacts]
+            plot["mesh"]["y"] = [scale(point.y) for point in ground_contacts]
+            plot["mesh"]["z"] = [(scale(point.z) + dz) for point in ground_contacts]
+            """
+   
         if self.trajectories:
             plot["trajectories"] = []
             for i, points in enumerate(self.trajectories):
                 trajectory_data = {}
                 trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [round(point.x, 2) for point in points]
-                trajectory_data["y"] = [round(point.y, 2) for point in points]
-                trajectory_data["z"] = [round(point.z, 2) for point in points]
+                trajectory_data["x"] = [scale(point.x) for point in points]
+                trajectory_data["y"] = [scale(point.y) for point in points]
+                trajectory_data["z"] = [scale(point.z) for point in points]
                 plot["trajectories"].append(trajectory_data)
 
         if self.soft_trajectories:
@@ -204,9 +184,9 @@ class Forwarder:
             for i, points in enumerate(self.soft_trajectories):
                 trajectory_data = {}
                 trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [round(point.x, 2) for point in points]
-                trajectory_data["y"] = [round(point.y, 2) for point in points]
-                trajectory_data["z"] = [round(point.z, 2) for point in points]
+                trajectory_data["x"] = [scale(point.x) for point in points]
+                trajectory_data["y"] = [scale(point.y) for point in points]
+                trajectory_data["z"] = [scale(point.z) for point in points]
                 plot["softTrajectories"].append(trajectory_data)
 
         if self.rings:
@@ -214,9 +194,9 @@ class Forwarder:
             for i, points in enumerate(self.rings):
                 ring_set = {}
                 ring_set["name"] = "ring" + str(i)
-                ring_set["x"] = [round(point.x, 2) for point in points]
-                ring_set["y"] = [round(point.y, 2) for point in points]
-                ring_set["z"] = [round(point.z, 2) for point in points]
+                ring_set["x"] = [scale(point.x) for point in points]
+                ring_set["y"] = [scale(point.y) for point in points]
+                ring_set["z"] = [scale(point.z) for point in points]
                 plot["rings"].append(ring_set)
-  """
+
         return plot

@@ -220,13 +220,9 @@ export default function Viewer() {
                                     state={quadData?.contacts?.leftFront}
                                 />
                                 <ContactIndicator
-                                    name='LM'
-                                    state={quadData?.contacts?.leftMiddle}
-                                />
-                                <ContactIndicator
                                     name='LB'
                                     state={quadData?.contacts?.leftBack}
-                                />
+                                />                              
                             </View>
 
                             <View style={OverlayStyles.rightContacts}>
@@ -235,13 +231,9 @@ export default function Viewer() {
                                     state={quadData?.contacts?.rightFront}
                                 />
                                 <ContactIndicator
-                                    name='RM'
-                                    state={quadData?.contacts?.rightMiddle}
-                                />
-                                <ContactIndicator
                                     name='RB'
                                     state={quadData?.contacts?.rightBack}
-                                />
+                                />                               
                             </View>
 
                             <View style={OverlayStyles.leftMotors}>
@@ -295,15 +287,15 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Translation</Text>
-                                        <Text>X: {quadData?.ikParameters?.translateX?.toFixed(2)}</Text>
-                                        <Text>Y: {quadData?.ikParameters?.translateY?.toFixed(2)}</Text>
-                                        <Text>Z: {quadData?.ikParameters?.translateZ?.toFixed(2)}</Text>
+                                        <Text>Forward: {quadData?.ikParameters?.forwardTranslation?.toFixed(2)}</Text>
+                                        <Text>Side: {quadData?.ikParameters?.sideTranslation?.toFixed(2)}</Text>
+                                        <Text>Height: {quadData?.ikParameters?.heightTranslation?.toFixed(2)}</Text>
                                     </View>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Rotation</Text>
-                                        <Text>X: {quadData?.ikParameters?.rotateX?.toFixed(2)}</Text>
-                                        <Text>Y: {quadData?.ikParameters?.rotateY?.toFixed(2)}</Text>
-                                        <Text>Z: {quadData?.ikParameters?.rotateZ?.toFixed(2)}</Text>
+                                        <Text>Roll: {quadData?.ikParameters?.roll?.toFixed(2)}</Text>
+                                        <Text>Pitch: {quadData?.ikParameters?.pitch?.toFixed(2)}</Text>
+                                        <Text>Yaw: {quadData?.ikParameters?.yaw?.toFixed(2)}</Text>
                                     </View>
                                 </View>
                             </View>
