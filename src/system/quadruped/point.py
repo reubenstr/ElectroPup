@@ -298,6 +298,25 @@ def get_distance_statistics(vectors: np.ndarray) -> Tuple[float, float, float]:
         distance = get_distance_xy(vectors[i - 1], vectors[i])
         avg_dist = avg_dist + distance
         max_dist = max(max_dist, distance)
-        min_dist = min(min_dist, distance)       
+        min_dist = min(min_dist, distance)
     avg_dist = avg_dist / len(vectors) - 1
     return min_dist, avg_dist, max_dist
+
+
+# https://math.stackexchange.com/questions/1391470/find-distance-between-point-on-tangent-line-and-circle
+def move_point_y_to_radius(point: Point, radius: float):
+    """
+    Moves a point along the x axis to a given radius.
+    """
+
+    a = point.x * 2
+
+    if (radius * radius) - (a * a) / 4 < 0:
+        return
+
+    distance_from_circle = abs(radius) - sqrt((abs(radius) * abs(radius)) - (a * a) / 4)
+
+    if radius > 0:
+        distance_from_circle = -distance_from_circle
+
+    point.move_xyz(0, distance_from_circle, 0)

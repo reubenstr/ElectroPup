@@ -63,7 +63,7 @@ class Motion:
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
             with self.lock:
-                
+
                 if self.motion_state == MotionState.POSE:
                     base_foot_points = self.quad.get_base_foot_points()
                     self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
@@ -77,11 +77,14 @@ class Motion:
                         scaled_dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.fast_gait_time, -self.slow_gait_time)
                         self.trajector_planner.tick_gait_time(scaled_dt)
                                     
+
+                    heading = self.motion_parameters.get_heading_raw()    
+                    #print(heading)             
                   
                     foot_points: Dict[LegName, Point] = {}
                     for leg_name in LegName:
                         base_foot_point = self.quad.get_base_foot_point(leg_name)
-                        foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point)
+                        foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point, heading)
                         foot_points[leg_name] = foot_point
 
                     self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
@@ -132,12 +135,21 @@ class Motion:
     def get_quad(self) -> Quad:
         with self.lock:
             return self.quad
+        
+    def get_visual_rings(self) -> Trajectories:        
+        if self.motion_state == MotionState.WALK:
+            return self.trajector_planner.get_visual_rings()
+        else:
+            return None    
+        
+    def get_trajectories(self) -> Trajectories:
+        base_foot_points = self.quad.get_base_foot_points()
+
+        return self.trajector_planner.get_trajectories(base_foot_points, self.motion_parameters.heading_raw)
 
     ### OLD?
 
-    def get_trajectories(self) -> Trajectories:
-        base_foot_points = self.quad.get_base_foot_points()
-        return self.trajector_planner.get_trajectories(base_foot_points)
+    
 
     def get_soft_trajectories(self) -> Trajectories:
         return
@@ -151,12 +163,7 @@ class Motion:
     def get_target_motion_state(self) -> MotionState:
         return self.target_motion_state
 
-    def get_visual_rings(self) -> Trajectories:
-        return
-        if self.motion_state == MotionState.WALK:
-            return self.trajectory_planner.get_rings()
-        else:
-            return None
+   
 
     def set_target_motion_state(self, state: MotionState):
         self.target_motion_state = state
