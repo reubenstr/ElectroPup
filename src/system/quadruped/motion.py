@@ -11,7 +11,7 @@ from system.quadruped.gait import Gait
 from system.interfaces import MotionState
 from system.utilities.utilities import safe_divide, scale_value
 from system.quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from system.interfaces import LegName
+from system.quadruped.quad import LegName
 
 """
     Generates trajectories for walking and rotation.
@@ -21,7 +21,6 @@ from system.interfaces import LegName
 
 class Motion:
     def __init__(self):
-
         self.tag = "Motion"
 
         self.motion_state: MotionState = MotionState.WALK

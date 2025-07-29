@@ -144,16 +144,21 @@ class Forwarder:
         if quad:
 
             plot["body"] = {}
-            points = quad.get_body_coordinates() + [quad.get_body_coordinates()[0]]
-            plot["body"]["name"] = "body"
-            plot["body"]["x"] = [scale(point.x) for point in points]
-            plot["body"]["y"] = [scale(point.y) for point in points]
-            plot["body"]["z"] = [scale(point.z) for point in points]
+            plot["body"]["name"] = "body"   
+            plot["body"]["x"] = []
+            plot["body"]["y"] = []
+            plot["body"]["z"] = []          
+
+    
+            for leg_name, point in quad.get_body_coordinates().items():  
+                plot["body"]["x"].append(scale(point.x))
+                plot["body"]["y"].append(scale(point.y))
+                plot["body"]["z"].append(scale(point.z))
 
             plot["legs"] = []
-            for key, points in quad.get_leg_coordinates().items():
+            for leg_name, points in quad.get_leg_coordinates().items():
                 leg_data = {}
-                leg_data["name"] = key
+                leg_data["name"] = leg_name.name
                 leg_data["x"] = [scale(point.x) for point in points]
                 leg_data["y"] = [scale(point.y) for point in points]
                 leg_data["z"] = [scale(point.z) for point in points]

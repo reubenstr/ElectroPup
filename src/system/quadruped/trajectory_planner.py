@@ -4,7 +4,7 @@ from typing import List, Dict, TypeAlias
 
 from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
 from system.quadruped.gait import GaitPlanner
-from system.interfaces import LegName
+from system.quadruped.quad import LegName
 from system.quadruped.gait import Gait
 from system.utilities.utilities import log_scale_value
 

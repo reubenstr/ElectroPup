@@ -14,7 +14,12 @@ from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.point import Point
-from system.interfaces import LegName
+
+class LegName(Enum):
+    FL = "FL"
+    FR = "FR"
+    BL = "BL"
+    BR = "BR"
 
 class Quad(object):
     """
@@ -51,6 +56,10 @@ class Quad(object):
         KINEMATICS = 2
         JOINT = 3
 
+    class Units(Enum):
+        DEGREES = 1
+        RADIANS = 2
+
     def __init__(self):
         self.frame_parameters = FrameParameters()
 
@@ -62,7 +71,7 @@ class Quad(object):
         self.foot_length = self.frame_parameters.foot_length
         self.foot_width = self.frame_parameters.foot_width
 
-        self.legs: Dict[str, Leg] = {}
+        self.legs: Dict[LegName, Leg] = {}
 
         # Initialize legs at the neutral position
         ik_parameters = IKParameters()
@@ -124,7 +133,7 @@ class Quad(object):
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
            
-            self.legs["front_left"] = Leg(
+            self.legs[LegName.FL] = Leg(
                 0,
                 0,
                 0,
@@ -135,7 +144,7 @@ class Quad(object):
                 foot_positions[LegName.FL],
                 leg12=False,
             )
-            self.legs["front_right"] = Leg(
+            self.legs[LegName.FR] = Leg(
                 0,
                 0,
                 0,
@@ -146,7 +155,7 @@ class Quad(object):
                 foot_positions[LegName.FR],
                 leg12=True,
             )
-            self.legs["back_left"] = Leg(
+            self.legs[LegName.BL] = Leg(
                 0,
                 0,
                 0,
@@ -157,7 +166,7 @@ class Quad(object):
                 foot_positions[LegName.BL],
                 leg12=False,
             )
-            self.legs["back_right"] = Leg(
+            self.legs[LegName.BR] = Leg(
                 0,
                 0,
                 0,
@@ -180,76 +189,51 @@ class Quad(object):
 
         return Quad.ErrorState.NONE
 
-    def get_body_coordinates(self) -> dict[str, Point]:
+    def get_body_coordinates(self) -> dict[LegName, Point]:
         """
         Return coordinates of each hip as a list of 4 points
         """
 
-        return [
-            self.legs["back_right"].get_hip_point(),
-            self.legs["front_right"].get_hip_point(),
-            self.legs["front_left"].get_hip_point(),
-            self.legs["back_left"].get_hip_point(),
-        ]
+        return {
+            LegName.BR: self.legs[LegName.BR].get_hip_point(),
+            LegName.FR: self.legs[LegName.FR].get_hip_point(),
+            LegName.FL: self.legs[LegName.FL].get_hip_point(),
+            LegName.BL: self.legs[LegName.BL].get_hip_point(),
+        }
 
-    def get_leg_coordinates(self) -> dict[str, list[Point]]:
+    def get_leg_coordinates(self) -> dict[LegName, list[Point]]:
         """
         Return coordinates of each leg as a dict containing 4 sets of 4 leg points
         """
 
         return {
-            "BR": self.legs["back_right"].get_leg_points(),
-            "FR": self.legs["front_right"].get_leg_points(),
-            "FL": self.legs["front_left"].get_leg_points(),
-            "BL": self.legs["back_left"].get_leg_points(),
+            LegName.BR: self.legs[LegName.BR].get_leg_points(),
+            LegName.FR: self.legs[LegName.FR].get_leg_points(),
+            LegName.FL: self.legs[LegName.FL].get_leg_points(),
+            LegName.BL: self.legs[LegName.BL].get_leg_points(),
         }
-
-    def get_all_foot_points(self) -> List[Point]:
-        return [leg.get_foot_position_in_global_coords() for key, leg in self.legs.items()]
-
-    def get_all_base_foot_points(self) -> List[Point]:
-        return [leg.get_foot_position_in_global_coords() for key, leg in self.legs.items()]
-
-    def set_joint_angles(self, leg_angs):
-        """Set the joint angles for all four legs
-            Purpose is external wireframe and simulation verification only
-
-        Args:
-            leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
-                      An example input:
-                        ((rb_q1,rb_q2,rb_q3),
-                         (rf_q1,rf_q2,rf_q3),
-                         (lf_q1,lf_q2,lf_q3),
-                         (lb_q1,lb_q2,lb_q3))
-
-        Returns:
-            Nothing
-        """
-        self.legs["back_right"].set_angles(leg_angs[0][0], leg_angs[0][1], leg_angs[0][2])
-        self.legs["front_right"].set_angles(leg_angs[1][0], leg_angs[1][1], leg_angs[1][2])
-        self.legs["front_left"].set_angles(leg_angs[2][0], leg_angs[2][1], leg_angs[2][2])
-        self.legs["back_left"].set_angles(leg_angs[3][0], leg_angs[3][1], leg_angs[3][2])
-
-    def get_joint_angles(self, units: str):
+  
+   
+    def get_joint_angles(self, units: Units):
         """Get the joint angles for all four legs
         Args:
-            units: RADIANS for radians, DEGREES for degrees
+            units: degrees or radians
         Returns:
             joint_angles: dictionary containing four legs and their
             associated angles in the order q1,q2,q3
         """
-        if units.upper() == "RADIANS":
+        if units is Quad.Units.RADIANS:
             joint_angles = {}
-            joint_angles["front_left"] = self.legs["front_left"].get_leg_angles_in_radians()
-            joint_angles["front_right"] = self.legs["front_right"].get_leg_angles_in_radians()
-            joint_angles["back_left"] = self.legs["back_left"].get_leg_angles_in_radians()
-            joint_angles["back_right"] = self.legs["back_right"].get_leg_angles_in_radians()
-        elif units.upper() == "DEGREES":
+            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
+            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_radians()
+            joint_angles[LegName.BL] = self.legs[LegName.BR].get_leg_angles_in_radians()
+            joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_radians()
+        elif units is Quad.Units.DEGREES:
             joint_angles = {}
-            joint_angles["front_left"] = self.legs["front_left"].get_leg_angles_in_degrees()
-            joint_angles["front_right"] = self.legs["front_right"].get_leg_angles_in_degrees()
-            joint_angles["back_left"] = self.legs["back_left"].get_leg_angles_in_degrees()
-            joint_angles["back_right"] = self.legs["back_right"].get_leg_angles_in_degrees()
+            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
+            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_degrees()
+            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_degrees()
+            joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_degrees()
 
         return joint_angles
 
