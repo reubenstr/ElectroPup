@@ -1,5 +1,5 @@
 """
-    Custom exceptions for better error reporting and handling.
+    Custom exceptions for error reporting and handling.
 """
 
 class DomainBreach(Exception):

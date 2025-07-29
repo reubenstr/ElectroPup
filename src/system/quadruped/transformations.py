@@ -1,11 +1,9 @@
-""" 
-
-Functions for computing 3D rotation, transformation, and homogenenous transformation matrices 
-
-"""
-
 import numpy as np
 from math import cos, sin
+
+""" 
+Functions for computing 3D rotation, transformation, and homogenenous transformation matrices 
+"""
 
 
 def rotx(ang):
@@ -20,9 +18,7 @@ def rotx(ang):
     Returns:
         The 3D rotation matrix about the x axis
     """
-    rotxMatrix = np.array(
-        [[1, 0, 0], [0, cos(ang), -sin(ang)], [0, sin(ang), cos(ang)]]
-    )
+    rotxMatrix = np.array([[1, 0, 0], [0, cos(ang), -sin(ang)], [0, sin(ang), cos(ang)]])
 
     return rotxMatrix
 
@@ -39,9 +35,7 @@ def roty(ang):
     Returns:
         The 3D rotation matrix about the y axis
     """
-    rotyMatrix = np.array(
-        [[cos(ang), 0, sin(ang)], [0, 1, 0], [-sin(ang), 0, cos(ang)]]
-    )
+    rotyMatrix = np.array([[cos(ang), 0, sin(ang)], [0, 1, 0], [-sin(ang), 0, cos(ang)]])
 
     return rotyMatrix
 
@@ -58,9 +52,7 @@ def rotz(ang):
     Returns:
         The 3D rotation matrix about the z axis
     """
-    rotzMatrix = np.array(
-        [[cos(ang), -sin(ang), 0], [sin(ang), cos(ang), 0], [0, 0, 1]]
-    )
+    rotzMatrix = np.array([[cos(ang), -sin(ang), 0], [sin(ang), cos(ang), 0], [0, 0, 1]])
 
     return rotzMatrix
 
@@ -120,9 +112,7 @@ def homog_transxyz(x, y, z):
         4x4 numpy array for a linear translation on a 4x1 vector
     """
 
-    return np.block(
-        [[np.eye(3, 3), np.array([[x], [y], [z]])], [np.array([0, 0, 0, 1])]]
-    )
+    return np.block([[np.eye(3, 3), np.array([[x], [y], [z]])], [np.array([0, 0, 0, 1])]])
 
 
 def homog_transform(x_ang, y_ang, z_ang, x_t, y_t, z_t):
@@ -147,10 +137,10 @@ def homog_transform(x_ang, y_ang, z_ang, x_t, y_t, z_t):
     """
     # Rolling the quadruped caused leaning instead, reversing the order fixed the issue.
     # Orginal below:
-    return np.matmul(homog_rotxyz(x_ang,y_ang,z_ang), homog_transxyz(x_t,y_t,z_t))
+    return np.matmul(homog_rotxyz(x_ang, y_ang, z_ang), homog_transxyz(x_t, y_t, z_t))
 
     # NON ORIGNAL
-    #return np.matmul(homog_transxyz(x_t, y_t, z_t), homog_rotxyz(x_ang, y_ang, z_ang))
+    # return np.matmul(homog_transxyz(x_t, y_t, z_t), homog_rotxyz(x_ang, y_ang, z_ang))
 
 
 def ht_inverse(ht):
@@ -184,9 +174,7 @@ def ht_inverse(ht):
     temp_vec = -1 * ht[0:3, 3]
 
     # Block the inverted rotation matrix back to a 4x4 homogeneous transform matrix
-    temp_rot_ht = np.block(
-        [[temp_rot, np.zeros((3, 1))], [np.zeros((1, 3)), np.eye(1)]]
-    )
+    temp_rot_ht = np.block([[temp_rot, np.zeros((3, 1))], [np.zeros((1, 3)), np.eye(1)]])
 
     # Create a linear translation homogeneous transformation matrix
     temp_vec_ht = np.eye(4)

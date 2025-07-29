@@ -20,12 +20,17 @@ class Leg(object):
         _ht_leg: Homogeneous transformation matrix of leg starting
                  position and coordinate system relative to robot body.
                  4x4 np matrix
+        _foot_point: foot position (end effector) that the kinematics will attempt to reach.
         _leg12: Boolean specifying whether leg is 1 or 2 (rightback or rightfront)
                 or 3 or 4 (leftfront or leftback)
+
+    Notes:
+        Leg calculates in Y up coords. 
+        Every point passed to Legs is converted from Z up to Y up
+        Evert poiont passed out from legs is converted from Y up to Z up
     """
 
-    def __init__(self, q1, q2, q3, l1, l2, l3, ht_leg_start, foot: Point, leg12):
-        """Constructor"""
+    def __init__(self, q1, q2, q3, l1, l2, l3, ht_leg_start, foot_point: Point, leg12: bool):
         self._q1 = q1
         self._q2 = q2
         self._q3 = q3
@@ -33,8 +38,8 @@ class Leg(object):
         self._l2 = l2
         self._l3 = l3
         self._ht_leg_start = ht_leg_start
-        self._base_foot_position: Point = self.swap_point(foot)
-        self._leg12 = leg12
+        self._foot_point: Point = self.swap_point(foot_point)
+        self._leg12: bool = leg12
 
         # Create homogeneous transformation matrices for each joint
         self._t01 = kinematics.t_0_to_1(self._q1, self._l1)
@@ -43,7 +48,6 @@ class Leg(object):
         self._t34 = kinematics.t_3_to_4(self._q3, self._l3)
 
         self.calculate_ik()
-        #self.set_foot_position_in_global_coords(self._base_foot_position.x, self._base_foot_position.y, self._base_foot_position.z)
 
     def set_angles(self, q1, q2, q3):
         """Set the three leg angles and update transformation matrices as needed"""
@@ -54,78 +58,23 @@ class Leg(object):
         self._t23 = kinematics.t_2_to_3(self._q2, self._l2)
         self._t34 = kinematics.t_3_to_4(self._q3, self._l3)
 
-    '''def set_homog_transf(self, ht_leg_start):
-        """Set the homogeneous transformation of the leg start position"""
-        self._ht_leg_start = ht_leg_start
+    def calculate_ik(self):
+        # Get inverse of leg's homogeneous transform
+        ht_leg_inv = transformations.ht_inverse(self._ht_leg_start)
 
-    def get_homog_transf(self):
-        """Return this leg's homogeneous transformation of the leg start position"""
-        return self._ht_leg_start
-        '''
+        # Convert the foot coordinates for use with homogeneous transforms, e.g.:
+        # p4 = [x4, y4, z4, 1]
+        p4_global_coord = np.block([np.array([self._foot_point.x, self._foot_point.y, self._foot_point.z]), np.array([1])])
 
-    def set_foot_position_in_local_coords(self, x4, y4, z4):
-        """Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
-        Leg's coordinate frame is the frame defined by self._ht_leg_start
+        # Calculate foot coordinates in each leg's coordinate system
+        p4_in_leg_coords = ht_leg_inv.dot(p4_global_coord)
 
-        Args:
-            x4: Desired foot x position in leg's coordinate frame
-            y4: Desired foot y position in leg's coordinate frame
-            z4: Desired foot z position in leg's coordinate frame
-        Returns:
-            Nothing
-        """
         # Run inverse kinematics and get joint angles
-        leg_angs = kinematics.ikine(x4, y4, z4, self._l1, self._l2, self._l3, self._leg12)
+        leg_angs = kinematics.ikine(p4_in_leg_coords[0], p4_in_leg_coords[1], p4_in_leg_coords[2], self._l1, self._l2, self._l3, self._leg12)
 
         # Call method to set joint angles for leg
         self.set_angles(leg_angs[0], leg_angs[1], leg_angs[2])
 
-   
-   
-   
-    def set_foot_position_in_global_coords(self, x4, y4, z4):
-        """
-        Set the position of the foot by computing joint angles via inverse kinematics from inputted coordinates.
-        Inputted coordinates in the global coordinate frame
-
-        Args:
-            x4: Desired foot x position in global coordinate frame
-            y4: Desired foot y position in global coordinate frame
-            z4: Desired foot z position in global coordinate frame
-        Returns:
-            Nothing
-        """
-        # Get inverse of leg's homogeneous transform
-        ht_leg_inv = transformations.ht_inverse(self._ht_leg_start)
-
-        # Convert the foot coordinates for use with homogeneous transforms, e.g.:
-        # p4 = [x4, y4, z4, 1]
-        p4_global_coord = np.block([np.array([x4, y4, z4]), np.array([1])])
-
-        # Calculate foot coordinates in each leg's coordinate system
-        p4_in_leg_coords = ht_leg_inv.dot(p4_global_coord)
-
-        # Call this leg's position set function for coordinates in local frame
-        self.set_foot_position_in_local_coords(p4_in_leg_coords[0], p4_in_leg_coords[1], p4_in_leg_coords[2])
-
-    #### NEW
-    def calculate_ik(self):       
-        # Get inverse of leg's homogeneous transform
-        ht_leg_inv = transformations.ht_inverse(self._ht_leg_start)
-
-        # Convert the foot coordinates for use with homogeneous transforms, e.g.:
-        # p4 = [x4, y4, z4, 1]
-        p4_global_coord = np.block([np.array([self._base_foot_position.x, self._base_foot_position.y, self._base_foot_position.z]), np.array([1])])
-
-        # Calculate foot coordinates in each leg's coordinate system
-        p4_in_leg_coords = ht_leg_inv.dot(p4_global_coord)
-
-         # Call this leg's position set function for coordinates in local frame
-        self.set_foot_position_in_local_coords(p4_in_leg_coords[0], p4_in_leg_coords[1], p4_in_leg_coords[2])
-
-      
-   
-   
     def get_hip_point(self) -> Point:
         p1 = Point(*self._ht_leg_start[0:3, 3])
         return self.swap_points([p1])[0]
@@ -172,8 +121,10 @@ class Leg(object):
         """Return leg angles in degrees as a dictionary as q1,q2,q3"""
         return {"abduction": degrees(self._q1), "hip": degrees(self._q2), "knee": degrees(self._q3)}
 
-    
-    
+    ###############################################################################
+    # Helpers
+    ###############################################################################
+
     def swap_points(self, point_list: List[Point]) -> List[Point]:
         """
         Swap values of a list of Point objects to convert Y up to Z up.
@@ -182,10 +133,9 @@ class Leg(object):
         for pt in point_list:
             swapped.append(Point(pt.x, pt.z, pt.y, pt.name))
         return swapped
-    
+
     def swap_point(self, point: Point) -> Point:
         """
         Swap values of a list of Point objects to convert Y up to Z up.
         """
         return Point(point.x, point.z, point.y, point.name)
-      

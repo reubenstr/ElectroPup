@@ -1,4 +1,3 @@
-import copy
 import math
 import numpy as np
 from math import pi, sin, cos, radians, degrees
@@ -15,11 +14,13 @@ from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.point import Point
 
+
 class LegName(Enum):
     FL = "FL"
     FR = "FR"
     BL = "BL"
     BR = "BR"
+
 
 class Quad(object):
     """
@@ -76,7 +77,7 @@ class Quad(object):
         # Initialize legs at the neutral position
         ik_parameters = IKParameters()
         ik_parameters.height_translation = (IKParameters().height_translation_min + IKParameters().height_translation_max) / 2
-        base_foot_positions = self.get_base_foot_points()        
+        base_foot_positions = self.get_base_foot_points()
         self.set_body_pose_by_transform_inputs(ik_parameters, base_foot_positions)
 
     ###############################################################################
@@ -85,10 +86,9 @@ class Quad(object):
 
     def get_base_foot_point(self, name: LegName) -> Point:
         """ """
-        base_foot_positions = self.get_base_foot_points()     
+        base_foot_positions = self.get_base_foot_points()
         if name in base_foot_positions:
             return base_foot_positions[name]
-       
 
     def get_base_foot_points(self) -> Dict[LegName, Point]:
         """
@@ -99,14 +99,14 @@ class Quad(object):
         l1 = self.hip_length
         offset = 0
 
-        global_foot_positions = {}  
+        global_foot_positions = {}
         global_foot_positions[LegName.FL] = Point(l / 2, -w / 2 - l1 - offset, 0)
         global_foot_positions[LegName.FR] = Point(l / 2, w / 2 + l1 + offset, 0)
         global_foot_positions[LegName.BL] = Point(-l / 2, -w / 2 - l1 - offset, 0)
         global_foot_positions[LegName.BR] = Point(-l / 2, w / 2 + l1 + offset, 0)
 
         return global_foot_positions
-    
+
     def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]):
         """
         Set the body translation and orientation angles
@@ -132,7 +132,7 @@ class Quad(object):
 
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
-           
+
             self.legs[LegName.FL] = Leg(
                 0,
                 0,
@@ -212,8 +212,7 @@ class Quad(object):
             LegName.FL: self.legs[LegName.FL].get_leg_points(),
             LegName.BL: self.legs[LegName.BL].get_leg_points(),
         }
-  
-   
+
     def get_joint_angles(self, units: Units):
         """Get the joint angles for all four legs
         Args:
@@ -264,6 +263,3 @@ class Quad(object):
 
     def get_num_legs(self) -> int:
         return len(self.legs)
-
-    #def get_base_foot_positions(self) -> Dict[str, Point]:
-    #    return self.base_foot_positions
