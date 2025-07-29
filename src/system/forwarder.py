@@ -142,18 +142,19 @@ class Forwarder:
 
         plot = {}
         if quad:
-
+            
             plot["body"] = {}
             plot["body"]["name"] = "body"   
             plot["body"]["x"] = []
             plot["body"]["y"] = []
-            plot["body"]["z"] = []          
-
-    
+            plot["body"]["z"] = []      
             for leg_name, point in quad.get_body_coordinates().items():  
                 plot["body"]["x"].append(scale(point.x))
                 plot["body"]["y"].append(scale(point.y))
                 plot["body"]["z"].append(scale(point.z))
+            plot["body"]["x"].append(plot["body"]["x"][0])
+            plot["body"]["y"].append(plot["body"]["y"][0])
+            plot["body"]["z"].append(plot["body"]["z"][0])
 
             plot["legs"] = []
             for leg_name, points in quad.get_leg_coordinates().items():

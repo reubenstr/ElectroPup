@@ -97,7 +97,7 @@ export default function RootLayout() {
             name="data"
             options={{
               headerShown: true,
-              header: () => <Header title="Hexapod Data" />,
+              header: () => <Header title="Quad Data" />,
             }}
           />
           <Stack.Screen name="+not-found" />

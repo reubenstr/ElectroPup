@@ -11,7 +11,7 @@ interface ConfigStore {
   loadStore: () => Promise<void>;
 }
 
-const STORAGE_KEY = 'hexapodConfigStore';
+const STORAGE_KEY = 'quadrupedConfigStore';
 
 export const useConfigStore = create<ConfigStore>((set, get) => ({
   servers: [],

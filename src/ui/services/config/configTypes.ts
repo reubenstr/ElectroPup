@@ -1,6 +1,6 @@
 
 export enum ServerType {
-    HEXAPOD
+    QUADRUPED
 }
 
 export interface Endpoint {

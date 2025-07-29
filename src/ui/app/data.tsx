@@ -25,7 +25,7 @@ export default function DataScreen() {
     <View style={styles.container}>
       <View style={styles.row}>
         <Text style={styles.statusText}>
-          Hexapod: {connected ? "Connected" : "Disconnected"}
+          Quadruped: {connected ? "Connected" : "Disconnected"}
         </Text>
         <Text style={styles.statusText}>
        Character count: {count}

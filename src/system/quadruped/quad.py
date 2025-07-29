@@ -107,7 +107,7 @@ class Quad(object):
 
         return global_foot_positions
 
-    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]):
+    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]) -> ErrorState:
         """
         Set the body translation and orientation angles
         Perform full inverse kinematics

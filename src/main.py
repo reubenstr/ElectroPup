@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import time
 import argparse
@@ -9,8 +10,6 @@ from time import sleep
 from rich import print  # Overrides print and injects colors
 from math import degrees
 from typing import List, Dict
-
-# Local source.
 
 from system.quadruped.quad import Quad
 from system.input.input import Input
@@ -29,8 +28,6 @@ from system.forwarder import Forwarder
 """
     ElectroPup main application.
 """
-
-
 
 class Main:
     def __init__(self, mode: OpModes):
@@ -76,9 +73,7 @@ class Main:
         """
 
         ######################################################################
-
-        self.ik_status = Status.STANDBY
-        self.joint_angle_status = Status.STANDBY
+     
 
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
@@ -134,10 +129,12 @@ class Main:
 
             self.process_states()
 
+            self.update_inputs()
+
             # self.check_motor_errors()
 
             # self.process_aux()
-
+       
             self.forward_states()
 
             self.sleep_loop()
@@ -202,11 +199,15 @@ class Main:
                 self.system_state = SystemStates.HALT
 
         elif self.system_state == SystemStates.MOTION:
-            self.compute_quad()
+            pass
 
         elif self.system_state == SystemStates.POWER_DOWN:
             pass
 
+    def update_inputs(self):
+        self.motion.set_ik_parameters(self.input.get_ik_parameters())
+        self.motion.set_motion_parameters(self.input.get_motion_parameters())
+    
     def check_motor_errors(self):
         if self.motors.is_error():
             self.system_state = SystemStates.ERROR
@@ -251,6 +252,9 @@ class Main:
 
         self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds)
 
+  
+    
+    
     def forward_states(self):
         system_status = SystemStatus()
         system_status.opMode.state = self.op_mode
@@ -259,8 +263,8 @@ class Main:
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
         system_status.gait.state = self.motion.get_gait()
-        #system_status.ik.status = self.ik_status
-        #system_status.joint_angle.status = self.joint_angle_status
+        system_status.ik.status = self.motion.get_ik_status()
+        system_status.joint_angle.status = self.motion.get_joint_angle_status()
         system_status.input.state = self.input.get_input_mode()
         system_status.loopTimes.main = self.loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
@@ -292,12 +296,10 @@ class Main:
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
 
-
-
     def sleep_loop(self):
         """
-        Keep a consistance loop rate by sleeping the delta of processing time.
-        Sleep required to share the CPU.
+            Keep a consistance loop rate by sleeping the delta of processing time.
+            Sleep required to share the CPU.
         """
         delta = time.time() - self.loop_time
 
@@ -311,60 +313,7 @@ class Main:
         # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
         self.loop_completion_time_ms = delta * 1000
         self.loop_time = time.time()
-
-    ###############################################################################
-    # Other Methods (called by loop methods)
-    ###############################################################################
-
-    def stand_quad(self):
-        self.stand.tick()
-
-    def compute_quad(self):
-        motion_parameters = self.input.get_motion_parameters()
-        ik_parameters = self.input.get_ik_parameters()
-
-        self.motion.set_ik_parameters(ik_parameters)
-        self.motion.set_motion_parameters(motion_parameters)
-
-
-
-        #self.motion.tick(self.quad_sim, ik_parameters, motion_parameters)  
-        #self.body_error_state = self.quad_sim.set_body_pose_by_transform_inputs(ik_parameters)
-
-
-
-
-        return
-
-        if self.body_error_state == Quad.ErrorState.NONE:
-            joint_angles = self.quad_sim.get_joint_angles(units="DEGREES")
-            # APPLY JOINT ANGLES
-        elif self.body_error_state == Quad.ErrorState.KINEMATICS or self.body_error_state == Quad.ErrorState.JOINT:
-            print(f"[Body] error, {self.body_error_state.name}")
-
-        """try:
-            motion_parameters = self.input.get_motion_parameters()
-            ik_parameters = self.input.get_ik_parameters()
-            #self.motion.tick(self.sim_hexapod, ik_parameters, motion_parameters)
-            self.ik_status = Status.ACTIVE
-            self.joint_angle_status = Status.ACTIVE
-        except OutOfBounds:
-            self.joint_angle_status = Status.ERROR
-        except (
-            CoxiaInterceptsGround,
-            UnableToReachGround,
-            FootPenetratesGround,
-        ) as e:
-            self.ik_status = Status.ERROR
-            print(f"{time.time()} {e}")
-            traceback.print_exc()
-            return"""
-
-        # Apply angles to motors.
-        """leg_angles = self.sim_hexapod.get_all_leg_angles_radians()
-        for key, leg_angle in leg_angles.items():
-            self.motors.set_target_position(key, leg_angle)"""
-
+   
     ###############################################################################
     # Helpers
     ###############################################################################

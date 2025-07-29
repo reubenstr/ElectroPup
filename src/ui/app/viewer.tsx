@@ -26,8 +26,6 @@ export default function Viewer() {
     const rightY = useRef<number>(0);
     const command = useRef<Command>(Command.NO_UPDATE);
 
-    const eStop = false; // TODO
-
     useEffect(() => {
         const intervalId = setInterval(() => {
             const message: ControlMessage = {
@@ -49,49 +47,6 @@ export default function Viewer() {
         router.push(uri as any)
     }
 
-    const onTouchEventLeft = (event: AxisPadTouchEvent) => {
-        if (["start", "end", "pan"].includes(event.eventType)) {
-            leftX.current = -event.ratio.x;
-            leftY.current = -event.ratio.y
-        }
-    };
-
-    const onTouchEventRight = (event: AxisPadTouchEvent) => {
-        if (["start", "end", "pan"].includes(event.eventType)) {
-            leftX.current = -event.ratio.x;
-            leftY.current = -event.ratio.y
-        }
-    };
-
-    const setCommand = (newCommand: Command) => {
-        command.current = newCommand;
-    }
-
-
-
-    // https://snack.expo.dev/@fustaro/fustaro-axis-pad-demo
-    const padBackgroundColor = "#00000033";
-    const padBorderColor = eStop ? "#AA0000" : "#009900";
-    const knobColor = eStop ? "#550000aa" : "#005500aa";
-    const AxisPadStyles = StyleSheet.create({
-        pad: {
-            backgroundColor: padBackgroundColor,
-            borderColor: padBorderColor,
-            borderWidth: 2,
-        },
-        knob: {
-            backgroundColor: knobColor,
-            borderColor: padBorderColor,
-            borderWidth: 2,
-        },
-        stick: {
-            width: 30,
-            backgroundColor: padBackgroundColor,
-            borderColor: padBorderColor,
-            borderWidth: 2,
-        },
-    });
-
     const getMotor = (motorName: string) => {
         if (quadData?.motors && motorName in quadData?.motors) {
             return quadData.motors[motorName]
@@ -105,7 +60,7 @@ export default function Viewer() {
 
                 </View>
                 <View style={TopNavStyles.topBarColumn}>
-                    <Text style={TopNavStyles.topBarTitle}>HexCrawler</Text>
+                    <Text style={TopNavStyles.topBarTitle}>ElectroPup</Text>
                 </View>
                 <View style={[TopNavStyles.topBarColumn, { justifyContent: 'flex-end' }]}>
                     <TouchableOpacity
@@ -121,58 +76,11 @@ export default function Viewer() {
                 </View>
             </View>
 
-            <View style={styles.baseColumnContainer}>
-                <View style={styles.baseColumnControls}>
-                    <View style={styles.controlContainer}>
-                        <View style={styles.controlRowTop}>
-
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
-                                <TouchableOpacity
-                                    style={[ButtonStyles.iconButton, ButtonStyles.primary]}
-                                    onPress={() => setCommand(Command.GAMEPAD_INPUT)}>
-                                    <Icon name='gamepad-square' size={24} color='white' />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[ButtonStyles.iconButton, ButtonStyles.primary]}
-                                    onPress={() => setCommand(Command.TOUCH_INPUT)}>
-                                    <Icon name='tablet' size={24} color='white' />
-                                </TouchableOpacity>
-                            </View>
-
-                            <TouchableOpacity
-                                style={[ButtonStyles.button, ButtonStyles.primary]}
-                                onPress={() => setCommand(Command.STAND)}>
-                                <Text style={ButtonStyles.text}>STAND</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.controlRowCenterLeft}>
-                            <AxisPad
-                                id={`pad-left-${Math.floor(Math.random() * 1000) + 1}`}
-                                size={140}
-                                controlSize={60}
-                                disableY={false}
-                                padBackgroundStyle={AxisPadStyles.pad}
-                                controlStyle={AxisPadStyles.knob}
-                                stickStyle={AxisPadStyles.stick}
-                                ignoreTouchDownInPadArea={false}
-                                initialTouchType={"no-snap"}
-                                onTouchEvent={onTouchEventLeft}
-                            />
-                        </View>
-                        <View style={styles.controlRowBottom}>
-                            <TouchableOpacity
-                                style={[ButtonStyles.button, ButtonStyles.primary]}
-                                onPress={() => setCommand(Command.SIT)}>
-                                <Text style={ButtonStyles.text}>SIT</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                </View>
+            <View style={styles.baseColumnContainer}>               
                 <View style={styles.baseColumnCenter}>
                     <View style={styles.centerColumnIndicatorRow}>
                         <StatusIndicator
-                            name='Hexapod'
+                            name='Quadruped'
                             value={connected ? "Connected" : "Disconnected"}
                             status={connected ? Status.Active : Status.Error}
                             style={{ width: 100 }}
@@ -373,43 +281,7 @@ export default function Viewer() {
                     </View>
 
                 </View>
-                <View style={styles.baseColumnControls}>
-                    <View style={styles.controlContainer}>
-                        <View style={styles.controlRowTop}>
-                            <TouchableOpacity
-                                style={[ButtonStyles.button, ButtonStyles.primary]}
-                                onPress={() => setCommand(Command.POSE)}>
-                                <Text style={ButtonStyles.text}>POSE</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.controlRowCenterRight}>
-                            <AxisPad
-                                id={`pad-right-${Math.floor(Math.random() * 1000) + 1}`}
-                                size={140}
-                                controlSize={60}
-                                disableY={false}
-                                padBackgroundStyle={AxisPadStyles.pad}
-                                controlStyle={AxisPadStyles.knob}
-                                stickStyle={AxisPadStyles.stick}
-                                ignoreTouchDownInPadArea={false}
-                                initialTouchType={"no-snap"}
-                                onTouchEvent={onTouchEventRight}
-                            />
-                        </View>
-                        <View style={styles.controlRowBottom}>
-                            <TouchableOpacity
-                                style={[ButtonStyles.button, ButtonStyles.primary]}
-                                onPress={() => setCommand(Command.BIAS_WALK)}>
-                                <Text style={ButtonStyles.text}>B. WALK</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[ButtonStyles.button, ButtonStyles.primary]}
-                                onPress={() => setCommand(Command.VECTOR_WALK)}>
-                                <Text style={ButtonStyles.text}>V. WALK</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+               
             </View>
         </View>
     );
@@ -425,46 +297,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
         width: '100%',
-    },
-    baseColumnControls: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 10,
-    },
+    },   
     baseColumnCenter: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 10,
-    },
-
-    controlContainer: {
-        flexDirection: 'column',
-        flex: 1,
-    },
-    controlRowTop: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-    },
-    controlRowCenterLeft: {
-        marginVertical: 20,
-        paddingLeft: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    controlRowCenterRight: {
-        marginVertical: 20,
-        paddingRight: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    },    
     controlRowBottom: {
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
     },
-
     centerColumnIndicatorRow: {
         flexDirection: 'row',
         width: '100%',
@@ -487,7 +331,6 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginBottom: 10,
     },
-
     verticalLine: {
         width: 2,
         backgroundColor: '#000',

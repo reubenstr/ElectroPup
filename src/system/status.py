@@ -1,7 +1,7 @@
 from enum import Enum
-from dataclasses import dataclass, field, is_dataclass
-from system.interfaces import MotionState, SystemStates, OpModes, Status, Gaits, InputMode
-
+from dataclasses import dataclass, field
+from system.interfaces import MotionState, SystemStates, OpModes, Status, InputMode
+from system.quadruped.gait import Gait
 
 @dataclass
 class Canbus:
@@ -16,7 +16,7 @@ class Current:
 
 @dataclass
 class Gait:
-    state: Gaits = Gaits.NONE
+    state: Gait = Gait.NONE
 
 
 @dataclass

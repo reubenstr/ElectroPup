@@ -4,14 +4,14 @@ from threading import Thread, Lock, Event
 from typing import List, Dict
 
 from system.quadruped.point import Point
-from system.quadruped.quad import Quad
+from system.quadruped.quad import Quad, LegName
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.gait import Gait
-from system.interfaces import MotionState
-from system.utilities.utilities import safe_divide, scale_value
 from system.quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from system.quadruped.quad import LegName
+from system.interfaces import MotionState, Status
+from system.utilities.utilities import safe_divide, scale_value
+
 
 """
     Generates trajectories for walking and rotation.
@@ -23,7 +23,7 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.WALK
+        self.motion_state: MotionState = MotionState.POSE
         self.trajectories: Trajectories = None
 
         self.ik_parameters = IKParameters()
@@ -32,6 +32,8 @@ class Motion:
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
 
         self.quad = Quad()
+        self.ik_status = Status.STANDBY
+        self.joint_angle_status = Status.STANDBY
 
         self.min_loop_rate_seconds: float = 0.050
         self.loop_completion_time_ms: float = 0.0
@@ -39,6 +41,8 @@ class Motion:
 
         self.slow_gait_time: float = 0.001
         self.fast_gait_time: float = 0.025
+
+        
 
         self._start()
 
@@ -68,10 +72,11 @@ class Motion:
             with self.lock:
                 if self.motion_state == MotionState.POSE:
                     base_foot_points = self.quad.get_base_foot_points()
-                    self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+                    error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+                    self._set_error(error)
+                    
 
-                elif self.motion_state == MotionState.WALK:
-                   
+                elif self.motion_state == MotionState.WALK:                   
                     if self.motion_parameters.forward_raw > 0:
                         scaled_dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.slow_gait_time, self.fast_gait_time)   
                         self.trajector_planner.tick_gait_time(scaled_dt)                     
@@ -87,7 +92,8 @@ class Motion:
                         foot_point = self.trajector_planner.get_foot_point(leg_name, base_foot_point, heading)
                         foot_points[leg_name] = foot_point
 
-                    self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
+                    error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
+                    self._set_error(error)
                     
 
             delta = time() - loop_time
@@ -96,7 +102,13 @@ class Motion:
                 sleep(self.min_loop_rate_seconds - delta)
 
             with self.lock:
-                self.loop_completion_time_ms = (time() - loop_time) * 1000            
+                self.loop_completion_time_ms = (time() - loop_time) * 1000    
+
+    def _set_error(self, error: Quad.ErrorState):       
+        self.ik_status = Status.ERROR if error is Quad.ErrorState.KINEMATICS else Status.STANDBY
+        self.joint_angle_status = Status.ERROR if error is Quad.ErrorState.JOINT else Status.STANDBY
+             
+
             
 
     ###############################################################################
@@ -166,6 +178,14 @@ class Motion:
     def get_loop_time_ms(self) -> float:
         with self.lock:
             return self.loop_completion_time_ms
+        
+    def get_ik_status(self) -> Status:
+        with self.lock:
+            return self.ik_status
+    
+    def get_joint_angle_status(self) -> Status:
+        with self.lock:
+            return self.joint_angle_status
         
     
     

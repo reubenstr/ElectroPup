@@ -1,5 +1,5 @@
 
-/* Messages sent from the UI received by the Hexapod */
+/* Messages sent from the UI received by the quadruped */
 
 export enum Command {
     NO_UPDATE = 'no_update',
@@ -7,8 +7,7 @@ export enum Command {
     SIT = 'sit',
     STAND = 'stand',
     POSE = 'pose',
-    BIAS_WALK = 'bias_walk',
-    VECTOR_WALK = 'vector_walk',
+    WALK = 'walk', 
     GAMEPAD_INPUT = 'gamepad_input',
     TOUCH_INPUT = 'touch_input'
 }
@@ -22,7 +21,7 @@ export interface ControlMessage {
 }
 
 
-/* Messages sent by the Hexapod received by the UI */
+/* Messages sent by the quadruped received by the UI */
 
 interface Coordinate {
     x: number;
@@ -37,8 +36,7 @@ interface CoordinateSeries {
     z: number[];
 }
 
-export interface PlotData {
-    cog: Coordinate;
+export interface PlotData {   
     body: CoordinateSeries;
     legs: CoordinateSeries[];
     mesh: CoordinateSeries;

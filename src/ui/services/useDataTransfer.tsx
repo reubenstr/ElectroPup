@@ -12,7 +12,7 @@ export function useDataTransfer(): {
   const [hexData, setHexData] = useState<QuadData>();
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
-  const endpointByType = useEndpointByType(ServerType.HEXAPOD)
+  const endpointByType = useEndpointByType(ServerType.QUADRUPED)
 
   const noDataTimeoutMs = 3000;
 
