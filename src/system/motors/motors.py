@@ -333,10 +333,19 @@ class Motors:
     # General
     ###############################################################################
 
-    def shutdown(self):
-        self._stop()
-        self.disable_all_motors()
-        self.deinit_can_buses(self.can_infos)
+    def get_can_status(self, can_name: str) -> Status:
+        can_info = next((can_info for can_info in self.can_infos.values() if can_info.can_channel == can_name), None)
+        if can_info:
+            return can_info.status
+        else:            
+            return Status.ERROR
+        
+    def get_can_loop_time(self, can_name: str) -> float:
+        can_info = next((can_info for can_info in self.can_infos.values() if can_info.can_channel == can_name), None)
+        if can_info:
+            return can_info.loop_completion_time_ms
+        else:           
+            return 0
 
     def is_error(self) -> bool:
         for can_info in self.can_infos.values():
@@ -351,6 +360,12 @@ class Motors:
             if motor.is_error():
                 return True
         return False
+    
+    
+    def shutdown(self):
+        self._stop()
+        self.disable_all_motors()
+        self.deinit_can_buses(self.can_infos)
 
     ###############################################################################
     # Helpers
