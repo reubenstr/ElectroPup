@@ -55,22 +55,16 @@ class Status(StrEnum):
     ERROR = "error"
 
 
-class SystemStates(StrEnum):
-    NONE = "none"
-    ERROR = "error"
-    STANDBY = "standby"
-    MOTION = "motion"
-
-
 class MotionState(StrEnum):
     NONE = "none"
-    STANDBY = "standby"
-    TRANSITION = "transition"
-    POSE = "pose"
-    ROTATE = "rotate"
-    WALK = "walk"
+    STANDBY = "standby"   
+   
     STAND = "stand"
     SIT = "sit"
+    POSE = "pose"
+    WALK = "walk"
+
+    TRANSITION = "transition"
 
 
 class StandStates(StrEnum):

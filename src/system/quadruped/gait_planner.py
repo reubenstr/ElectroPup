@@ -44,15 +44,16 @@ class GaitPlanner:
 
         return phase, normalized_time
 
-    def bezier_curve(self, t, points):
-        """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
-        p = np.array(points)
-        while len(p) > 1:
-            p = (1 - t) * p[:-1] + t * p[1:]
-        return p[0]
-
     def foot_trajectory_bezier(self, phase: Phase, phase_time: float, stride_length=0.2, step_height=0.05):
         """Return foot (d: distance, h: height) using Bezier swing and linear stance."""
+
+        def bezier_curve(t, points):
+            """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
+            p = np.array(points)
+            while len(p) > 1:
+                p = (1 - t) * p[:-1] + t * p[1:]
+            return p[0]
+
         if phase == Phase.STANCE:
             # Linear backward motion (stroke)
             d = (1 - phase_time) * stride_length - stride_length / 2
@@ -70,7 +71,7 @@ class GaitPlanner:
                     [stride_length / 2, 0],
                 ]
             )
-            d, h = self.bezier_curve(phase_time, control_points)
+            d, h = bezier_curve(phase_time, control_points)
         return d, h
 
     def foot_trajectory_sin(self, phase: Phase, phase_time: float, stride_length=0.2, step_height=0.05):
@@ -84,4 +85,3 @@ class GaitPlanner:
             f = phase_time * stride_length - stride_length / 2
             h = step_height * np.sin(np.pi * phase_time)
         return d, h
-

@@ -1,5 +1,10 @@
-from enum import Enum, auto
+from enum import IntEnum, Enum, auto
 from dataclasses import dataclass
+
+class MotorSpeeds(IntEnum):
+    SLOW = 1000
+    MOTION = 2000
+
 
 class MotorName(Enum):
     FLA = auto()
@@ -26,3 +31,4 @@ class MotorInfo:
     inverse_rotation: bool
     allow_motion: bool
     allow_comms: bool   
+

@@ -18,11 +18,11 @@ from system.input.input import Input
 from system.quadruped.motion import Motion
 from system.hardware.hardware import Hardware
 from system.motors.motors import Motor, Motors
-from system.motors.interfaces import MotorName
+from system.motors.interfaces import MotorName, MotorSpeeds
 from system.auxiliary.aux import Aux, AuxMessage
 from system.utilities.utilities import *
 
-from system.interfaces import SystemStates, OpModes, MotorSpeeds, MotorCurrents, Status, InputCommand, MotionState
+from system.interfaces import OpModes, Status, InputCommand, MotionState
 from system.status import SystemStatus
 from system.forwarder import Forwarder
 
@@ -49,6 +49,11 @@ class Main:
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
         self.loop_completion_time_ms: float = 0    
+
+        if self.op_mode == OpModes.SIM:
+            self.motion.set_target_motion_state(MotionState.WALK)
+        elif self.op_mode == OpModes.LIVE:
+            self.motion.set_target_motion_state(MotionState.STANDBY)
 
     ###############################################################################
     # Callback from Input(s)
@@ -108,9 +113,9 @@ class Main:
             if self.motion.motion_state is not MotionState.STANDBY:
 
                 if self.motion.motion_state is MotionState.SIT or self.motion.motion_state is MotionState.STAND:
-                    speed = 1000
+                    speed = MotorSpeeds.SLOW
                 else:
-                    speed = 2000
+                    speed = MotorSpeeds.MOTION
 
                 joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
                 self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL]["abduction"])

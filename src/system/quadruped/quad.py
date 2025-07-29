@@ -199,6 +199,20 @@ class Quad(object):
             LegName.FL: self.legs[LegName.FL].get_leg_points(),
             LegName.BL: self.legs[LegName.BL].get_leg_points(),
         }
+    
+
+    def get_foot_points(self) -> dict[LegName, Point]:
+        """
+        Return coordinates of each leg's foot as a dict containing a point
+        """
+
+        return {
+            LegName.BR: self.legs[LegName.BR].get_foot_point(),
+            LegName.FR: self.legs[LegName.FR].get_foot_point(),
+            LegName.FL: self.legs[LegName.FL].get_foot_point(),
+            LegName.BL: self.legs[LegName.BL].get_foot_point(),
+        }
+
 
     def get_joint_angles(self, units: AngleUnits):
         """Get the joint angles for all four legs

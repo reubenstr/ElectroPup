@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass, field
-from system.interfaces import MotionState, SystemStates, OpModes, Status, InputMode
+from system.interfaces import MotionState, OpModes, Status, InputMode
 from system.quadruped.gait_planner import Gait
 
 
@@ -59,11 +59,6 @@ class SMBus:
 
 
 @dataclass
-class System:
-    status: Status = Status.NONE
-
-
-@dataclass
 class Voltage:
     voltage: str = "N/A"
     status: Status = Status.NONE
@@ -90,7 +85,6 @@ class LoopTimes:
 @dataclass
 class SystemStatus:
     opMode: OperationMode = field(default_factory=OperationMode)
-    system: System = field(default_factory=System)
     motion: Motion = field(default_factory=Motion)
     target_motion: Motion = field(default_factory=Motion)
     ik: GenericStatus = field(default_factory=GenericStatus)

@@ -2,10 +2,12 @@ from time import time, sleep
 from typing import List
 from threading import Thread, Lock, Event
 from typing import List, Dict
+import numpy as np
 
 from system.quadruped.interfaces import QuadErrorState
 from system.quadruped.point import Point
 from system.quadruped.quad import Quad, LegName
+from system.quadruped.transition_planner import TransitionPlanner
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.gait_planner import Gait
@@ -24,8 +26,9 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.STANDBY
-        self.target_motion_state: MotionState = MotionState.STANDBY
+        self.motion_state: MotionState = MotionState.WALK
+        self.target_motion_state: MotionState = MotionState.WALK
+        self.previous_target_motion_state: MotionState = MotionState.WALK
         self.gait: Gait = Gait.WALK
         self.target_gait: Gait = Gait.WALK
 
@@ -46,6 +49,9 @@ class Motion:
         self.fast_gait_time: float = 0.025
 
         self._start()
+
+
+        self.transitions: Trajectories = None
 
     ###############################################################################
     # Thread
@@ -71,7 +77,9 @@ class Motion:
             loop_time = time()
 
             with self.lock:
-                self._process_motion()
+                self._process_target_motion_state()   
+                self._process_motion_state()
+                self.temp()
 
             delta = time() - loop_time
 
@@ -86,22 +94,106 @@ class Motion:
         self.joint_angle_status = Status.ERROR if error is QuadErrorState.JOINT else Status.STANDBY
 
 
-    def _process_motion(self):
-        if self.motion_state == MotionState.STANDBY:
+    def _process_target_motion_state(self):     
+        if self.previous_target_motion_state is not self.target_motion_state:
+            self.motion_state = MotionState.TRANSITION
+            print(f"[{self.tag}] target state changed to: {self.target_motion_state}")
+
+            target_foot_points: Dict[LegName, Point] = {}
+
+            if self.target_motion_state is MotionState.STANDBY:
+                pass
+
+            elif self.target_motion_state is MotionState.STAND:
+                pass
+
+            elif self.target_motion_state is MotionState.SIT:
+                pass
+
+            elif self.target_motion_state is MotionState.POSE:
+                target_foot_points = self.quad.get_base_foot_points()
+
+            elif self.target_motion_state is MotionState.WALK:                
+                self.gait_time = 0
+                heading = 0                
+                for leg_name in LegName:                   
+                    base_foot_point = self.quad.get_base_foot_point(leg_name)
+                    foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.gait_time, heading)
+                    target_foot_points[leg_name] = foot_point
+
+            
+            
+          
+           
+    def temp(self):
+        active_foot_points = self.quad.get_foot_points()
+        #target_foot_points: Dict[LegName, Point] = {}
+        target_foot_points = self.quad.get_base_foot_points()
+
+        ##print(active_foot_points[LegName.FL])
+
+        #self.gait_time = 0
+        #heading = 0                
+        #for leg_name in LegName:                   
+        #    base_foot_point = self.quad.get_base_foot_point(leg_name)
+        #    foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.gait_time, heading)
+        #    target_foot_points[leg_name] = foot_point
+
+        ###################################################
+        # lower all feet
+        # arc one at a time
+        # profit
+
+        tp = TransitionPlanner( 
+        period=1.0,
+        duty_factor=0.25,
+        phase_offsets={
+            LegName.FL: 0.0,
+            LegName.BR: 0.25,
+            LegName.FR: 0.5,
+            LegName.BL: 0.75,
+        })
+
+        timestep = tp.period / 100
+        gait_times = np.arange(0, tp.period, timestep)     
+
+        self.transitions: Trajectories = []
+        for leg_name in LegName:
+            active_foot_point = active_foot_points[leg_name]
+            target_foot_point = target_foot_points[leg_name]
+         
+            transition: Trajectory = []
+            for gait_time in gait_times:
+
+                phase, phase_time = tp.get_leg_phase_time(leg_name, gait_time)  
+                foot_point = tp.foot_trajectory_sin(phase, phase_time, active_foot_point, target_foot_point)
+               
+
+                #foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
+
+                #foot_point, bend_radius, cor = tp._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, heading)
+                transition.append(foot_point)            
+            self.transitions.append(transition)
+            break
+                         
+
+
+    def _process_motion_state(self):
+        if self.motion_state is MotionState.STANDBY:
             pass
 
-        elif self.motion_state == MotionState.STAND:
+        elif self.motion_state is MotionState.STAND:
             pass
 
-        elif self.motion_state == MotionState.SIT:
+        elif self.motion_state is MotionState.SIT:
             pass
 
-        elif self.motion_state == MotionState.POSE:
+        elif self.motion_state is MotionState.POSE:
             base_foot_points = self.quad.get_base_foot_points()
             error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
             self._set_error(error)
 
-        elif self.motion_state == MotionState.WALK:
+        elif self.motion_state is MotionState.WALK:
             if self.motion_parameters.forward_raw > 0:
                 dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.slow_gait_time, self.fast_gait_time)
                 self.gait_time += dt
@@ -116,9 +208,16 @@ class Motion:
                 base_foot_point = self.quad.get_base_foot_point(leg_name)
                 foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.gait_time, heading)
                 foot_points[leg_name] = foot_point
-
+           
             error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
             self._set_error(error)
+
+        elif self.motion_state is MotionState.TRANSITION:
+
+
+            self.motion_state = self.target_motion_state
+            print(f"[{self.tag}] motion state changed to: {self.motion_state}")
+        
 
     ###############################################################################
     # Methods
@@ -170,7 +269,10 @@ class Motion:
     def get_trajectories(self) -> Trajectories:
         with self.lock:
             base_foot_points = self.quad.get_base_foot_points()
-            return self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
+
+            a, b, c = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
+            self.transitions
+            return a, b, self.transitions
 
     def get_loop_time_ms(self) -> float:
         with self.lock:
@@ -183,8 +285,3 @@ class Motion:
     def get_joint_angle_status(self) -> Status:
         with self.lock:
             return self.joint_angle_status
-
-    ### OLD?   
-
-    def is_in_motion(self) -> bool:
-        return self.motion_state != MotionState.POSE

@@ -58,12 +58,12 @@ class Hardware:
     def _init_smbus(self):
         self.smbus_lock = Lock()
 
-        print("[{self.tag}] initializing smbus (I2C)")
+        print(f"[{self.tag}] initializing smbus (I2C)")
         try:
             self.bus: SMBus = SMBus(SMBUS_ID)
             self.smbus_status = Status.ACTIVE
         except Exception:
-            print("[{self.tag}] error, smbus failed to init! Check connections and check if I2C is activated using raspi-config.")
+            print(f"[{self.tag}] error, smbus failed to init! Check connections and check if I2C is activated using raspi-config.")
             self.smbus_status = Status.ERROR
 
     def get_smbus_status(self) -> Status:

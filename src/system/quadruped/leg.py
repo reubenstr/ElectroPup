@@ -108,10 +108,15 @@ class Leg(object):
 
         return self.swap_points([p1, p2, p3, p4])
 
+    '''
     def get_foot_position_in_global_coords(self) -> Point:
         """Return coordinates of the foot in the leg's local coordinate frame"""
         ht_foot = np.matmul(np.matmul(np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12), self._t23), self._t34)
         return self.swap_points([Point(*ht_foot[0:3, 3])])[0]
+    '''    
+
+    def get_foot_point(self) -> Point:     
+        return self.swap_point(self._foot_point)
 
     def get_leg_angles_in_radians(self) -> Dict[str, float]:
         """Return leg angles as a dictionary as q1, q2, q3"""
@@ -137,5 +142,5 @@ class Leg(object):
     def swap_point(self, point: Point) -> Point:
         """
         Swap values of a list of Point objects to convert Y up to Z up.
-        """
+        """       
         return Point(point.x, point.z, point.y, point.name)
