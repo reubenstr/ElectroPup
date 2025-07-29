@@ -5,13 +5,6 @@ from dataclasses import dataclass
 from enum import Enum, StrEnum, IntEnum
 
 
-class LegName(Enum):
-    FL = "FL"
-    FR = "FR"
-    BL = "BL"
-    BR = "BR"
-
-
 class OpModes(StrEnum):
     NA = 'N/A'
     LIVE = 'live'
@@ -27,13 +20,16 @@ class InputMode(StrEnum):
 class InputCommand(StrEnum):
     NO_UPDATE = "no_update"
     E_STOP = "e_stop"
-    CLEAR_MOTOR_ERRORS = 'clear_motor_errors'   
+    CLEAR_ERRORS = 'clear_errors'   
+   
     SIT = "sit"
-    STAND = "stand"
+    STAND = "stand"   
     POSE = "pose"
-    ROTATE = 'rotate'
-    BIAS_WALK = "bias_walk"
-    VECTOR_WALK = "vector_walk"
+    WALK = "walk"
+
+    GAIT_WALK = "gait_walk"
+    GAIT_TROT = "gait_trot"
+
     GAMEPAD_INPUT = "gamepad_input"
     TOUCH_INPUT = "touch_input"
 
@@ -91,9 +87,6 @@ class StandStates(StrEnum):
     COMPLETE = 'complete'
 
 
-class Gaits(StrEnum):
-    NONE = 'none'
-    TRIPOD = 'tripod'
 
 
 class Contacts:

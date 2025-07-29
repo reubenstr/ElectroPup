@@ -162,10 +162,12 @@ class Motors:
         start = time()
         with self.comm_lock:
             for motor in self.motors.values():
-                if not motor.cmd_motor_on():
-                    print(f"[{self.tag}][ALL] error, enable all motors failed!")
-                    return False
+                if self.allow_enable and motor.allow_motion:
+                    if not motor.cmd_motor_on():
+                        print(f"[{self.tag}][ALL] error, enable all motors failed!")
+                        return False
             print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
+            self.disable_all_motors()
             return True
 
     def disable_all_motors(self):

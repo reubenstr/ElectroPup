@@ -41,7 +41,7 @@ export interface PlotData {
     legs: CoordinateSeries[];
     mesh: CoordinateSeries;
     trajectories: CoordinateSeries[];
-    softTrajectories: CoordinateSeries[];
+    transitions: CoordinateSeries[];
     rings: CoordinateSeries[];
 }
 
@@ -134,10 +134,7 @@ interface SystemStatus {
         roll: string;
         pitch: string;
         status: Status;
-    };
-    expander: {
-        status: Status;
-    };
+    };   
     can0: {
         status: Status;
     };
@@ -147,10 +144,7 @@ interface SystemStatus {
     gamepad: {
         battery: string;
         status: Status;
-    };
-    motorPower: {
-        status: Status;
-    };
+    };  
     voltage: {
         voltage: string;
         status: Status;

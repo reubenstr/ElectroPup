@@ -208,8 +208,8 @@ export default function Plot3D({ quadData }: Plot3DProps) {
       });
     }
 
-    if (plotData.softTrajectories) {
-      plotData.softTrajectories.map((trajectory, index) => {
+    if (plotData.transitions) {
+      plotData.transitions.map((trajectory, index) => {
         newPlotData.push({
           x: trajectory.x,
           y: trajectory.y,

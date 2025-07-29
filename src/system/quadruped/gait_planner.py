@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum, StrEnum
 from typing import Dict, List
-from system.interfaces import LegName
+from system.quadruped.quad import LegName
 
 
 class Gait(StrEnum):

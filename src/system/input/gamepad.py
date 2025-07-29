@@ -92,7 +92,7 @@ class Gamepad:
 
     def btn_triangle_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.STAND)
+            self._send_input_command_as_event(InputCommand.GAIT_WALK)
 
     def btn_circle_changed_callback(self, state):
         if state == True:
@@ -100,7 +100,7 @@ class Gamepad:
 
     def btn_cross_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.SIT)
+            self._send_input_command_as_event(InputCommand.GAIT_TROT)
 
     def btn_square_changed_callback(self, state):
         if state == True:
@@ -138,7 +138,7 @@ class Gamepad:
 
     def btn_options_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.MOTOR_CLEAR_ERRORS)
+            self._send_input_command_as_event(InputCommand.CLEAR_ERRORS)
 
     def btn_ps_changed_callback(self, state):
         if state == True:
@@ -148,25 +148,19 @@ class Gamepad:
 
     def axis_dpad_x_changed_callback(self, state):
         if state == DPAD_DIRECTION_LEFT:
-            self._send_input_command_as_event(InputCommand.BIAS_WALK)
+            self._send_input_command_as_event(InputCommand.POSE)
         elif state == DPAD_DIRECTION_CENTER:
             pass
         elif state == DPAD_DIRECTION_RIGHT:
-            self._send_input_command_as_event(InputCommand.VECTOR_WALK)
+            self._send_input_command_as_event(InputCommand.WALK)
 
     def axis_dpad_y_changed_callback(self, state):
-        if state == DPAD_DIRECTION_UP:
-            if self.left_shift:
-                self._send_input_command_as_event(InputCommand.STAND)
-            else:
-                self._send_input_command_as_event(InputCommand.ROTATE)
+        if state == DPAD_DIRECTION_UP:  
+            self._send_input_command_as_event(InputCommand.STAND)
         elif state == DPAD_DIRECTION_CENTER:
             pass
-        elif state == DPAD_DIRECTION_DOWN:
-            if self.left_shift:
-                self._send_input_command_as_event(InputCommand.SIT)
-            else:
-                self._send_input_command_as_event(InputCommand.POSE)
+        elif state == DPAD_DIRECTION_DOWN:          
+            self._send_input_command_as_event(InputCommand.SIT)
 
     """ AXIS JOY-STICKS """
 

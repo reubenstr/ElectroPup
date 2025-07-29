@@ -1,11 +1,11 @@
 from math import radians, copysign
 import numpy as np
-from typing import List, Dict, TypeAlias
+from typing import List, Dict, TypeAlias, Tuple
 
 from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
-from system.quadruped.gait import GaitPlanner
+from system.quadruped.gait_planner import GaitPlanner
 from system.quadruped.quad import LegName
-from system.quadruped.gait import Gait
+from system.quadruped.gait_planner import Gait
 from system.utilities.utilities import log_scale_value
 
 Trajectory: TypeAlias = List[Point]
@@ -14,19 +14,12 @@ Trajectories: TypeAlias = List[Trajectory]
 
 class TrajectoryPlanner:
     def __init__(self):
-
-        self.set_gait(Gait.WALK)
-        self.gait_time: float = 0.0
-
-        self.visual_rings: Trajectories = None
-
+        pass
+      
     ###############################################################################
     # Gaits (can be modified)
     ###############################################################################
-
-    def set_gait(self, gait: Gait):
-        self.gait_planner: GaitPlanner = self.gait_factory(gait)
-
+        
     def gait_factory(self, gait: Gait) -> GaitPlanner:
         if gait == Gait.WALK:
             return GaitPlanner(
@@ -57,17 +50,16 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def tick_gait_time(self, dt: float):
-        self.gait_time += dt
-
-    def get_foot_point(self, leg_name: LegName, base_foot_point: Point, heading: float):
-        foot_point, bend_radius, cor = self.calc(leg_name, base_foot_point, self.gait_time, heading)
+    def get_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
+        foot_point, bend_radius, cor = self.calc(gait, leg_name, base_foot_point, gait_time, heading)
         return foot_point
 
-    def calc(self, leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
+    def calc(self, gait: Gait,  leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
+
+        gait_planner: GaitPlanner = self.gait_factory(gait)
 
         # Create a center-of-rotation given the heading input.
         max_cor_x = 50
@@ -89,10 +81,10 @@ class TrajectoryPlanner:
             twist_angle -= 90
 
         # Get phase and phase time of the leg.
-        phase, phase_time = self.gait_planner.get_leg_phase_time(leg_name, gait_time)
+        phase, phase_time = gait_planner.get_leg_phase_time(leg_name, gait_time)
 
         # Generate foot offsets given the phase and phase time.
-        d, h = self.gait_planner.foot_trajectory_bezier(phase, phase_time, stride_length=0.075)
+        d, h = gait_planner.foot_trajectory_bezier(phase, phase_time, stride_length=0.075)
         foot_point = Point(d, 0, h)
 
         # Move the point to match the rotation radius (projects path along the y)
@@ -106,13 +98,15 @@ class TrajectoryPlanner:
 
         return foot_point, bend_radius, cor
 
-    def get_trajectories(self, base_foot_points: Dict[LegName, Point], heading: float) -> Trajectories:
+    def get_trajectories(self, gait: Gait,  base_foot_points: Dict[LegName, Point], heading: float) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
         """
 
-        timestep = self.gait_planner.period / 100
-        gait_times = np.arange(0, self.gait_planner.period, timestep)
+        gait_planner: GaitPlanner = self.gait_factory(gait)
+
+        timestep = gait_planner.period / 100
+        gait_times = np.arange(0, gait_planner.period, timestep)
 
         trajectories: Trajectories = []
         visual_rings: Trajectories = []
@@ -121,14 +115,14 @@ class TrajectoryPlanner:
 
             trajectory: Trajectory = []
             for gait_time in gait_times:
-                foot_point, bend_radius, cor = self.calc(leg_name, base_foot_point, gait_time, heading)
+                foot_point, bend_radius, cor = self.calc(gait, leg_name, base_foot_point, gait_time, heading)
                 trajectory.append(foot_point)
 
             trajectories.append(trajectory)
             visual_rings.append(self.create_circle_trajectory(bend_radius, cor, 100))
-
-        self.visual_rings = visual_rings
-        return trajectories
+            transitions = None
+        
+        return trajectories, visual_rings, transitions
 
     @staticmethod
     def create_circle_trajectory(radius: float, center: Point, num_points: int) -> Trajectory:
@@ -149,13 +143,4 @@ class TrajectoryPlanner:
             point = Point(x[i], y[i], z[i])
             trajectory.append(point)
         return trajectory
-
-    ###############################################################################
-    # Getters / Setters
-    ###############################################################################
-
-    def get_visual_rings(self) -> Trajectories:
-        return self.visual_rings
-
-    def get_gait(self) -> Gait: 
-        return self.gait_planner.gait
+  

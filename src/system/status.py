@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass, field
 from system.interfaces import MotionState, SystemStates, OpModes, Status, InputMode
-from system.quadruped.gait import Gait
+from system.quadruped.gait_planner import Gait
 
 @dataclass
 class Canbus:
@@ -48,16 +48,6 @@ class OperationMode:
 
 @dataclass
 class PowerSensor:
-    status: Status = Status.NONE
-
-
-@dataclass
-class MotorPower:
-    status: Status = Status.NONE
-
-
-@dataclass
-class Expander:
     status: Status = Status.NONE
 
 
@@ -110,12 +100,10 @@ class SystemStatus:
     smbus: SMBus = field(default_factory=SMBus)
     power_sensor: PowerSensor = field(default_factory=PowerSensor)
     imu: IMU = field(default_factory=IMU)
-    expander: Expander = field(default_factory=Expander)
     can0: Canbus = field(default_factory=Canbus)
     can1: Canbus = field(default_factory=Canbus)
-    gamepad: Gamepad = field(default_factory=Gamepad)
-        
-    motor_power: MotorPower = field(default_factory=MotorPower)
+    gamepad: Gamepad = field(default_factory=Gamepad)        
+  
     voltage: Voltage = field(default_factory=Voltage)
     current: Current = field(default_factory=Current)
       

@@ -27,7 +27,7 @@ class MessageType(Enum):
     SHUTDOWN_RPI = 2
 
 
-class StatusMessage:
+class AuxMessage:
     def __init__(self):
         self.joystick_error : bool = False
         self.physical_limit_error : bool = False
@@ -146,13 +146,13 @@ if __name__ == "__main__":
     while(True): 
                 
         if test == 0:    
-            message_data = StatusMessage()
+            message_data = AuxMessage()
             data = message_data.pack()        
             aux.send(data)
             sleep(1)
             
         elif test == 1:
-            message_data = StatusMessage()
+            message_data = AuxMessage()
             data = message_data.pack()
             rate = 0.5
             aux.send_at_rate(data, rate) 

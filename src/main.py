@@ -14,12 +14,9 @@ from typing import List, Dict
 from system.quadruped.quad import Quad
 from system.input.input import Input
 from system.quadruped.motion import Motion
-from system.quadruped.parameters.frame_parameters import FrameParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.quadruped.parameters.ik_parameters import IKParameters
 from system.hardware.hardware import Hardware
 from system.motors.motors import Motor, Motors
-from system.auxiliary.aux import Aux, StatusMessage
+from system.auxiliary.aux import Aux, AuxMessage
 from system.utilities.utilities import *
 
 from system.interfaces import SystemStates, OpModes, MotorSpeeds, MotorCurrents, Status, InputCommand, MotionState
@@ -41,40 +38,9 @@ class Main:
         self.hardware = Hardware()
         self.input = Input(callback=self.controller_event_callback)
         self.motion = Motion()
-
         self.forwarder = Forwarder()
-
-        #self.quad_sim = Quad()
-        #self.quad_live = Quad()
-
-        ######################################################################
-
-        """   
-        self.aux = Aux() 
-        self.aux_send_rate_seconds : float = 0.125
-
-        self.gamepad = Gamepad(self.motion_parameters)
-        self.gamepad.register_controller_event_callback(self.controller_event_callback)
-        self.gamepad_last_connected_time : float = 0
-        self.gamepad_no_comms_timeout_seconds : float = 5
-        
-        self.gamepad_last_battery_check_time : float = 0
-        self.gamepad_battery_check_rate_seconds : float = 1
-
-        self.body = Body()       
-
-        self.kinetic_state : KineticState = KineticState.STARTUP
-        self.previous_kinetic_state : KineticState = KineticState.INIT 
-        self.body_error_state : Body.ErrorState = Body.ErrorState.NONE
-        self.speed : int = 0
-        self.loop_time : float = 0
-        
-        #self.pose_start_time : float = 0
-        #self.pose_timeout_seconds : float = 0
-        """
-
-        ######################################################################
-     
+        self.motors = Motors(allow_enable)
+        #self.aux = Aux()
 
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
@@ -104,19 +70,19 @@ class Main:
             if self.hardware.get_motors_power_status() is Status.ACTIVE:
                 self.system_state = SystemStates.SIT
 
-        if event == InputCommand.CLEAR_MOTOR_ERRORS:
+        if event == InputCommand.CLEAR_ERRORS:
             self.clear_all_errors()
 
         if event == InputCommand.POSE:
             self.motion.set_target_motion_state(MotionState.POSE)
 
-        if event == InputCommand.BIAS_WALK:
+        if event == InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
         if event == InputCommand.ROTATE:
             self.motion.set_target_motion_state(MotionState.ROTATE)
 
-        if event == InputCommand.VECTOR_WALK:
+        if event == InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
     ###############################################################################
@@ -217,14 +183,11 @@ class Main:
         """
         Check for commands and send latest status data to Auxiliary Board.
         """
-
-        self.aux.check_for_commands()
-
-        message = StatusMessage()
-
+     
+        message = AuxMessage()
         message.joint_angle_error = self.body_error_state == Quad.ErrorState.JOINT
         message.inverse_kinematics_error = self.body_error_state == Quad.ErrorState.KINEMATICS
-        message.joystick_error = self.gamepad.is_connected() == False
+        message.joystick_error = self.input.gamepad.is_connected() == False
         message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
         message.imuError = False
 
@@ -274,12 +237,11 @@ class Main:
         
 
         #system_status.gpio.status = self.hardware.get_gpio_status()
-        #system_status.smbus.status = self.hardware.get_smbus_status()
-        #ystem_status.power_sensor.status = self.hardware.get_power_sensor_status()
-        #system_status.imu.status = self.hardware.get_imu_status()
-        #system_status.imu.roll = self.hardware.get_imu_data().roll
-        #system_status.imu.pitch = self.hardware.get_imu_data().pitch
-        #system_status.expander.status = self.hardware.get_port_expander_status()
+        system_status.smbus.status = self.hardware.get_smbus_status()
+        #system_status.power_sensor.status = self.hardware.get_power_sensor_status()
+        system_status.imu.status = self.hardware.get_imu_status()
+        system_status.imu.roll = self.hardware.get_imu_data().roll
+        system_status.imu.pitch = self.hardware.get_imu_data().pitch  
         #system_status.can0.status = self.motors.get_can_status("can0")
         #system_status.can1.status = self.motors.get_can_status("can1")
         system_status.gamepad.status = self.input.gamepad.get_status()
@@ -291,9 +253,12 @@ class Main:
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         # self.forwarder.set_motors_states(self.motors.get_all_motor_states())
-        self.forwarder.set_trajectories(self.motion.get_trajectories())
-        self.forwarder.set_soft_trajectories(self.motion.get_soft_trajectories())
-        self.forwarder.set_rings(self.motion.get_visual_rings())
+       
+        trajectories, visual_rings, transitions = self.motion.get_trajectories()
+        self.forwarder.set_trajectories(trajectories)        
+        self.forwarder.set_rings(visual_rings)
+        self.forwarder.set_transitions(transitions)
+        
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
 

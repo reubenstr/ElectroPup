@@ -224,14 +224,14 @@ export default function Viewer() {
                         </View>
                     </View>
 
-                    <View style={styles.centerColumnIndicatorRow}>
-                        <StatusIndicator
-                            name='MPWR'
-                            status={quadData?.status?.motorPower?.status}
-                        />
+                    <View style={styles.centerColumnIndicatorRow}>                      
                         <StatusIndicator
                             name='IK'
                             status={quadData?.status?.ik?.status}
+                        />
+                        <StatusIndicator
+                            name='JA'
+                            status={quadData?.status?.jointAngle?.status}
                         />
                         <View style={styles.verticalLine} />
                         <StatusIndicator
@@ -249,11 +249,7 @@ export default function Viewer() {
                         <StatusIndicator
                             name='IMU'
                             status={quadData?.status?.imu?.status}
-                        />
-                        <StatusIndicator
-                            name='EXP'
-                            status={quadData?.status?.expander?.status}
-                        />
+                        />                      
                         <StatusIndicator
                             name='CAN0'
                             status={quadData?.status?.can0?.status}

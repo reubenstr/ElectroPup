@@ -35,7 +35,7 @@ class Forwarder:
         self.live_quad = None
         self.ik_parameters = None
         self.trajectories = None
-        self.soft_trajectories = None
+        self.transitions = None
         self.rings = None
         self.system_status: SystemStatus = None
         self.contacts: Contacts = None
@@ -69,9 +69,9 @@ class Forwarder:
         with self.data_lock:
             self.trajectories = trajectories
 
-    def set_soft_trajectories(self, trajectories):
+    def set_transitions(self, trajectories):
         with self.data_lock:
-            self.soft_trajectories = trajectories
+            self.transitions = trajectories
 
     def set_rings(self, rings):
         with self.data_lock:
@@ -186,16 +186,6 @@ class Forwarder:
                 trajectory_data["z"] = [scale(point.z) for point in points]
                 plot["trajectories"].append(trajectory_data)
 
-        if self.soft_trajectories:
-            plot["softTrajectories"] = []
-            for i, points in enumerate(self.soft_trajectories):
-                trajectory_data = {}
-                trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [scale(point.x) for point in points]
-                trajectory_data["y"] = [scale(point.y) for point in points]
-                trajectory_data["z"] = [scale(point.z) for point in points]
-                plot["softTrajectories"].append(trajectory_data)
-
         if self.rings:
             plot["rings"] = []
             for i, points in enumerate(self.rings):
@@ -205,5 +195,15 @@ class Forwarder:
                 ring_set["y"] = [scale(point.y) for point in points]
                 ring_set["z"] = [scale(point.z) for point in points]
                 plot["rings"].append(ring_set)
-
+        
+        if self.transitions:
+            plot["transitions"] = []
+            for i, points in enumerate(self.transitions):
+                trajectory_data = {}
+                trajectory_data["name"] = "leg" + str(i)
+                trajectory_data["x"] = [scale(point.x) for point in points]
+                trajectory_data["y"] = [scale(point.y) for point in points]
+                trajectory_data["z"] = [scale(point.z) for point in points]
+                plot["transitions"].append(trajectory_data)
+      
         return plot
