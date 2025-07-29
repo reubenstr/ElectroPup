@@ -1,12 +1,10 @@
 import os
 import can
 from rich import print
-
-
 from can.interface import Bus
-
-
 from typing import Optional
+
+from . interfaces import MotorName
 
 """
 
@@ -23,7 +21,7 @@ https://wiki.openelab.io/lkmtech/mg4010e-i10-v3-dual-encoder-robot-motor
 class Motor:
     def __init__(
         self,
-        name: str,
+        name: MotorName,
         motor_id: int,
         min_angle: float,
         max_angle: float,
@@ -33,7 +31,7 @@ class Motor:
         can_channel: str,
         bus: Bus,
     ):
-        self.name: str = name
+        self.name: MotorName = name
         self.motor_id: int = motor_id
         self.min_angle: float = min_angle
         self.max_angle: float = max_angle

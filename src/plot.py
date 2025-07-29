@@ -68,7 +68,7 @@ class Plot:
             y=.2,
             z=0,
         )
-        if error_state == Quad.ErrorState.NONE:
+        if error_state == Quad.QuadErrorState.NONE:
 
             
 

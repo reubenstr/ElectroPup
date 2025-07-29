@@ -32,7 +32,7 @@ class GaitPlanner:
         self.phase_offsets = phase_offsets
 
     def get_leg_phase_time(self, leg: LegName, time: float) -> tuple[Phase, float]:
-        """Determines which phase and location (time) of the phase."""
+        """Determines the phase and location (time) of the leg."""
         cycle_time = time % self.period
         phase_time = (cycle_time / self.period - self.phase_offsets[leg]) % 1.0
         phase = Phase.STANCE if phase_time < self.duty_factor else Phase.SWING

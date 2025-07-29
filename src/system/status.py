@@ -58,7 +58,7 @@ class SMBus:
 
 @dataclass
 class System:
-    state: SystemStates = SystemStates.INIT
+    state: SystemStates = SystemStates.NONE
 
 
 @dataclass

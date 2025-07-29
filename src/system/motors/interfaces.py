@@ -1,29 +1,24 @@
-
-import can
-from threading import Thread, Lock, Event
+from enum import Enum, auto
 from dataclasses import dataclass
-from enum import Enum, StrEnum, IntEnum
 
-class Status_x(StrEnum):
-    NONE = 'none'
-    STANDBY = 'standby'
-    ACTIVE = 'active'
-    WARNING = 'warning'
-    CRITICAL = 'critical'
-    ERROR = 'error'
-
-class Status(IntEnum):
-    NONE = 0
-    STANDBY = 1
-    ACTIVE = 2
-    WARNING = 3
-    CRITICAL =4
-    ERROR = 5
+class MotorName(Enum):
+    FLA = auto()
+    FLH = auto()
+    FLK = auto()
+    FRA = auto()
+    FRH = auto()
+    FRK = auto()
+    BLA = auto()
+    BLH = auto()
+    BLK = auto()
+    BRA = auto()
+    BRH = auto()
+    BRK = auto()
 
 
 @dataclass
 class MotorInfo:  
-    name:str
+    name:MotorName
     can_channel: str
     id: int
     min_angle: float
@@ -31,15 +26,3 @@ class MotorInfo:
     inverse_rotation: bool
     allow_motion: bool
     allow_comms: bool   
-
-
-@dataclass
-class CanInfo:
-    can_channel: str
-    bus: can.interface.Bus
-    status: Status
-    thread_handle: Thread
-    lock: Lock
-    exit_event: Event
-    loop_completion_time_ms: float = 0.01    
-    worker_running_flag: bool = False

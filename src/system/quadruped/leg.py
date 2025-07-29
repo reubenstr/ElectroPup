@@ -1,6 +1,6 @@
 from math import pi, degrees
 import numpy as np
-from typing import List
+from typing import List, Dict
 
 from . import kinematics
 from . import transformations
@@ -113,11 +113,11 @@ class Leg(object):
         ht_foot = np.matmul(np.matmul(np.matmul(np.matmul(self._ht_leg_start, self._t01), self._t12), self._t23), self._t34)
         return self.swap_points([Point(*ht_foot[0:3, 3])])[0]
 
-    def get_leg_angles_in_radians(self):
+    def get_leg_angles_in_radians(self) -> Dict[str, float]:
         """Return leg angles as a dictionary as q1, q2, q3"""
         return {"abduction": self._q1, "hip": self._q2, "knee": self._q3}
 
-    def get_leg_angles_in_degrees(self):
+    def get_leg_angles_in_degrees(self) -> Dict[str, float]:
         """Return leg angles in degrees as a dictionary as q1,q2,q3"""
         return {"abduction": degrees(self._q1), "hip": degrees(self._q2), "knee": degrees(self._q3)}
 

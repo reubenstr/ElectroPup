@@ -1,19 +1,16 @@
 
 from typing import List
 
-
-from system.interfaces import MotorInfo
+from system.motors.interfaces import MotorInfo, MotorName
 from system.quadruped.parameters.frame_parameters import FrameParameters
+
 
 def motor_list() -> List[MotorInfo]:
     fp = FrameParameters()
 
-    # motor_tags = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"] 
-    # motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
-
     return [
         MotorInfo(
-            name="FLA",
+            name=MotorName.FLA,
             can_channel="can0",
             id=1,
             min_angle=fp.abduction_joint_lower_bounds,

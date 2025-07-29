@@ -3,6 +3,7 @@ from typing import List
 from threading import Thread, Lock, Event
 from typing import List, Dict
 
+from system.quadruped.interfaces import QuadErrorState
 from system.quadruped.point import Point
 from system.quadruped.quad import Quad, LegName
 from system.quadruped.parameters.ik_parameters import IKParameters
@@ -23,12 +24,10 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.WALK
-        self.target_motion_state: MotionState = MotionState.POSE
+        self.motion_state: MotionState = MotionState.STANDBY
+        self.target_motion_state: MotionState = MotionState.STANDBY
         self.gait: Gait = Gait.WALK
-        self.target_gait: Gait = Gait.NONE
-
-        self.trajectories: Trajectories = None
+        self.target_gait: Gait = Gait.WALK
 
         self.ik_parameters = IKParameters()
         self.motion_parameters = MotionParameters()
@@ -72,7 +71,17 @@ class Motion:
             loop_time = time()
 
             with self.lock:
-                if self.motion_state == MotionState.POSE:
+
+                if self.motion_state == MotionState.STANDBY:
+                    pass
+
+                if self.motion_state == MotionState.STAND:
+                    pass
+
+                if self.motion_state == MotionState.SIT:
+                    pass
+
+                elif self.motion_state == MotionState.POSE:
                     base_foot_points = self.quad.get_base_foot_points()
                     error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
                     self._set_error(error)
@@ -104,34 +113,13 @@ class Motion:
             with self.lock:
                 self.loop_completion_time_ms = (time() - loop_time) * 1000
 
-    def _set_error(self, error: Quad.ErrorState):
-        self.ik_status = Status.ERROR if error is Quad.ErrorState.KINEMATICS else Status.STANDBY
-        self.joint_angle_status = Status.ERROR if error is Quad.ErrorState.JOINT else Status.STANDBY
+    def _set_error(self, error: QuadErrorState):
+        self.ik_status = Status.ERROR if error is QuadErrorState.KINEMATICS else Status.STANDBY
+        self.joint_angle_status = Status.ERROR if error is QuadErrorState.JOINT else Status.STANDBY
 
     ###############################################################################
     # Methods
     ###############################################################################
-
-    def generate_trajectory(
-        self,
-        quad: Quad,
-        motion_parameters: MotionParameters,
-        motion_state: MotionState,
-    ):
-
-        if motion_state == MotionState.TRANSITION:
-            pass
-        elif motion_state == MotionState.POSE:
-            pass
-
-        elif motion_state == MotionState.ROTATE:
-            pass
-
-        elif motion_state == MotionState.WALK:
-            pass
-
-        elif motion_state == MotionState.WALK:
-            pass
 
     def shutdown(self):
         self._stop()
@@ -175,14 +163,7 @@ class Motion:
     def get_quad(self) -> Quad:
         with self.lock:
             return self.quad
-
-    def get_visual_rings(self) -> Trajectories:
-        with self.lock:
-            if self.motion_state == MotionState.WALK:
-                return self.trajector_planner.get_visual_rings()
-            else:
-                return None
-
+   
     def get_trajectories(self) -> Trajectories:
         with self.lock:
             base_foot_points = self.quad.get_base_foot_points()
@@ -200,13 +181,7 @@ class Motion:
         with self.lock:
             return self.joint_angle_status
 
-    ### OLD?
-
-    def get_soft_trajectories(self) -> Trajectories:
-        return
-        if self.soft_transition_flag:
-            return self.soft_trajectories
-        return []
+    ### OLD?   
 
     def is_in_motion(self) -> bool:
         return self.motion_state != MotionState.POSE

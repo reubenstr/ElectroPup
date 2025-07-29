@@ -102,7 +102,7 @@ if __name__ == "__main__":
                 z=new_motion_parameters.forward_translation,
             )
 
-            if error_state == Quad.ErrorState.NONE:
+            if error_state == Quad.QuadErrorState.NONE:
                 joint_angles = body.get_joint_angles(units="RADIANS")
 
                 # print(joint_angles)

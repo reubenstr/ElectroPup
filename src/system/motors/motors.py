@@ -233,26 +233,20 @@ class Motors:
         with self.lock:
             return self.motors[motor_name].position_degrees
 
-    def is_error(self):
-        """
-        Args: None
+    def is_error(self) -> bool:      
+        for can_info in self.can_infos.values():
+            if can_info.status == Status.ERROR:
+                return True
 
-        Returns:
-            bool: True if motor contains a fault state or comms error
-        """
-        if self.is_can_error():
-            return True
-
-        if self.thread_handle:
-            if not self.thread_handle.is_alive():
+        if can_info.thread_handle:
+            if not can_info.thread_handle.is_alive():
                 return True
 
         with self.lock:
-            error = False
-            for motor_tag, motor in self.motors.items():
+            for key, motor in self.motors.items():
                 if motor.is_error():
-                    error = motor_tag
-            return error
+                    return True
+        return False
 
     ###############################################################################
     # Worker (thread)

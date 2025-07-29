@@ -8,18 +8,13 @@ from typing import Dict, List
 from .leg import Leg
 from . import kinematics
 from . import transformations
-from .exceptions import DomainBreach
+from . exceptions import DomainBreach
+from . interfaces import LegName, AngleUnits, QuadErrorState
 from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.point import Point
 
-
-class LegName(Enum):
-    FL = "FL"
-    FR = "FR"
-    BL = "BL"
-    BR = "BR"
 
 
 class Quad(object):
@@ -51,15 +46,7 @@ class Quad(object):
         front_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
         back_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
     """
-
-    class ErrorState(Enum):
-        NONE = 1
-        KINEMATICS = 2
-        JOINT = 3
-
-    class Units(Enum):
-        DEGREES = 1
-        RADIANS = 2
+ 
 
     def __init__(self):
         self.frame_parameters = FrameParameters()
@@ -107,7 +94,7 @@ class Quad(object):
 
         return global_foot_positions
 
-    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]) -> ErrorState:
+    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]) -> QuadErrorState:
         """
         Set the body translation and orientation angles
         Perform full inverse kinematics
@@ -181,13 +168,13 @@ class Quad(object):
             error_string = self.check_joint_angles(self.legs)
             if error_string != None:
                 print(error_string)
-                return Quad.ErrorState.JOINT
+                return QuadErrorState.JOINT
 
         except DomainBreach as error:
             print(error)
-            return Quad.ErrorState.KINEMATICS
+            return QuadErrorState.KINEMATICS
 
-        return Quad.ErrorState.NONE
+        return QuadErrorState.NONE
 
     def get_body_coordinates(self) -> dict[LegName, Point]:
         """
@@ -213,7 +200,7 @@ class Quad(object):
             LegName.BL: self.legs[LegName.BL].get_leg_points(),
         }
 
-    def get_joint_angles(self, units: Units):
+    def get_joint_angles(self, units: AngleUnits):
         """Get the joint angles for all four legs
         Args:
             units: degrees or radians
@@ -221,13 +208,13 @@ class Quad(object):
             joint_angles: dictionary containing four legs and their
             associated angles in the order q1,q2,q3
         """
-        if units is Quad.Units.RADIANS:
+        if units is AngleUnits.RADIANS:
             joint_angles = {}
             joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
             joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_radians()
             joint_angles[LegName.BL] = self.legs[LegName.BR].get_leg_angles_in_radians()
             joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_radians()
-        elif units is Quad.Units.DEGREES:
+        elif units is AngleUnits.DEGREES:
             joint_angles = {}
             joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
             joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_degrees()
