@@ -244,6 +244,27 @@ class Quad(object):
             if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
 
+    
+    def set_joint_angles(self,leg_angs):
+        ''' Set the joint angles for all four legs
+            Purpose is external wireframe and simulation verification
+
+        Args:
+            leg_angs: Tuple of 4 lists of leg angles. Legs in the order backright, frontright, frontleft, backleft. ANgles in the order q1,q2,q3.
+                      An example input:
+                        ((rb_q1,rb_q2,rb_q3),
+                         (rf_q1,rf_q2,rf_q3),
+                         (lf_q1,lf_q2,lf_q3),
+                         (lb_q1,lb_q2,lb_q3))
+
+        Returns:
+            Nothing
+        '''
+        self.legs[LegName.FL].set_angles(leg_angs[0][0],leg_angs[0][1],leg_angs[0][2])
+        self.legs[LegName.FR].set_angles(leg_angs[1][0],leg_angs[1][1],leg_angs[1][2])
+        self.legs[LegName.BL].set_angles(leg_angs[2][0],leg_angs[2][1],leg_angs[2][2])
+        self.legs[LegName.BR].set_angles(leg_angs[3][0],leg_angs[3][1],leg_angs[3][2])    
+    
     ###############################################################################
     # Getters / Setters
     ###############################################################################

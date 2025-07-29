@@ -48,13 +48,7 @@ class Main:
 
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
-        self.loop_completion_time_ms: float = 0
-
-        self.previous_system_state: SystemStates = SystemStates.STANDBY
-        if self.op_mode == OpModes.LIVE:
-            self.system_state: SystemStates = SystemStates.STANDBY
-        elif self.op_mode == OpModes.SIM:
-            self.system_state: SystemStates = SystemStates.MOTION
+        self.loop_completion_time_ms: float = 0    
 
     ###############################################################################
     # Callback from Input(s)
@@ -89,9 +83,11 @@ class Main:
     ###############################################################################
 
     def run(self):
-        while True:          
+        while True:
 
-            self.update_inputs()         
+            self.update_inputs()
+
+            self.apply_joints_angles()
 
             # self.process_aux()
 
@@ -102,16 +98,20 @@ class Main:
     ###############################################################################
     # Loop Methods
     ###############################################################################
+ 
+    def update_inputs(self):
+        self.motion.set_ik_parameters(self.input.get_ik_parameters())
+        self.motion.set_motion_parameters(self.input.get_motion_parameters())
 
-    def process_joints_angles(self):    
-        if not self.motors.is_error(): 
+    def apply_joints_angles(self):
+         if not self.motors.is_error():
             if self.motion.motion_state is not MotionState.STANDBY:
 
-                if self.motion.motion_state is MotionState.SIT  or self.motion.motion_state is MotionState.STAND:
+                if self.motion.motion_state is MotionState.SIT or self.motion.motion_state is MotionState.STAND:
                     speed = 1000
                 else:
-                    speed = 2000    
-             
+                    speed = 2000
+
                 joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
                 self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL]["abduction"])
                 self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FL]["hip"])
@@ -125,12 +125,6 @@ class Main:
                 self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BR]["abduction"])
                 self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BR]["hip"])
                 self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR]["knee"])
-    
-    
-    def update_inputs(self):
-        self.motion.set_ik_parameters(self.input.get_ik_parameters())
-        self.motion.set_motion_parameters(self.input.get_motion_parameters())
- 
 
     def process_aux(self):
         """
@@ -172,7 +166,6 @@ class Main:
     def forward_states(self):
         system_status = SystemStatus()
         system_status.opMode.state = self.op_mode
-        system_status.system.state = self.system_state
 
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
@@ -182,8 +175,8 @@ class Main:
         system_status.input.state = self.input.get_input_mode()
         system_status.loopTimes.main = self.loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
-        # system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
-        # system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
+        system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
+        system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
 
         # system_status.gpio.status = self.hardware.get_gpio_status()
         system_status.smbus.status = self.hardware.get_smbus_status()
@@ -234,7 +227,7 @@ class Main:
     def clear_errors(self):
         print("[{MAIN}] clearing errors...")
         # TODO
-       
+
     def shutdown(self, full_shutdown_flag: bool):
         print("[MAIN] shutdown...")
 
@@ -251,7 +244,7 @@ class Main:
         if full_shutdown_flag:
             print(f"[MAIN] shutting down system...")
             sleep(1)
-            os.system("sudo shutdown now")        
+            os.system("sudo shutdown now")
 
 
 ###############################################################################

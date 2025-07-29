@@ -90,12 +90,7 @@ export default function Viewer() {
                             name='OpMode'
                             value={quadData?.status?.opMode?.state}
                             style={{ width: 100 }}
-                        />
-                        <StatusIndicator
-                            name='System'
-                            value={quadData?.status?.system?.state}
-                            style={{ width: 100 }}
-                        />
+                        />                     
                         <StatusIndicator
                             name='Target'
                             value={quadData?.status?.motion?.state}
@@ -233,7 +228,7 @@ export default function Viewer() {
                             name='JA'
                             status={quadData?.status?.jointAngle?.status}
                         />
-                        <View style={styles.verticalLine} />
+                        <View style={styles.verticalLine} />                      
                         <StatusIndicator
                             name='GPIO'
                             status={quadData?.status?.gpio?.status}

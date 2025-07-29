@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from system.interfaces import MotionState, SystemStates, OpModes, Status, InputMode
 from system.quadruped.gait_planner import Gait
 
+
 @dataclass
 class Canbus:
     status: Status = Status.NONE
@@ -28,6 +29,7 @@ class Gamepad:
 @dataclass
 class GenericStatus:
     status: Status = Status.NONE
+
 
 @dataclass
 class IMU:
@@ -58,7 +60,7 @@ class SMBus:
 
 @dataclass
 class System:
-    state: SystemStates = SystemStates.NONE
+    status: Status = Status.NONE
 
 
 @dataclass
@@ -75,6 +77,7 @@ class Input:
 @dataclass
 class Gpio:
     status: Status = Status.NONE
+
 
 @dataclass
 class LoopTimes:
@@ -95,15 +98,14 @@ class SystemStatus:
     gait: Gait = field(default_factory=Gait)
     input: Input = field(default_factory=Input)
     loopTimes: LoopTimes = field(default_factory=LoopTimes)
-    
+
     gpio: Gpio = field(default_factory=Gpio)
     smbus: SMBus = field(default_factory=SMBus)
     power_sensor: PowerSensor = field(default_factory=PowerSensor)
     imu: IMU = field(default_factory=IMU)
     can0: Canbus = field(default_factory=Canbus)
     can1: Canbus = field(default_factory=Canbus)
-    gamepad: Gamepad = field(default_factory=Gamepad)        
-  
+    gamepad: Gamepad = field(default_factory=Gamepad)
+
     voltage: Voltage = field(default_factory=Voltage)
     current: Current = field(default_factory=Current)
-      

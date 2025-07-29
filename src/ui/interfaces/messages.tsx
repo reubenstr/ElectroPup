@@ -93,9 +93,6 @@ interface SystemStatus {
     opMode: {
         state: string;
     };
-    system: {
-        state: string;
-    };
     motion: {
         state: string;
     };

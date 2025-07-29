@@ -71,39 +71,7 @@ class Motion:
             loop_time = time()
 
             with self.lock:
-
-                if self.motion_state == MotionState.STANDBY:
-                    pass
-
-                if self.motion_state == MotionState.STAND:
-                    pass
-
-                if self.motion_state == MotionState.SIT:
-                    pass
-
-                elif self.motion_state == MotionState.POSE:
-                    base_foot_points = self.quad.get_base_foot_points()
-                    error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
-                    self._set_error(error)
-
-                elif self.motion_state == MotionState.WALK:
-                    if self.motion_parameters.forward_raw > 0:
-                        dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.slow_gait_time, self.fast_gait_time)
-                        self.gait_time += dt
-                    elif self.motion_parameters.forward_raw < 0:
-                        dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.fast_gait_time, -self.slow_gait_time)
-                        self.gait_time += dt
-
-                    heading = self.motion_parameters.get_heading_raw()
-
-                    foot_points: Dict[LegName, Point] = {}
-                    for leg_name in LegName:
-                        base_foot_point = self.quad.get_base_foot_point(leg_name)
-                        foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.gait_time, heading)
-                        foot_points[leg_name] = foot_point
-
-                    error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
-                    self._set_error(error)
+                self._process_motion()
 
             delta = time() - loop_time
 
@@ -116,6 +84,41 @@ class Motion:
     def _set_error(self, error: QuadErrorState):
         self.ik_status = Status.ERROR if error is QuadErrorState.KINEMATICS else Status.STANDBY
         self.joint_angle_status = Status.ERROR if error is QuadErrorState.JOINT else Status.STANDBY
+
+
+    def _process_motion(self):
+        if self.motion_state == MotionState.STANDBY:
+            pass
+
+        elif self.motion_state == MotionState.STAND:
+            pass
+
+        elif self.motion_state == MotionState.SIT:
+            pass
+
+        elif self.motion_state == MotionState.POSE:
+            base_foot_points = self.quad.get_base_foot_points()
+            error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+            self._set_error(error)
+
+        elif self.motion_state == MotionState.WALK:
+            if self.motion_parameters.forward_raw > 0:
+                dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.slow_gait_time, self.fast_gait_time)
+                self.gait_time += dt
+            elif self.motion_parameters.forward_raw < 0:
+                dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.fast_gait_time, -self.slow_gait_time)
+                self.gait_time += dt
+
+            heading = self.motion_parameters.get_heading_raw()
+
+            foot_points: Dict[LegName, Point] = {}
+            for leg_name in LegName:
+                base_foot_point = self.quad.get_base_foot_point(leg_name)
+                foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.gait_time, heading)
+                foot_points[leg_name] = foot_point
+
+            error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
+            self._set_error(error)
 
     ###############################################################################
     # Methods
