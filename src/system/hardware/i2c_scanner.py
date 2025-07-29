@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-    Scans for attached devices on the I2C bus.   
+    Standalone script to scan for attached devices on the I2C bus.   
 """
 
 import smbus

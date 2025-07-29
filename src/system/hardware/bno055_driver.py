@@ -16,10 +16,9 @@ ACCEL_DATA = 0x08
 GYRO_DATA = 0x0C
 MAG_DATA = 0x0E
 
-class IMU:
-    def __init__(self):  
-        bus_number = 1 # Raspberry Pi default I2C bus
-        self.bus = smbus.SMBus(bus_number)
+class BNO055:
+    def __init__(self, bus):       
+        self.bus = bus
 
     ###############################################################################
     # Read/Write Registers
@@ -105,7 +104,7 @@ class IMU:
 # Entry
 ###############################################################################
 if __name__ == "__main__":
-    imu = IMU()
+    imu = BNO055()
     
     imu.reset()
     

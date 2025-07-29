@@ -17,6 +17,7 @@ from system.quadruped.motion import Motion
 from system.quadruped.parameters.frame_parameters import FrameParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
 from system.quadruped.parameters.ik_parameters import IKParameters
+from system.hardware.hardware import Hardware
 from system.motors.motors import Motor, Motors
 from system.auxiliary.aux import Aux, StatusMessage
 from system.utilities.utilities import *
@@ -37,8 +38,8 @@ class Main:
 
         allow_enable = True if self.op_mode == OpModes.LIVE else False
 
+        self.hardware = Hardware()
         self.input = Input(callback=self.controller_event_callback)
-
         self.motion = Motion()
 
         self.forwarder = Forwarder()
@@ -331,9 +332,9 @@ class Main:
 
         # self.hardware.beep(BeepType.SHUTDOWN)
         # self.motors.shutdown()
-        # self.hardware.power_motors_off()
-        # self.hardware.shutdown()
-        # self.input.shutdown()
+        
+        self.hardware.shutdown()
+        self.input.shutdown()
         self.motion.shutdown()
         self.forwarder.shutdown()
 
