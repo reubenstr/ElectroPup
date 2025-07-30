@@ -1,15 +1,16 @@
 from math import radians, copysign
 import numpy as np
-from typing import List, Dict, TypeAlias, Tuple
+from typing import List, Dict, Tuple
+
 
 from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
 from system.quadruped.gait_planner import GaitPlanner
+from system.quadruped.transition_planner import TransitionPlanner
 from system.quadruped.quad import LegName
 from system.quadruped.gait_planner import Gait
+from system.quadruped.interfaces import Trajectories, Trajectory
 from system.utilities.utilities import log_scale_value
 
-Trajectory: TypeAlias = List[Point]
-Trajectories: TypeAlias = List[Trajectory]
 
 
 class TrajectoryPlanner:
@@ -51,10 +52,10 @@ class TrajectoryPlanner:
     ###############################################################################
 
     def get_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
-        foot_point, bend_radius, cor = self.calc(gait, leg_name, base_foot_point, gait_time, heading)
+        foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, heading)
         return foot_point
 
-    def calc(self, gait: Gait,  leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
+    def _calculate_foot_point(self, gait: Gait,  leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
@@ -115,14 +116,13 @@ class TrajectoryPlanner:
 
             trajectory: Trajectory = []
             for gait_time in gait_times:
-                foot_point, bend_radius, cor = self.calc(gait, leg_name, base_foot_point, gait_time, heading)
+                foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, heading)
                 trajectory.append(foot_point)
 
             trajectories.append(trajectory)
             visual_rings.append(self.create_circle_trajectory(bend_radius, cor, 100))
-            transitions = None
-        
-        return trajectories, visual_rings, transitions
+                          
+        return trajectories, visual_rings
 
     @staticmethod
     def create_circle_trajectory(radius: float, center: Point, num_points: int) -> Trajectory:

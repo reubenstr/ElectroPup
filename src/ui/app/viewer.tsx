@@ -93,12 +93,12 @@ export default function Viewer() {
                         />                     
                         <StatusIndicator
                             name='Target'
-                            value={quadData?.status?.motion?.state}
+                            value={quadData?.status?.targetMotion?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
                             name='Motion'
-                            value={quadData?.status?.targetMotion?.state}
+                            value={quadData?.status?.motion?.state}
                             style={{ width: 100 }}
                         />
                         <StatusIndicator
