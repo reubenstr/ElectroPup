@@ -219,7 +219,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
           name: `soft-${index}`,
           showlegend: false,
           line: { shape: 'linear', width: 6, color: 'black' },
-          marker: { size: 4, color: 'yellow' }
+          marker: { size: 4, color: 'orange' }
         });
       });
     }
