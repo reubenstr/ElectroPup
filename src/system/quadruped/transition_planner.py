@@ -23,10 +23,7 @@ class TransitionPlanner:
     ):
         self.touchdown_period = touchdown_period
         self.arc_period = arc_period
-        self.height = height
-
-        self.start_foot_positions: Dict[LegName, Point] = None
-        self.end_foot_positions: Dict[LegName, Point] = None
+        self.height = height    
 
     def get_phase_index_and_phase_time(self, time: float, period: float, num_phases: int):
         section_length = period / num_phases
@@ -81,29 +78,29 @@ class TransitionPlanner:
         else:
             return end_point
 
-    def get_foot_positions(self, time: float) -> Dict[LegName, Point]:
+    def get_foot_positions(self, time: float, start_foot_points: Dict[LegName, Point], end_foot_points: Dict[LegName, Point]) -> Dict[LegName, Point]:
         foot_points: Dict[LegName, Point] = {}
         for leg in LegName:
-            start_foot_point = self.start_foot_positions[leg]
-            end_foot_point = self.end_foot_positions[leg]
+            start_foot_point = start_foot_points[leg]
+            end_foot_point = end_foot_points[leg]
             phase, phase_time = self.get_leg_phase_time(leg, time)
             foot_points[leg] = self.foot_trajectory_sin(phase, phase_time, start_foot_point, end_foot_point)
         return foot_points
 
-    def get_transitions(self):
+    def get_transitions(self, start_foot_points: Dict[LegName, Point], end_foot_points: Dict[LegName, Point]):
         """Generate transitions for visual representation"""
 
-        if self.start_foot_positions is None or self.end_foot_positions is None:
+        if start_foot_points == {} or end_foot_points == {}:
             return None
-
+       
         timestep = self.get_period() / 100
         phase_times = np.arange(0, self.get_period(), timestep)
 
         trajectories: Trajectories = []
 
         for leg in LegName:
-            start_foot_point = self.start_foot_positions[leg]
-            end_foot_point = self.end_foot_positions[leg]
+            start_foot_point = start_foot_points[leg]
+            end_foot_point = end_foot_points[leg]
 
             trajectory: Trajectory = []
             for phase_time in phase_times:
@@ -117,12 +114,6 @@ class TransitionPlanner:
     ###############################################################################
     # Getters / Setters
     ###############################################################################
-
-    def set_start_foot_points(self, foot_positions: Dict[LegName, Point]):
-        self.start_foot_positions = foot_positions
-
-    def set_end_foot_points(self, foot_positions: Dict[LegName, Point]):
-        self.end_foot_positions = foot_positions
 
     def get_period(self):
         return self.touchdown_period + self.arc_period * len(LegName)

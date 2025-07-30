@@ -27,6 +27,8 @@ class TrajectoryPlanner:
                 gait=Gait.WALK,
                 period=1.0,
                 duty_factor=0.75,
+                stride_length=0.075,
+                step_height=0.05,
                 phase_offsets={
                     LegName.FL: 0.0,
                     LegName.BR: 0.25,
@@ -39,6 +41,8 @@ class TrajectoryPlanner:
                 gait=Gait.TROT,
                 period=0.6,
                 duty_factor=0.5,
+                stride_length=0.075,
+                step_height=0.05,
                 phase_offsets={
                     LegName.FL: 0.0,
                     LegName.BR: 0.0,
@@ -59,9 +63,7 @@ class TrajectoryPlanner:
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-
-        gait_planner: GaitPlanner = self.gait_factory(gait)
-
+      
         # Create a center-of-rotation given the heading input.
         max_cor_x = 50
         cor_offset = log_scale_value(abs(heading), 0, 1, max_cor_x, 0)
@@ -81,12 +83,8 @@ class TrajectoryPlanner:
         else:
             twist_angle -= 90
 
-        # Get phase and phase time of the leg.
-        phase, phase_time = gait_planner.get_leg_phase_time(leg_name, gait_time)
-
-        # Generate foot offsets given the phase and phase time.
-        d, h = gait_planner.foot_trajectory_bezier(phase, phase_time, stride_length=0.075)
-        foot_point = Point(d, 0, h)
+        gait_planner: GaitPlanner = self.gait_factory(gait)
+        foot_point = gait_planner.get_foot_position(leg_name, gait_time)
 
         # Move the point to match the rotation radius (projects path along the y)
         move_point_y_to_radius(foot_point, bend_radius)

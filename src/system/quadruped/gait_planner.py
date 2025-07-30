@@ -2,6 +2,7 @@ import numpy as np
 from enum import Enum, StrEnum
 from typing import Dict, List
 from system.quadruped.quad import LegName
+from system.quadruped.point import Point
 
 
 class Gait(StrEnum):
@@ -16,7 +17,7 @@ class Phase(Enum):
 
 
 class GaitPlanner:
-    def __init__(self, gait: Gait, period: float, duty_factor: float, phase_offsets: Dict[LegName, float]):
+    def __init__(self, gait: Gait, period: float, duty_factor: float, stride_length: float, step_height: float, phase_offsets: Dict[LegName, float]):
         self.gait = gait
 
         # Duration of one complete gait cycle (seconds).
@@ -26,6 +27,12 @@ class GaitPlanner:
         # Range: [0, 1].
         # Example: 0.75 = 75% stance, 25% swing
         self.duty_factor = duty_factor
+
+        # Length of the path.
+        self.stride_length = stride_length
+
+        # Height of the path.
+        self.step_height = step_height
 
         # Dict[LegName, float] determines when during the gait cycle that leg begins the swing phase.
         # Range: [0, 1],
@@ -44,7 +51,7 @@ class GaitPlanner:
 
         return phase, normalized_time
 
-    def foot_trajectory_bezier(self, phase: Phase, phase_time: float, stride_length=0.2, step_height=0.05):
+    def foot_trajectory_bezier(self, phase: Phase, phase_time: float):
         """Return foot (d: distance, h: height) using Bezier swing and linear stance."""
 
         def bezier_curve(t, points):
@@ -56,32 +63,37 @@ class GaitPlanner:
 
         if phase == Phase.STANCE:
             # Linear backward motion (stroke)
-            d = (1 - phase_time) * stride_length - stride_length / 2
+            d = (1 - phase_time) * self.stride_length - self.stride_length / 2
             h = 0
         elif phase == Phase.SWING:
             # Bezier swing (retract/touchdown)
             control_points = np.array(
                 [
-                    [-stride_length / 2, 0],
-                    [-stride_length, 0],
-                    [-stride_length, step_height],
-                    [0, step_height],
-                    [stride_length, step_height],
-                    [stride_length, 0],
-                    [stride_length / 2, 0],
+                    [-self.stride_length / 2, 0],
+                    [-self.stride_length, 0],
+                    [-self.stride_length, self.step_height],
+                    [0, self.step_height],
+                    [self.stride_length, self.step_height],
+                    [self.stride_length, 0],
+                    [self.stride_length / 2, 0],
                 ]
             )
             d, h = bezier_curve(phase_time, control_points)
         return d, h
 
-    def foot_trajectory_sin(self, phase: Phase, phase_time: float, stride_length=0.2, step_height=0.05):
+    def foot_trajectory_sin(self, phase: Phase, phase_time: float):
         """Return foot (d: distance, h: height) based on phase and normalized phase time (0-1)."""
         if phase == Phase.STANCE:
             # Stance: foot moves backward linearly along x, stays on ground
-            d = (1 - phase_time) * stride_length - stride_length / 2
+            d = (1 - phase_time) * self.stride_length - self.stride_length / 2
             h = 0
         else:
             # Swing: foot moves forward with parabolic height
-            f = phase_time * stride_length - stride_length / 2
-            h = step_height * np.sin(np.pi * phase_time)
+            f = phase_time * self.stride_length - self.stride_length / 2
+            h = self.step_height * np.sin(np.pi * phase_time)
         return d, h
+
+    def get_foot_position(self, leg_name: LegName, gait_time: float) -> Dict[LegName, Point]:
+        phase, phase_time = self.get_leg_phase_time(leg_name, gait_time)
+        d, h = self.foot_trajectory_bezier(phase, phase_time)
+        return Point(d, 0, h)

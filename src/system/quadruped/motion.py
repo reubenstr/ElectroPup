@@ -52,6 +52,9 @@ class Motion:
             touchdown_period=0.25,
             arc_period=0.5,           
             height = 0.035)
+        self.start_foot_points:Dict[LegName, Point] = {}
+        self.end_foot_points: Dict[LegName, Point] = {}
+    
 
         self._start()
 
@@ -138,8 +141,9 @@ class Motion:
             self.motion_state = MotionState.TRANSITION
             self.phase_time = 0
             current_foot_points = self.quad.get_foot_points() 
-            self.transition_planner.set_start_foot_points(current_foot_points)
-            self.transition_planner.set_end_foot_points(target_foot_points)  
+            self.start_foot_points = current_foot_points
+            self.end_foot_points = target_foot_points
+           
             
                         
 
@@ -183,7 +187,7 @@ class Motion:
                 self.phase_time  = 0
             '''
 
-            foot_points = self.transition_planner.get_foot_positions(self.phase_time)
+            foot_points = self.transition_planner.get_foot_positions(self.phase_time, self.start_foot_points, self.end_foot_points)
             error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
             self._set_error(error)
 
@@ -246,7 +250,7 @@ class Motion:
         with self.lock:
             base_foot_points = self.quad.get_base_foot_points()
             trajectories, visual_rings, = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
-            transitions: Trajectories = self.transition_planner.get_transitions()
+            transitions = self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points)
             return trajectories, visual_rings, transitions
 
     def get_loop_time_ms(self) -> float:
