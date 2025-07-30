@@ -7,7 +7,7 @@ import traceback
 import subprocess
 from time import sleep
 from rich import print  # Overrides print and injects colors
-from typing import  Dict
+from typing import  Dict, List
 
 from system.quadruped.quad import Quad
 from system.quadruped.gait_planner import Gait
@@ -198,8 +198,7 @@ class Main:
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
-        self.forwarder.set_sim_quad(self.motion.get_quad())
-        # self.forwarder.set_live_quad(self.quad_live)
+        self.forwarder.set_sim_quad(self.motion.get_quad())       
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         self.forwarder.set_motors_states(self.motors.get_all_motor_states())
@@ -210,6 +209,34 @@ class Main:
         self.forwarder.set_transitions(transitions)
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
+
+        leg_angles: Dict[LegName, List[float]] = {}
+        leg_angles[LegName.FL] = [
+            self.motors.get_motor_position(MotorName.FLA),
+            self.motors.get_motor_position(MotorName.FLH),
+            self.motors.get_motor_position(MotorName.FLK),
+        ]
+        leg_angles[LegName.FR] = [
+            self.motors.get_motor_position(MotorName.FRA),
+            self.motors.get_motor_position(MotorName.FRH),
+            self.motors.get_motor_position(MotorName.FRK),
+        ]
+        leg_angles[LegName.BL] = [
+            self.motors.get_motor_position(MotorName.BLA),
+            self.motors.get_motor_position(MotorName.BLH),
+            self.motors.get_motor_position(MotorName.BLK),
+        ]
+        leg_angles[LegName.BR] = [
+            self.motors.get_motor_position(MotorName.BRA),
+            self.motors.get_motor_position(MotorName.BRH),
+            self.motors.get_motor_position(MotorName.BRK),
+        ]
+        for leg, angles in leg_angles.items():
+            leg_angles[leg] = [angle if angle is not None else 0.0 for angle in angles]
+        live_quad = Quad()
+        live_quad.set_joint_angles_degrees(leg_angles)
+        self.forwarder.set_live_quad(live_quad)
+
 
     def sleep_loop(self):
         """

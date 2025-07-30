@@ -240,7 +240,9 @@ class Motors:
 
     def get_motor_position(self, motor_name: str) -> float:
         with self.lock:
-            return self.motors[motor_name].position_degrees
+            if motor_name in self.motors:
+                return self.motors[motor_name].position_degrees
+            return None
 
     def is_can_error(self) -> bool:
         for can_info in self.can_infos.values():
