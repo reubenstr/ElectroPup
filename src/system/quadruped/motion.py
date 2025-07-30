@@ -80,7 +80,8 @@ class Motion:
 
             with self.lock:
                 self._process_dt()
-                self._process_state_changes()
+                self._process_motion_state_changes()
+                self._process_gait_changes()
                 self._process_motion_state()
 
             delta = time() - loop_time
@@ -99,22 +100,24 @@ class Motion:
             dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
             self.phase_time += dt
 
-    def _process_state_changes(self):
-        if self.motion_state is MotionState.STANDBY:
-            if self.target_motion_state == MotionState.STAND:
-                self.motion_state = MotionState.STAND
-       
-        elif self.motion_state is not MotionState.STAND and self.motion_state is not MotionState.SIT:
-            if self.previous_target_motion_state is not self.target_motion_state:
-                self.previous_target_motion_state = self.target_motion_state
-                print(f"[{self.tag}] target state changed to: {self.target_motion_state}")               
-                self._create_transition(self.target_motion_state, self.gait)
+    def _process_motion_state_changes(self): 
+        if self.previous_target_motion_state is not self.target_motion_state:
+            self.previous_target_motion_state = self.target_motion_state
+            print(f"[{self.tag}] target state changed to: {self.target_motion_state}") 
 
+            if self.target_motion_state is MotionState.STAND or self.target_motion_state is MotionState.SIT:
+                self.phase_time = 0
+                self.motion_state = self.target_motion_state
+            else:                           
+                self._create_transition(self.target_motion_state, self.gait)
+              
+    def _process_gait_changes(self):                
+        if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION: 
             if self.gait is not self.target_gait:
                 self.gait = self.target_gait
-                print(f"[{self.tag}] target gait changed to: {self.gait}")            
-                if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
-                    self._create_transition(self.target_motion_state, self.gait)
+                print(f"[{self.tag}] target gait changed to: {self.gait}")               
+                self._create_transition(self.target_motion_state, self.gait)
+     
 
     def _process_motion_state(self):
         if self.motion_state is MotionState.STANDBY:
@@ -208,6 +211,8 @@ class Motion:
             self.motion_parameters = motion_parameters
 
     def set_target_motion_state(self, state: MotionState):
+        if self.motion_state is MotionState.STANDBY and state is not MotionState.STAND:
+            return
         with self.lock:
             self.target_motion_state = state
 
