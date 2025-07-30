@@ -124,7 +124,7 @@ sudo apt-get install python3-python-can
 sudo apt-get install can-utils
 
 python3 -m pip install pyzmq
-
+python3 -m pip install flask_socketio
 
 Append these statements to /boot/firmware/config.txt:
 dtparam=spi=on

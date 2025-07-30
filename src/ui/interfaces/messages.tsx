@@ -45,40 +45,36 @@ export interface PlotData {
     rings: CoordinateSeries[];
 }
 
-interface MotorFaults {
-    notCalibrated: boolean;
-    hallEncoderFailure: boolean;
-    magEncoderFailure: boolean;
-    overTemperature: boolean;
-    overCurrent: boolean;
-    underVoltage: boolean;
+export interface MotorValues {
+  temperature: number;
+  voltage: number;
+  watts: number;
+  motorSpeed: number;
+  encoderPosition: number;
+  positionDegrees: number;
 }
 
-interface MotorErrors {
-    communications: boolean;
-    position: boolean;
-    fault: boolean;
+export interface MotorFaults {
+  underVoltageProtection: boolean;
+  overVoltageProtection: boolean;
+  overTemperatureProtection: boolean;
+  lostInputProtection: boolean;
 }
 
-interface MotorValues {
-    enabled: boolean;
-    position: number | null;
-    velocity: number;
-    torque: number;
-    temperature: number;
+export interface MotorState {
+  id: number;
+  minAngle: number;
+  maxAngle: number;
+  inverseRotation: boolean;
+  allowComms: boolean;
+  allowMotion: boolean;
+  canChannel: string;
+  enabled: boolean;
+  commsError: boolean;
+  values: MotorValues;
+  faults: MotorFaults;
 }
 
-interface MotorTargets {
-    position: number | null;
-    speed: number | null;
-}
-
-interface MotorState {
-    targets: MotorTargets;
-    values: MotorValues;
-    errors: MotorErrors;
-    faults: MotorFaults;
-}
 
 export enum Status {
     None = 'none',

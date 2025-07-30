@@ -11,12 +11,12 @@ import MotorTooltip from '@/components/MotorTooltip';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { Status } from '@/interfaces/messages';
-import { motorAbbreviationToNameMap } from '@/constants/motorNames';
+import { motorNames } from '@/constants/motorNames';
 import MotorTable from '@/components/MotorTable';
 
 export default function Viewer() {
     const router = useRouter();
-    const { hexData: quadData, connected, sendMessage } = useDataTransfer();
+    const { quadData: quadData, connected, sendMessage } = useDataTransfer();
 
     const [showMotorInfo, setShowMotorInfo] = useState(false);
 
@@ -140,20 +140,20 @@ export default function Viewer() {
                             </View>
 
                             <View style={OverlayStyles.leftMotors}>
-                                {Object.entries(motorAbbreviationToNameMap)
-                                    .slice(0, Math.ceil(Object.keys(motorAbbreviationToNameMap).length / 2))
+                                {Object.entries(motorNames)
+                                    .slice(0, Math.ceil(Object.keys(motorNames).length / 2))
                                     .map(([key, value]) => (
                                         <MotorTooltip key={key} label={key} value={value}>
-                                            <MotorIndicator name={key} state={getMotor(value)?.values.enabled || false} />
+                                            <MotorIndicator name={key} state={getMotor(key)?.enabled || false} />
                                         </MotorTooltip>
                                     ))}
                             </View>
 
                             <View style={OverlayStyles.rightMotors}>
-                                {Object.entries(motorAbbreviationToNameMap)
-                                    .slice(Math.ceil(Object.keys(motorAbbreviationToNameMap).length / 2))
+                                {Object.entries(motorNames)
+                                    .slice(Math.ceil(Object.keys(motorNames).length / 2))
                                     .map(([key, value]) => (
-                                        <MotorIndicator name={key} state={getMotor(value)?.values.enabled || false} />
+                                        <MotorIndicator name={key} state={getMotor(key)?.enabled || false} />
                                     ))}
                             </View>
 

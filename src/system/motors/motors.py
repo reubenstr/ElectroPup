@@ -361,6 +361,41 @@ class Motors:
                 return True
         return False
     
+    def get_all_motor_states(self):
+        """Pack state for UI"""
+        states = {}
+        with self.comm_lock:
+            for motor in self.motors.values():
+                state = {}
+                state['id'] = motor.motor_id
+                state['minAngle'] = motor.min_angle
+                state['maxAngle'] = motor.max_angle
+                state['inverseRotation'] = motor.inverse_rotation
+                state['allowComms'] = motor.allow_comms
+                state['allowMotion'] = motor.allow_motion
+                state['canChannel'] = motor.can_channel
+                state['enabled'] = motor.enabled
+                state['commsError'] = motor.is_comms_error()
+
+                values = {}
+                values['temperature'] = motor.temperature
+                values['voltage'] = motor.voltage
+                values['watts'] = motor.watts
+                values['motorSpeed'] = motor.motor_speed
+                values['encoderPosition'] = motor.encoder_position
+                values['positionDegrees'] = motor.position_degrees
+                state['values'] = values
+
+                faults = {}
+                faults['underVoltageProtection'] =  motor.under_voltage_protection
+                faults['overVoltageProtection'] =  motor.over_voltage_protection
+                faults['overTemperatureProtection'] =  motor.over_temperature_protection
+                faults['lostInputProtection'] =  motor.lost_input_protection                
+                state['faults'] = faults
+                states[motor.name.name] = state
+
+        return states
+    
     
     def shutdown(self):
         self._stop()

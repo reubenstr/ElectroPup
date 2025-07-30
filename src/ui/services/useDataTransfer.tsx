@@ -5,7 +5,7 @@ import { useEndpointByType } from './config/useConfigStore';
 import { ServerType } from '@/services/config/configTypes';
 
 export function useDataTransfer(): {
-  hexData: QuadData | undefined;
+  quadData: QuadData | undefined;
   connected: boolean;
   sendMessage: (msg: string) => void;
 } {
@@ -66,5 +66,5 @@ export function useDataTransfer(): {
     }
   }, []);
 
-  return { hexData, connected, sendMessage };
+  return { quadData: hexData, connected, sendMessage };
 }

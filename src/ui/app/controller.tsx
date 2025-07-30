@@ -11,7 +11,7 @@ import MotorTooltip from '@/components/MotorTooltip';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { Status } from '@/interfaces/messages';
-import { motorAbbreviationToNameMap } from '@/constants/motorNames';
+import { motorNames } from '@/constants/motorNames';
 import MotorTable from '@/components/MotorTable';
 
 /*
@@ -22,7 +22,7 @@ import MotorTable from '@/components/MotorTable';
 
 export default function Viewer() {
     const router = useRouter();
-    const { hexData: quadData, connected, sendMessage } = useDataTransfer();
+    const { quadData: quadData, connected, sendMessage } = useDataTransfer();
 
     const leftX = useRef<number>(0);
     const leftY = useRef<number>(0);

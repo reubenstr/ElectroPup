@@ -16,7 +16,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
   const [hold, setHold] = useState(false);
   const [plotWidth, setPlotWidth] = useState(0);
   const [plotHeight, setPlotHeight] = useState(0);
-  const [checkedValues, setCheckedValues] = useState({ x: true, y: true, z: true, sim: true, live: true });
+  const [checkedValues, setCheckedValues] = useState({ grid: false, x: true, y: true, z: true, sim: true, live: true });
 
   const lastUpdateRef = useRef<number>(0);
   const [throttledPlotData, setThrottledPlotData] = useState<any[]>([]);
@@ -72,35 +72,47 @@ export default function Plot3D({ quadData }: Plot3DProps) {
   }, [quadData, hold, computePlotData]);
 
   const defaultZoomLevel = 1;
+
+  const getGridSettings = (showGrid: boolean) => {
+    if (showGrid) {
+      return {
+        xaxis: {
+          range: [-gridBoundry, gridBoundry],
+          title: 'X',
+          showline: true,
+          showgrid: true,
+          zeroline: true,
+          showticklabels: true
+        },
+        yaxis: {
+          range: [-gridBoundry, gridBoundry],
+          title: 'Y',
+          showline: true,
+          showgrid: true,
+          zeroline: true,
+          showticklabels: true
+        },
+        zaxis: {
+          range: [-gridBoundry, gridBoundry],
+          title: 'Z',
+          showline: true,
+          showgrid: true,
+          zeroline: true,
+          showticklabels: true
+        }
+      }
+    } else {
+      return {
+        xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+        yaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
+        zaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' }
+      }
+    }
+  }
+
   const layout = useMemo(() => ({
     scene: {
-      //xaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
-      //yaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
-      //zaxis: { range: [-gridBoundry, gridBoundry], showticklabels: false, showgrid: false, zeroline: false, showspikes: false, title: '' },
-      xaxis: {
-    range: [-gridBoundry, gridBoundry],
-    title: 'X',
-    showline: true,
-    showgrid: true,
-    zeroline: true,
-    showticklabels: true
-  },
-  yaxis: {
-    range: [-gridBoundry, gridBoundry],
-    title: 'Y',
-    showline: true,
-    showgrid: true,
-    zeroline: true,
-    showticklabels: true
-  },
-  zaxis: {
-    range: [-gridBoundry, gridBoundry],
-    title: 'Z',
-    showline: true,
-    showgrid: true,
-    zeroline: true,
-    showticklabels: true
-  },
+      ...getGridSettings(checkedValues.grid),
       camera: {
         eye: { x: checkedValues.x ? defaultZoomLevel : 0, y: checkedValues.y ? defaultZoomLevel : 0, z: checkedValues.z ? defaultZoomLevel : 0 },
         center: {
@@ -142,7 +154,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
 
   const generatePlotData = (plotData: PlotData): any[] => {
     const newPlotData: any = [];
-   
+
     if (plotData.body) {
       newPlotData.push({
         x: plotData.body.x,
@@ -276,6 +288,12 @@ export default function Plot3D({ quadData }: Plot3DProps) {
     <View style={styles.container} onLayout={onLayoutContainer}>
       <View style={styles.checkboxesRow}>
         <View style={styles.checkboxContainer}>
+          <Switch
+            value={checkedValues.grid}
+            onValueChange={() => toggleCheckbox('grid')}
+            color={'#0077ff'}
+          />
+          <Text style={styles.checkboxText}>Grid</Text>
           <Switch
             value={checkedValues.x}
             onValueChange={() => toggleCheckbox('x')}

@@ -198,11 +198,12 @@ class Main:
         # self.forwarder.set_live_quad(self.quad_live)
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
-        # self.forwarder.set_motors_states(self.motors.get_all_motor_states())
+        self.forwarder.set_motors_states(self.motors.get_all_motor_states())
+        print(self.motors.get_all_motor_states())
 
-        trajectories, visual_rings, transitions = self.motion.get_trajectories()
+        trajectories, rings, transitions = self.motion.get_trajectories()
         self.forwarder.set_trajectories(trajectories)
-        self.forwarder.set_rings(visual_rings)
+        self.forwarder.set_rings(rings)
         self.forwarder.set_transitions(transitions)
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())

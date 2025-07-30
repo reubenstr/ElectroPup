@@ -1,65 +1,65 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { DataTable } from 'react-native-paper';
-import { motorAbbreviationToNameMap } from '@/constants/motorNames';
+import { motorNames } from '@/constants/motorNames';
 import { useDataTransfer } from '@/services/useDataTransfer';
+import { VerticalText } from './verticalText';
+
+const columnWidths = [40, 30, 30, 30, 30, 50, 50, 50, 50];
+const headerTitles = ['Motor', 'Enabled', 'AllowComms', 'AllowMotion', 'CommsError', 'Position', 'Speed', 'Temperature', 'Watts']
 
 export default function MotorTable() {
 
-    const { hexData } = useDataTransfer();
+    const { quadData } = useDataTransfer();
 
-    if (!hexData) {
+    if (!quadData) {
         return (
             <></>
         )
     }
 
-      const getMotor = (motorName: string) => {
-        if (hexData?.motors && motorName in hexData?.motors) {
-            return hexData.motors[motorName]
+    const getMotor = (motorName: string) => {       
+        if (quadData?.motors && motorName in quadData?.motors) {
+            return quadData.motors[motorName]
         }
     }
 
     return (
-        <DataTable style={styles.container}>
-            <DataTable.Header style={styles.header}>
-                {['Motor', 'Enabled', 'Comms', 'Pos.', 'Fault', 'Position', 'Target Pos.', 'Velocity', 'Torque', 'Temperature'].map((title, index) => (
-                    <DataTable.Title key={index} style={styles.title}>
-                        <Text style={styles.text}>{title}</Text>
-                    </DataTable.Title>
+        <View style={styles.table}>          
+            <View style={styles.headerRow}>
+                {headerTitles.map((title, index) => (
+                    <View key={index} style={[styles.cell, { width: columnWidths[index] }]}>
+                        <VerticalText text={title} />
+                    </View>
                 ))}
-            </DataTable.Header>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                {Object.entries(motorAbbreviationToNameMap).map(([key, value]) => {
+            </View>
+          
+            <ScrollView style={styles.scrollContainer}>
+                {Object.entries(motorNames).map(([key, value]) => {
+                    const motor = getMotor(key);
+                    const rowData = [
+                        key,
+                        motor?.enabled === undefined ? "-" : motor.enabled ? "✅" : "❌",
+                        motor?.allowComms === undefined ? "-" : motor.allowComms ? "✅" : "❌",
+                        motor?.allowMotion=== undefined ? "-" : motor.allowMotion ? "✅" : "❌",
+                        motor?.commsError=== undefined ? "-" : motor.commsError ? "❌" : "-",
+                        motor?.values.positionDegrees || 0,
+                        motor?.values.motorSpeed || 0,
+                        motor?.values.temperature || 0,
+                        motor?.values.watts || 0,
+                    ];
 
-                    const motor = getMotor(value)
                     return (
-                        <DataTable.Row key={key} style={styles.row}>
-                            <DataTable.Cell style={styles.cell}>
-                                {key}
-                            </DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>
-                                {motor?.values.enabled ? "✅" : "❌"}
-                            </DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>
-                                {motor?.errors.communications ? "✅" : "❌"}
-                            </DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>
-                                {motor?.errors.position ? "✅" : "❌"}
-                            </DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>
-                                {motor?.errors.fault ? "✅" : "❌"}
-                            </DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>{motor?.values.position || 0}</DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>{motor?.targets.position || 0}</DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>{motor?.values.velocity || 0}</DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>{motor?.values.torque || 0}</DataTable.Cell>
-                            <DataTable.Cell style={styles.cell}>{motor?.values.temperature || 0}</DataTable.Cell>
-                        </DataTable.Row>
+                        <View key={key} style={styles.dataRow}>
+                            {rowData.map((cellData, index) => (
+                                <View key={index} style={[styles.cell, { width: columnWidths[index] }]}>
+                                    <Text style={styles.cellText}>{cellData}</Text>
+                                </View>
+                            ))}
+                        </View>
                     );
                 })}
             </ScrollView>
-        </DataTable>
+        </View>
     )
 };
 
@@ -68,32 +68,43 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#aaaaaa',
     },
-    scrollContainer: {
+    table: {
         flex: 1,
+        backgroundColor: '#aaa',
     },
-    header: {
-        borderBottomWidth: 3,
+    headerRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 2,
         borderBottomColor: '#888',
-        height: 60
+        paddingBottom: 4,
     },
-    title: {
-        width: 40,
-        minHeight: 60,
-        justifyContent: 'flex-start',
+    headerCell: {
+        justifyContent: 'center',
         alignItems: 'center',
+        borderRightWidth: 1,
+        borderColor: '#555',
+        height: 100, // matches rotated text height
         overflow: 'visible',
-        transform: [{ rotate: '-90deg' }],
     },
-    text: {
-        color: 'black',
-    },
-    row: {
-        minHeight: 25,
+    dataRow: {
+        flexDirection: 'row',
         borderBottomWidth: 1,
-        borderBottomColor: '#888'
+        borderBottomColor: '#555',
+        minHeight: 30,
     },
     cell: {
-        paddingVertical: 0,
-        paddingHorizontal: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRightWidth: 1,
+        borderColor: '#555',
+        paddingVertical: 4,
     },
+    cellText: {
+        fontSize: 12,
+        color: 'black',
+        textAlign: 'center',
+    },
+    scrollContainer: {
+        flexGrow: 1,
+    }
 });

@@ -231,14 +231,15 @@ class Motion:
     def get_trajectories(self) -> Tuple[Trajectories, Trajectories, Trajectories]:
         with self.lock:
             base_foot_points = self.quad.get_base_foot_points()
-            (
-                trajectories,
-                visual_rings,
-            ) = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
-            transitions = (
-                self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points) if self.motion_state is MotionState.TRANSITION else None
-            )
-            return trajectories, visual_rings, transitions
+            trajectories = None
+            rings = None
+            transitions = None
+            
+            if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:              
+                trajectories,rings,= self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
+            if self.motion_state is MotionState.TRANSITION:
+                transitions = self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points)  
+            return trajectories, rings, transitions
 
     def get_loop_time_ms(self) -> float:
         with self.lock:

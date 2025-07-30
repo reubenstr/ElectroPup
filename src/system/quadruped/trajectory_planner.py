@@ -1,26 +1,21 @@
 from math import radians, copysign
 import numpy as np
-from typing import List, Dict, Tuple
-
+from typing import Dict, Tuple
 
 from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
 from system.quadruped.gait_planner import GaitPlanner
-from system.quadruped.transition_planner import TransitionPlanner
 from system.quadruped.quad import LegName
 from system.quadruped.gait_planner import Gait
 from system.quadruped.interfaces import Trajectories, Trajectory
 from system.utilities.utilities import log_scale_value
 
 
-
 class TrajectoryPlanner:
-    def __init__(self):
-        pass
-      
+
     ###############################################################################
     # Gaits (can be modified)
     ###############################################################################
-        
+
     def gait_factory(self, gait: Gait) -> GaitPlanner:
         if gait == Gait.WALK:
             return GaitPlanner(
@@ -59,11 +54,11 @@ class TrajectoryPlanner:
         foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, heading)
         return foot_point
 
-    def _calculate_foot_point(self, gait: Gait,  leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
+    def _calculate_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, heading: float):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-      
+
         # Create a center-of-rotation given the heading input.
         max_cor_x = 50
         cor_offset = log_scale_value(abs(heading), 0, 1, max_cor_x, 0)
@@ -97,7 +92,7 @@ class TrajectoryPlanner:
 
         return foot_point, bend_radius, cor
 
-    def get_trajectories(self, gait: Gait,  base_foot_points: Dict[LegName, Point], heading: float) -> Tuple[Trajectories, Trajectories, Trajectories]:
+    def get_trajectories(self, gait: Gait, base_foot_points: Dict[LegName, Point], heading: float) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
         """
@@ -108,7 +103,7 @@ class TrajectoryPlanner:
         gait_times = np.arange(0, gait_planner.period, timestep)
 
         trajectories: Trajectories = []
-        visual_rings: Trajectories = []
+        rings: Trajectories = []
         for leg_name in LegName:
             base_foot_point = base_foot_points[leg_name]
 
@@ -118,16 +113,13 @@ class TrajectoryPlanner:
                 trajectory.append(foot_point)
 
             trajectories.append(trajectory)
-            visual_rings.append(self.create_circle_trajectory(bend_radius, cor, 100))
-                          
-        return trajectories, visual_rings
+            rings.append(self.create_circle_trajectory(bend_radius, cor, 100))
+
+        return trajectories, rings
 
     @staticmethod
     def create_circle_trajectory(radius: float, center: Point, num_points: int) -> Trajectory:
-        """
-        Creates a trajectory as a circle that used to
-        validate the rotation trajectory is corectly generated.
-        """
+        """Creates a circle trajectory"""
         trajectory: Trajectory = []
         linspace = np.linspace(
             radians(0),
@@ -141,4 +133,3 @@ class TrajectoryPlanner:
             point = Point(x[i], y[i], z[i])
             trajectory.append(point)
         return trajectory
-  

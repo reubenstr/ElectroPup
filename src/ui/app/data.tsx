@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, Text, StyleSheet } from "react-nativ
 import { useDataTransfer } from "@/services/useDataTransfer";
 
 export default function DataScreen() {
-  const { hexData, connected } = useDataTransfer();
+  const { quadData: hexData, connected } = useDataTransfer();
 
   const [displayString, setDisplayString] = useState<string>("No data...");
   const [allowUpdates, setAllowUpdates] = useState(true);
