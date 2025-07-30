@@ -34,16 +34,7 @@ class InputCommand(StrEnum):
     TOUCH_INPUT = "touch_input"
 
 
-class MotorSpeeds(IntEnum):
-    STAND = 1
-    SIT = 1
-    MOTION = 10
 
-
-class MotorCurrents(IntEnum):
-    STAND = 1
-    SIT = 1
-    MOTION = 3
 
 
 class Status(StrEnum):

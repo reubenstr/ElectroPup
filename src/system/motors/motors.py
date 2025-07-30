@@ -47,6 +47,7 @@ class Motors:
         self.lock = Lock()
         self.comm_lock = Lock()
 
+        self.motors_enabled: bool = False
         self.motor_enable_sequence_delay_seconds: float = 0.250
         self.motor_disable_sequence_delay_seconds: float = 0.125
 
@@ -67,10 +68,10 @@ class Motors:
 
         self.motors: Dict[str, Motor] = {}
         self.target_positions: Dict[str, float] = {}
-        self.target_speeds: Dict[str, float] = {}
+        self.target_speeds: Dict[str, int] = {}
         self.targets_lock = Lock()
 
-        default_speed = 1.0
+        default_speed: int = 250
 
         for motor in motor_list():
             if motor.can_channel in can_channels:
@@ -87,6 +88,8 @@ class Motors:
                 )
                 self.target_positions[motor.name] = 0  # Will be set during enable.
                 self.target_speeds[motor.name] = default_speed
+        
+        self.start()
 
     ###############################################################################
     # CAN
@@ -163,11 +166,13 @@ class Motors:
         with self.comm_lock:
             for motor in self.motors.values():
                 if self.allow_enable and motor.allow_motion:
+                    print(f"[{self.tag}] enabling motor: {motor.name}")
                     if not motor.cmd_motor_on():
                         print(f"[{self.tag}][ALL] error, enable all motors failed!")
                         return False
+                    sleep(self.motor_enable_sequence_delay_seconds)
             print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
-            self.disable_all_motors()
+            self.motors_enabled = True
             return True
 
     def disable_all_motors(self):
@@ -175,10 +180,13 @@ class Motors:
         with self.comm_lock:
             self.motors_on = False
             for motor in self.motors.values():
+                print(f"[{self.tag}] disabling motor: {motor.name}")
                 if not motor.cmd_motor_off():
                     print(f"[{self.tag}][ALL] error, disable all motors failed!")
                     return False
+                sleep(self.motor_disable_sequence_delay_seconds)
             print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
+            self.motors_enabled = False
             return True
 
     def clear_errors_all_motors(self):
@@ -305,15 +313,17 @@ class Motors:
                     with self.targets_lock:
                         target_angle = self.target_positions[key]
                         target_speed = self.target_speeds[key]
-
+                 
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
                             motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
                             motor.req_position()
                             motor.req_state_1()
+                            motor.req_state_2()
                         elif motor.allow_comms:
                             motor.req_position()
                             motor.req_state_1()
+                            motor.req_state_2()
                     
                         motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False                        
 
@@ -323,16 +333,16 @@ class Motors:
                 sleep(self.min_loop_rate_seconds - delta)
 
             can_info.loop_completion_time_ms = (time() - loop_time) * 1000
-            print("LOOP TIME:", can_info.loop_completion_time_ms)
-
-
-  
-                
+            # print("LOOP TIME:", can_info.loop_completion_time_ms)
+               
 
     ###############################################################################
     # General
     ###############################################################################
 
+    def is_motors_enabled(self) -> bool:
+        return self.motors_enabled
+    
     def get_can_status(self, can_name: str) -> Status:
         can_info = next((can_info for can_info in self.can_infos.values() if can_info.can_channel == can_name), None)
         if can_info:

@@ -1,4 +1,4 @@
-from enum import IntEnum, Enum, auto
+from enum import IntEnum, Enum, StrEnum
 from dataclasses import dataclass
 
 class MotorSpeeds(IntEnum):
@@ -6,20 +6,19 @@ class MotorSpeeds(IntEnum):
     MOTION = 2000
 
 
-class MotorName(Enum):
-    FLA = auto()
-    FLH = auto()
-    FLK = auto()
-    FRA = auto()
-    FRH = auto()
-    FRK = auto()
-    BLA = auto()
-    BLH = auto()
-    BLK = auto()
-    BRA = auto()
-    BRH = auto()
-    BRK = auto()
-
+class MotorName(StrEnum):
+    FLA = 'FLA'
+    FLH = 'FLH'
+    FLK = 'FLK'
+    FRA = 'FRA'
+    FRH = 'FRH'
+    FRK = 'FRK'
+    BLA = 'BLA'
+    BLH = 'BLH'
+    BLK = 'BLK'
+    BRA = 'BRA'
+    BRH = 'BRH'
+    BRK = 'BRK'
 
 @dataclass
 class MotorInfo:  

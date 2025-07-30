@@ -5,15 +5,12 @@ import time
 import argparse
 import traceback
 import subprocess
-from math import pi
 from time import sleep
 from rich import print  # Overrides print and injects colors
-from math import degrees
-from typing import List, Dict
+from typing import  Dict
 
-from system.quadruped.quad import Quad
 from system.quadruped.gait_planner import Gait
-from system.quadruped.interfaces import LegName, AngleUnits, QuadErrorState
+from system.quadruped.interfaces import LegName, AngleUnits
 from system.input.input import Input
 from system.quadruped.motion import Motion
 from system.hardware.hardware import Hardware
@@ -46,6 +43,8 @@ class Main:
         self.motors = Motors(allow_enable)
         self.aux = Aux()
 
+        self.motor_enable_flag: bool = False
+
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
         self.loop_completion_time_ms: float = 0    
@@ -61,9 +60,10 @@ class Main:
 
     def controller_event_callback(self, event: InputCommand):
         print(f"[MAIN] Controller event received: {event.name}")
-
+      
         if event == InputCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
+            self.motor_enable_flag = True
 
         if event == InputCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)
@@ -90,11 +90,13 @@ class Main:
     def run(self):
         while True:
 
+            self.check_motors()
+
             self.update_inputs()
 
             self.apply_joints_angles()
 
-            # self.process_aux()
+            #self.process_aux()
 
             self.forward_states()
 
@@ -104,6 +106,14 @@ class Main:
     # Loop Methods
     ###############################################################################
  
+    def check_motors(self):   
+        if self.motor_enable_flag:
+            if not self.motors.is_motors_enabled():
+                self.motors.enable_all_motors()
+        else:
+            if self.motors.is_motors_enabled():
+                self.motors.disable_all_motors()
+
     def update_inputs(self):
         self.motion.set_ik_parameters(self.input.get_ik_parameters())
         self.motion.set_motion_parameters(self.input.get_motion_parameters())
@@ -159,7 +169,7 @@ class Main:
             voltage_accumulator += motor.voltage
         message.battery_voltage = voltage_accumulator / len(motors) 
         message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
-        self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds)
+        self.aux.send_at_rate(message.pack())
 
     def forward_states(self):
         system_status = SystemStatus()
@@ -192,7 +202,7 @@ class Main:
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         self.forwarder.set_motors_states(self.motors.get_all_motor_states())
-   
+           
         trajectories, rings, transitions = self.motion.get_trajectories()
         self.forwarder.set_trajectories(trajectories)
         self.forwarder.set_rings(rings)
@@ -211,8 +221,8 @@ class Main:
         if sleep_time > 0:
             sleep(sleep_time)
 
-        if delta > self.main_loop_rate_ms:
-            print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
+        #if delta > self.main_loop_rate_ms:
+        #    print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
         # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
         self.loop_completion_time_ms = delta * 1000
@@ -229,11 +239,11 @@ class Main:
     def shutdown(self, full_shutdown_flag: bool):
         print("[MAIN] shutdown...")
 
-        # TODO: sit hexapod to avoid hard crashes
+        # TODO: sit quadruped to avoid hard crashes
 
         # self.hardware.beep(BeepType.SHUTDOWN)
-        # self.motors.shutdown()
 
+        self.motors.shutdown()
         self.hardware.shutdown()
         self.input.shutdown()
         self.motion.shutdown()

@@ -1,4 +1,5 @@
-#!/usr/bin/env python3import os
+#!/usr/bin/env python3
+import os
 import serial
 import struct
 import time

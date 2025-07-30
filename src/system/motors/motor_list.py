@@ -19,6 +19,26 @@ def motor_list() -> List[MotorInfo]:
             allow_motion=True,
             allow_comms=True,
         ),
+         MotorInfo(
+            name=MotorName.FLH,
+            can_channel="can0",
+            id=2,
+            min_angle=fp.hip_joint_lower_bounds,
+            max_angle=fp.hip_joint_upper_bounds,
+            inverse_rotation=False,     
+            allow_motion=False,
+            allow_comms=False,
+        ),
+         MotorInfo(
+            name=MotorName.FLK,
+            can_channel="can0",
+            id=3,
+            min_angle=fp.knee_joint_lower_bounds,
+            max_angle=fp.knee_joint_upper_bounds,
+            inverse_rotation=False,     
+            allow_motion=False,
+            allow_comms=False,
+        ),
 
 
     ]

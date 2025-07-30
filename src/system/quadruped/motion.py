@@ -29,9 +29,9 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.WALK
-        self.target_motion_state: MotionState = MotionState.WALK
-        self.previous_target_motion_state: MotionState = MotionState.WALK
+        self.motion_state: MotionState = MotionState.STANDBY
+        self.target_motion_state: MotionState = MotionState.STANDBY
+        self.previous_target_motion_state: MotionState = MotionState.STANDBY
         self.gait: Gait = Gait.WALK
         self.target_gait: Gait = Gait.WALK
 
@@ -100,23 +100,30 @@ class Motion:
             self.phase_time += dt
 
     def _process_state_changes(self):
-        if self.previous_target_motion_state is not self.target_motion_state:
-            self.previous_target_motion_state = self.target_motion_state
-            print(f"[{self.tag}] target state changed to: {self.target_motion_state}")
-            self._create_transition(self.target_motion_state, self.gait)
-
-        if self.gait is not self.target_gait:
-            self.gait = self.target_gait
-            print(f"[{self.tag}] target gait changed to: {self.gait}")
-            if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
+        if self.motion_state is MotionState.STANDBY:
+            if self.target_motion_state == MotionState.STAND:
+                self.motion_state = MotionState.STAND
+       
+        elif self.motion_state is not MotionState.STAND and self.motion_state is not MotionState.SIT:
+            if self.previous_target_motion_state is not self.target_motion_state:
+                self.previous_target_motion_state = self.target_motion_state
+                print(f"[{self.tag}] target state changed to: {self.target_motion_state}")               
                 self._create_transition(self.target_motion_state, self.gait)
+
+            if self.gait is not self.target_gait:
+                self.gait = self.target_gait
+                print(f"[{self.tag}] target gait changed to: {self.gait}")            
+                if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
+                    self._create_transition(self.target_motion_state, self.gait)
 
     def _process_motion_state(self):
         if self.motion_state is MotionState.STANDBY:
             pass
 
         elif self.motion_state is MotionState.STAND:
-            pass
+            base_foot_points = self.quad.get_base_foot_points()
+            error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+            self._set_error(error)
 
         elif self.motion_state is MotionState.SIT:
             pass
@@ -155,10 +162,10 @@ class Motion:
             pass
 
         elif self.target_motion_state is MotionState.STAND:
-            pass
+            target_foot_points = self.quad.get_base_foot_points()
 
         elif self.target_motion_state is MotionState.SIT:
-            pass
+            target_foot_points = self.quad.get_base_foot_points()
 
         elif self.target_motion_state is MotionState.POSE:
             target_foot_points = self.quad.get_base_foot_points()

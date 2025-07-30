@@ -13,18 +13,24 @@ export default function MotorTable() {
 
     if (!quadData) {
         return (
-            <></>
+            <Text style={styles.loadingText}>No Data</Text>
         )
     }
 
-    const getMotor = (motorName: string) => {       
+    const getMotor = (motorName: string) => {
         if (quadData?.motors && motorName in quadData?.motors) {
             return quadData.motors[motorName]
         }
     }
 
+    const getValue = (value: number | undefined) => {
+        if (value != undefined)
+            return Math.round(value) 
+        return '-';
+    }
+
     return (
-        <View style={styles.table}>          
+        <View style={styles.table}>
             <View style={styles.headerRow}>
                 {headerTitles.map((title, index) => (
                     <View key={index} style={[styles.cell, { width: columnWidths[index] }]}>
@@ -32,7 +38,7 @@ export default function MotorTable() {
                     </View>
                 ))}
             </View>
-          
+
             <ScrollView style={styles.scrollContainer}>
                 {Object.entries(motorNames).map(([key, value]) => {
                     const motor = getMotor(key);
@@ -40,12 +46,12 @@ export default function MotorTable() {
                         key,
                         motor?.enabled === undefined ? "-" : motor.enabled ? "✅" : "❌",
                         motor?.allowComms === undefined ? "-" : motor.allowComms ? "✅" : "❌",
-                        motor?.allowMotion=== undefined ? "-" : motor.allowMotion ? "✅" : "❌",
-                        motor?.commsError=== undefined ? "-" : motor.commsError ? "❌" : "-",
-                        motor?.values.positionDegrees || 0,
-                        motor?.values.motorSpeed || 0,
-                        motor?.values.temperature || 0,
-                        motor?.values.watts || 0,
+                        motor?.allowMotion === undefined ? "-" : motor.allowMotion ? "✅" : "❌",
+                        motor?.commsError === undefined ? "-" : motor.commsError ? "❌" : "-",
+                        getValue(motor?.values?.positionDegrees),
+                        getValue(motor?.values?.motorSpeed),
+                        getValue(motor?.values?.temperature),
+                        getValue(motor?.values?.watts)
                     ];
 
                     return (
@@ -67,6 +73,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#aaaaaa',
+    },
+    loadingText: {
+        fontSize: 18,
+        color: 'white',
     },
     table: {
         flex: 1,

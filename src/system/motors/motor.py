@@ -42,7 +42,7 @@ class Motor:
         self.bus: Bus = bus
 
         self.tag = f"[Motor][{name}]"
-        self.prints_enabled: bool = True
+        self.prints_enabled: bool = False
 
         # Motor states (from motor driver):
         self.temperature: int = 0
@@ -155,7 +155,8 @@ class Motor:
         """
         Sets speed and angle of the motor.
         Datasheet named as: cmd_motor_multi_angle_2
-        """
+        """       
+
         speed_low_byte = speed & 0x00FF
         speed_high_byte = speed >> 8 & 0x00FF
         angle_byte_0 = int(angle * 1000.0) >> 0 & 0x000000FF
