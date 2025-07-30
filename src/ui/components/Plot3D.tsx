@@ -4,9 +4,6 @@ import { QuadData } from '@/interfaces/messages';
 import { Switch } from 'react-native-paper';
 import { PlotData } from '@/interfaces/messages';
 
-
-
-
 interface Plot3DProps {
   quadData?: QuadData;
 }

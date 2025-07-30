@@ -7,8 +7,7 @@ interface MotorIndicatorProps {
 
 export default function MotorIndicator({ name, state }: MotorIndicatorProps) {
 
-    function stateColors(state: boolean) {
-        // console.log(name, state)
+    function stateColors(state: boolean) {   
         return {
             backgroundColor: state ? '#4caf50' : '#aaaaaa'
         };

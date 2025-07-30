@@ -221,19 +221,19 @@ class Motors:
             self.target_speeds[motor_name] = speed
             self.target_positions[motor_name] = position
 
-    def get_motor(self, motor_name: str):
+    def get_motor(self, motor_name: str) -> Motor:
         with self.lock:
             return self.motors[motor_name]
 
-    def get_all_motors(self):
+    def get_all_motors(self) -> Dict[str, Motor]:
         with self.lock:
             return self.motors.copy()
 
-    def get_motor_position(self, motor_name: str):
+    def get_motor_position(self, motor_name: str) -> float:
         with self.lock:
             return self.motors[motor_name].position_degrees
-
-    def is_error(self) -> bool:      
+        
+    def is_can_error(self) -> bool:
         for can_info in self.can_infos.values():
             if can_info.status == Status.ERROR:
                 return True
@@ -241,6 +241,11 @@ class Motors:
         if can_info.thread_handle:
             if not can_info.thread_handle.is_alive():
                 return True
+        return False
+
+    def is_error(self) -> bool:      
+        if self.is_can_error():
+            return True
 
         with self.lock:
             for key, motor in self.motors.items():
@@ -279,15 +284,6 @@ class Motors:
                 can_info.exit_event.set()
                 can_info.thread_handle.join(timeout=1)
 
-    """
-    def _worker_check_all_angle_limits(self)   :
-        with self.lock:
-            for motor_tag, motor in self.motors.items(): 
-                if motor.position_degrees < motor.angle_min or motor.position_degrees > motor.angle_max:
-                    self.motors[motor_tag].angle_limit_breached = True 
-                    print(f"[{motor_tag}] error, breach! angle: {motor.position_degrees}, min: {motor.angle_min}, max: {motor.angle_max}")
-    """
-
     def _worker(self, can_info: CanInfo):
         can_info.exit_event.clear()
 
@@ -318,8 +314,8 @@ class Motors:
                         elif motor.allow_comms:
                             motor.req_position()
                             motor.req_state_1()
-
-                    # check error
+                    
+                        motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False                        
 
             delta = time() - loop_time
 
@@ -328,6 +324,10 @@ class Motors:
 
             can_info.loop_completion_time_ms = (time() - loop_time) * 1000
             print("LOOP TIME:", can_info.loop_completion_time_ms)
+
+
+  
+                
 
     ###############################################################################
     # General

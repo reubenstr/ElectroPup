@@ -60,6 +60,7 @@ class Motor:
 
         # Motor states:
         self.enabled: bool = False
+        self.angle_limit_breached = False
 
         # Communication states:
         self.send_error: bool = False

@@ -19,14 +19,14 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     overflow: 'visible',
   },
   rotatedText: {
     transform: [{ rotate: '-90deg' }],
     fontSize: 12,
     color: 'black',
-    textAlign: 'center',
+    textAlign: 'left',
     width: 100, // This becomes the height after rotation
   },
 });

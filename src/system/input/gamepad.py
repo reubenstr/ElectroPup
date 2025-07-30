@@ -63,6 +63,7 @@ class Gamepad:
 
         self.no_battery_life_text = "N/A"
         self.status = Status.STANDBY
+        self.battery_life_percent: float = -1.0
         self.battery_life_str: str = self.no_battery_life_text
 
         # State containers
@@ -276,6 +277,7 @@ class Gamepad:
 
                     percent = self.gamepad_inferface.get_battery_percent()
                     if percent:
+                        self.battery_life_percent = percent
                         self.battery_life_str = f"{int(percent)}%"
                         if percent < 20:
                             self.status = Status.WARNING
@@ -312,6 +314,9 @@ class Gamepad:
 
     def get_status(self) -> Status:
         return self.status
+    
+    def get_battery_life_percent(self) -> float:
+        return self.battery_life_percent
 
     def get_battery_life_str(self) -> str:
         if self.status != Status.ACTIVE:

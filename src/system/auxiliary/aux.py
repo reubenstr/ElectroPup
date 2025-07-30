@@ -1,14 +1,4 @@
-#!/usr/bin/env python3
-"""
-    Auxiliary Board (Raspberry Pi hat) interface.
-    
-    Sends status messages and commands over serial to the Auxiliary Board.
-    Received commands over serial sent from the Auxiliary Board.
-    
-    The Auxiliary Board is optional and not required for the quadruped to operate.
-"""
-
-import os
+#!/usr/bin/env python3import os
 import serial
 import struct
 import time
@@ -16,8 +6,19 @@ from typing import List
 from time import sleep
 from enum import Enum
 
-# Local
 from .crc32 import crc32
+
+"""
+    Auxiliary Board (Raspberry Pi hat) interface.
+    
+    Sends status messages and commands over serial to the Auxiliary Board.
+    Received commands over serial sent from the Auxiliary Board.
+    
+    The Auxiliary Board is optional and not required for the quadruped to operate.
+
+    TODO: aux controller can be migrated to use threading to prevent main thread delays.
+"""
+
 
 
 # Must match auxiliary board firmware's MessageType struct.
@@ -84,6 +85,8 @@ class Aux():
         self.timeout = 0.25        
         self.start_time : float = time.time()        
         self._open()
+
+        self.send_message_rate_seconds: float = 0.1
         
     def _open(self): 
         try:
@@ -91,9 +94,9 @@ class Aux():
         except Exception as e:
             print(f"[AUX] error, unable open serial port: {self.port}, exception: {e}")            
                                         
-    def send_at_rate(self, data : bytes, rate : float):
+    def send_at_rate(self, data : bytes):
         """Sends data only when a specific amount of time has passed."""
-        if (time.time() - self.start_time > rate):
+        if (time.time() - self.start_time > self.send_message_rate_seconds):
             self.start_time = time.time()
             self.send(data)
            

@@ -44,7 +44,7 @@ class Main:
         self.motion = Motion()
         self.forwarder = Forwarder()
         self.motors = Motors(allow_enable)
-        # self.aux = Aux()
+        self.aux = Aux()
 
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
@@ -137,14 +137,14 @@ class Main:
         """
 
         message = AuxMessage()
-        message.joint_angle_error = self.body_error_state == Quad.QuadErrorState.JOINT
-        message.inverse_kinematics_error = self.body_error_state == Quad.QuadErrorState.KINEMATICS
+        message.joint_angle_error = self.motion.get_joint_angle_status == Status.ERROR
+        message.inverse_kinematics_error = self.motion.get_ik_status == Status.ERROR
         message.joystick_error = self.input.gamepad.is_connected() == False
-        message.can_error = self.motor_interface_front.is_can_error() or self.motor_interface_back.is_can_error()
+        message.can_error = self.motors.is_can_error()
         message.imuError = False
 
         voltage_accumulator: float = 0.0
-        motors: Dict[str, Motor] = self.motor_interface_front.get_all_motors() | self.motor_interface_back.get_all_motors()
+        motors: Dict[str, Motor] = self.motors.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
             message.motor_ons[index] = motor.is_enabled()
             message.motor_errors[index] = motor.is_error()
@@ -157,15 +157,8 @@ class Main:
             if motor.is_comms_error() == True:
                 message.motor_communication_error = True
             voltage_accumulator += motor.voltage
-
-        message.battery_voltage = voltage_accumulator / len(motors)
-
-        if time.time() - self.gamepad_last_battery_check_time > self.gamepad_battery_check_rate_seconds:
-            self.gamepad_last_battery_check_time = time.time()
-            self.gamepad_battery_percent = self.gamepad.get_battery_percentange() or -1
-
-        message.gamepad_battery_percent = self.gamepad_battery_percent
-
+        message.battery_voltage = voltage_accumulator / len(motors) 
+        message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
         self.aux.send_at_rate(message.pack(), self.aux_send_rate_seconds)
 
     def forward_states(self):
@@ -199,8 +192,7 @@ class Main:
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         self.forwarder.set_motors_states(self.motors.get_all_motor_states())
-        print(self.motors.get_all_motor_states())
-
+   
         trajectories, rings, transitions = self.motion.get_trajectories()
         self.forwarder.set_trajectories(trajectories)
         self.forwarder.set_rings(rings)
@@ -219,8 +211,8 @@ class Main:
         if sleep_time > 0:
             sleep(sleep_time)
 
-        # if delta > self.main_loop_rate_ms:
-        #    print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
+        if delta > self.main_loop_rate_ms:
+            print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
         # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
         self.loop_completion_time_ms = delta * 1000
