@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 """
-Class containing frame parameters for quadruped rotation, translation, and states.
+    Class containing frame parameters and physical joint limits.
 """
 
 @dataclass

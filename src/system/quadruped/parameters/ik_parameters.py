@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
 """
-    User inputs that modify the rotation and translation of the hexapod.
-    Edit these values to prevent inputs that cause positional errors.
+   Class container parameters for pose.
 """
 
 @dataclass
@@ -36,9 +35,10 @@ class IKParameters:
     ###############################################################################
     # Running values, do not change, will be overwritten
     ###############################################################################
-    forward_translation: float = 0
-    side_translation: float = 0
-    height_translation: float = (height_translation_min + height_translation_max) / 2.0
     roll: float = 0
     pitch: float = 0
     yaw: float = 0
+    forward_translation: float = 0
+    side_translation: float = 0
+    height_translation: float = (height_translation_min + height_translation_max) / 2.0
+   

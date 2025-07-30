@@ -1,5 +1,8 @@
+import can
+from threading import Thread, Lock , Event
 from enum import IntEnum, Enum, StrEnum
 from dataclasses import dataclass
+from system.interfaces import Status
 
 class MotorSpeeds(IntEnum):
     SLOW = 1000
@@ -30,4 +33,15 @@ class MotorInfo:
     inverse_rotation: bool
     allow_motion: bool
     allow_comms: bool   
+
+@dataclass
+class CanInfo:
+    can_channel: str
+    bus: can.interface.Bus
+    status: Status
+    thread_handle: Thread
+    lock: Lock
+    exit_event: Event
+    loop_completion_time_ms: float = 0.01
+    worker_running_flag: bool = False
 

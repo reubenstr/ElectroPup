@@ -15,7 +15,8 @@ from enum import Enum
 # Local
 from system.motors.motor import Motor
 from system.motors.motor_list import motor_list
-from system.interfaces import Status, CanInfo
+from system.motors.interfaces import CanInfo
+from system.interfaces import Status
 
 
 """
@@ -38,7 +39,7 @@ If motors angles at startup are greater than 180 an offset flag is set and angle
 
 
 class Motors:
-    def __init__(self, allow_enable: bool):   
+    def __init__(self, allow_enable: bool):
         self.allow_enable: bool = allow_enable
         self.tag: str = "Motors"
 
@@ -88,7 +89,7 @@ class Motors:
                 )
                 self.target_positions[motor.name] = 0  # Will be set during enable.
                 self.target_speeds[motor.name] = default_speed
-        
+
         self.start()
 
     ###############################################################################
@@ -240,7 +241,7 @@ class Motors:
     def get_motor_position(self, motor_name: str) -> float:
         with self.lock:
             return self.motors[motor_name].position_degrees
-        
+
     def is_can_error(self) -> bool:
         for can_info in self.can_infos.values():
             if can_info.status == Status.ERROR:
@@ -251,7 +252,7 @@ class Motors:
                 return True
         return False
 
-    def is_error(self) -> bool:      
+    def is_error(self) -> bool:
         if self.is_can_error():
             return True
 
@@ -313,7 +314,7 @@ class Motors:
                     with self.targets_lock:
                         target_angle = self.target_positions[key]
                         target_speed = self.target_speeds[key]
-                 
+
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
                             motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
@@ -324,8 +325,8 @@ class Motors:
                             motor.req_position()
                             motor.req_state_1()
                             motor.req_state_2()
-                    
-                        motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False                        
+
+                        motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False
 
             delta = time() - loop_time
 
@@ -334,7 +335,6 @@ class Motors:
 
             can_info.loop_completion_time_ms = (time() - loop_time) * 1000
             # print("LOOP TIME:", can_info.loop_completion_time_ms)
-               
 
     ###############################################################################
     # General
@@ -342,19 +342,19 @@ class Motors:
 
     def is_motors_enabled(self) -> bool:
         return self.motors_enabled
-    
+
     def get_can_status(self, can_name: str) -> Status:
         can_info = next((can_info for can_info in self.can_infos.values() if can_info.can_channel == can_name), None)
         if can_info:
             return can_info.status
-        else:            
+        else:
             return Status.ERROR
-        
+
     def get_can_loop_time(self, can_name: str) -> float:
         can_info = next((can_info for can_info in self.can_infos.values() if can_info.can_channel == can_name), None)
         if can_info:
             return can_info.loop_completion_time_ms
-        else:           
+        else:
             return 0
 
     def is_error(self) -> bool:
@@ -370,43 +370,42 @@ class Motors:
             if motor.is_error():
                 return True
         return False
-    
+
     def get_all_motor_states(self):
         """Pack state for UI"""
         states = {}
         with self.comm_lock:
             for motor in self.motors.values():
                 state = {}
-                state['id'] = motor.motor_id
-                state['minAngle'] = motor.min_angle
-                state['maxAngle'] = motor.max_angle
-                state['inverseRotation'] = motor.inverse_rotation
-                state['allowComms'] = motor.allow_comms
-                state['allowMotion'] = motor.allow_motion
-                state['canChannel'] = motor.can_channel
-                state['enabled'] = motor.enabled
-                state['commsError'] = motor.is_comms_error()
+                state["id"] = motor.motor_id
+                state["minAngle"] = motor.min_angle
+                state["maxAngle"] = motor.max_angle
+                state["inverseRotation"] = motor.inverse_rotation
+                state["allowComms"] = motor.allow_comms
+                state["allowMotion"] = motor.allow_motion
+                state["canChannel"] = motor.can_channel
+                state["enabled"] = motor.enabled
+                state["commsError"] = motor.is_comms_error()
 
                 values = {}
-                values['temperature'] = motor.temperature
-                values['voltage'] = motor.voltage
-                values['watts'] = motor.watts
-                values['motorSpeed'] = motor.motor_speed
-                values['encoderPosition'] = motor.encoder_position
-                values['positionDegrees'] = motor.position_degrees
-                state['values'] = values
+                values["temperature"] = motor.temperature
+                values["voltage"] = motor.voltage
+                values["watts"] = motor.watts
+                values["motorSpeed"] = motor.motor_speed
+                values["encoderPosition"] = motor.encoder_position
+                values["positionDegrees"] = motor.position_degrees
+                state["values"] = values
 
                 faults = {}
-                faults['underVoltageProtection'] =  motor.under_voltage_protection
-                faults['overVoltageProtection'] =  motor.over_voltage_protection
-                faults['overTemperatureProtection'] =  motor.over_temperature_protection
-                faults['lostInputProtection'] =  motor.lost_input_protection                
-                state['faults'] = faults
+                faults["underVoltageProtection"] = motor.under_voltage_protection
+                faults["overVoltageProtection"] = motor.over_voltage_protection
+                faults["overTemperatureProtection"] = motor.over_temperature_protection
+                faults["lostInputProtection"] = motor.lost_input_protection
+                state["faults"] = faults
                 states[motor.name.name] = state
 
         return states
-    
-    
+
     def shutdown(self):
         self._stop()
         self.disable_all_motors()

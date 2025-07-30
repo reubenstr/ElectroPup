@@ -9,6 +9,7 @@ from time import sleep
 from rich import print  # Overrides print and injects colors
 from typing import  Dict
 
+from system.quadruped.quad import Quad
 from system.quadruped.gait_planner import Gait
 from system.quadruped.interfaces import LegName, AngleUnits
 from system.input.input import Input

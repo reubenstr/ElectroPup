@@ -34,9 +34,6 @@ class InputCommand(StrEnum):
     TOUCH_INPUT = "touch_input"
 
 
-
-
-
 class Status(StrEnum):
     NONE = "none"
     STANDBY = "standby"
@@ -48,8 +45,8 @@ class Status(StrEnum):
 
 class MotionState(StrEnum):
     NONE = "none"
-    STANDBY = "standby"   
-   
+    STANDBY = "standby"
+
     STAND = "stand"
     SIT = "sit"
     POSE = "pose"
@@ -92,13 +89,4 @@ class ImuData:
     ERROR = "error"
 
 
-@dataclass
-class CanInfo:
-    can_channel: str
-    bus: can.interface.Bus
-    status: Status
-    thread_handle: Thread
-    lock: Lock
-    exit_event: Event
-    loop_completion_time_ms: float = 0.01
-    worker_running_flag: bool = False
+
