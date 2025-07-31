@@ -50,12 +50,19 @@ class Motion:
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.025
-        self.pose_period: float = 3
+        self.pose_period: float = 1
+
+        self.transition_time: float = 0
+        self.transition_time_rate: float = 0.025
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
-        self.transition_planner = TransitionPlanner(touchdown_period=0.25, arc_period=0.5, height=0.035)
+        self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.start_foot_points: Dict[LegName, Point] = {}
         self.end_foot_points: Dict[LegName, Point] = {}
+
+        self.idle_time: float = 0
+        self.idle_time_trigger_seconds: float = 3
+        self.idle_flag: bool = True
 
         self.min_loop_rate_seconds: float = 0.050
         self.loop_completion_time_ms: float = 0.0
@@ -85,6 +92,7 @@ class Motion:
             loop_time = time()
 
             with self.lock:
+                self._check_idle()
                 self._process_dt()
                 self._process_motion_state_changes()
                 self._process_gait_changes()
@@ -98,7 +106,25 @@ class Motion:
             with self.lock:
                 self.loop_completion_time_ms = (time() - loop_time) * 1000
 
-    def _process_dt(self):       
+    def _check_idle(self):        
+        if self.motion_state is MotionState.WALK:
+            if abs(self.motion_parameters.get_forward_raw()) > self.motion_parameters.deadzone:
+                self.idle_flag = False 
+                self.idle_time = time()        
+
+            if abs(self.motion_parameters.get_heading_raw()) > self.motion_parameters.deadzone:
+                self.idle_flag = False 
+                self.idle_time = time()
+        
+            if time() - self.idle_time > self.idle_time_trigger_seconds:  
+                if self.idle_flag == False:
+                    self.idle_flag = True
+                    if self.idle_flag:
+                        print(f"[{self.tag}] idle")
+                        self.target_motion_state = MotionState.POSE
+                        self._create_transition()   
+    
+    def _process_dt(self):
         self.pose_time += self.pose_time_rate
 
         if self.motion_parameters.forward_raw > 0:
@@ -108,49 +134,55 @@ class Motion:
             dt = scale_value(self.motion_parameters.forward_raw, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
             self.phase_time += dt
 
-    def _process_motion_state_changes(self): 
+        self.transition_time += self.transition_time_rate
+
+    def _process_motion_state_changes(self):
         if self.previous_target_motion_state is not self.target_motion_state:
             self.previous_target_motion_state = self.target_motion_state
-            print(f"[{self.tag}] target state changed to: {self.target_motion_state}") 
+            print(f"[{self.tag}] target state changed to: {self.target_motion_state}")
 
-            if self.target_motion_state is MotionState.STAND or self.target_motion_state is MotionState.SIT:
+            if self.target_motion_state is MotionState.STAND:
                 self.pose_time = 0
                 self.motion_state = self.target_motion_state
-            else:                           
-                self._create_transition(self.target_motion_state, self.gait)
-              
-    def _process_gait_changes(self):                
-        if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION: 
+            else:
+                self._create_transition()
+
+    def _process_gait_changes(self):
+        if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
             if self.gait is not self.target_gait:
                 self.gait = self.target_gait
-                print(f"[{self.tag}] target gait changed to: {self.gait}")               
-                self._create_transition(self.target_motion_state, self.gait)
-     
+                print(f"[{self.tag}] target gait changed to: {self.gait}")
+                self._create_transition()
 
     def _process_motion_state(self):
         if self.motion_state is MotionState.STANDBY:
             pass
 
         elif self.motion_state is MotionState.STAND:
-
-            t_start = IKParameters().height_translation_min
-            t_end = IKParameters().height_translation_max
-
             ik_parameters = IKParameters()
-            ik_parameters.height_translation = scale_value(self.pose_time, 0, self.pose_period, t_start, t_end)
+            ik_parameters.height_translation = scale_value(
+                self.pose_time, 0, self.pose_period, IKParameters().height_translation_min, IKParameters().height_translation_neutral
+            )
 
             base_foot_points = self.quad.get_base_foot_points()
             error = self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
             self._set_error(error)
 
-            print(self.pose_time, self.pose_period, ik_parameters.height_translation)
-
             if self.pose_time > self.pose_period:
-                self.motion_state = MotionState.WALK
-
+                self.motion_state = MotionState.POSE
 
         elif self.motion_state is MotionState.SIT:
-            pass
+            ik_parameters = IKParameters()
+            ik_parameters.height_translation = scale_value(
+                self.pose_time, 0, self.pose_period, IKParameters().height_translation_neutral, IKParameters().height_translation_min
+            )
+
+            base_foot_points = self.quad.get_base_foot_points()
+            error = self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
+            self._set_error(error)
+
+            if self.pose_time > self.pose_period:
+                self.pose_time = self.pose_period
 
         elif self.motion_state is MotionState.POSE:
             base_foot_points = self.quad.get_base_foot_points()
@@ -170,15 +202,16 @@ class Motion:
             self._set_error(error)
 
         elif self.motion_state is MotionState.TRANSITION:
-            if self.phase_time < self.transition_planner.get_period():
-                foot_points = self.transition_planner.get_foot_positions(self.phase_time, self.start_foot_points, self.end_foot_points)
+            if self.transition_time < self.transition_planner.get_period():
+                foot_points = self.transition_planner.get_foot_positions(self.transition_time, self.start_foot_points, self.end_foot_points)
                 error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
                 self._set_error(error)
             else:
                 self.phase_time = 0
+                self.pose_time = 0
                 self.motion_state = self.target_motion_state
 
-    def _create_transition(self, motion_state: MotionState, gait: Gait):
+    def _create_transition(self):
         """Get start and end foot points and init the tranistion"""
         target_foot_points: Dict[LegName, Point] = {}
 
@@ -203,7 +236,7 @@ class Motion:
                 target_foot_points[leg_name] = foot_point
 
         self.motion_state = MotionState.TRANSITION
-        self.phase_time = 0
+        self.transition_time = 0
         current_foot_points = self.quad.get_foot_points()
         self.start_foot_points = current_foot_points
         self.end_foot_points = target_foot_points
@@ -232,8 +265,11 @@ class Motion:
             self.motion_parameters = motion_parameters
 
     def set_target_motion_state(self, state: MotionState):
-        if self.motion_state is MotionState.STANDBY and state is not MotionState.STAND:
+        if state is not MotionState.STAND and self.motion_state is MotionState.STANDBY:
             return
+        if state is MotionState.STAND or state is MotionState.SIT:
+            if self.motion_state is MotionState.STAND or self.motion_state is MotionState.SIT:
+                return                
         with self.lock:
             self.target_motion_state = state
 
@@ -267,11 +303,14 @@ class Motion:
             trajectories = None
             rings = None
             transitions = None
-            
-            if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:              
-                trajectories,rings,= self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
+
+            if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
+                (
+                    trajectories,
+                    rings,
+                ) = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
             if self.motion_state is MotionState.TRANSITION:
-                transitions = self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points)  
+                transitions = self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points)
             return trajectories, rings, transitions
 
     def get_loop_time_ms(self) -> float:

@@ -11,6 +11,12 @@ from math import degrees, atan2, sqrt
 class MotionParameters:
     def __init__(self):     
         ###############################################################################
+        # 
+        ###############################################################################
+        self.deadzone = 0.025
+
+
+        ###############################################################################
         # Running values, do not change, will be overwritten
         ###############################################################################
         self.forward_raw : float = 0
@@ -19,6 +25,8 @@ class MotionParameters:
         self.heading_raw: float = 0
         self._heading_x: float = 0
         self._heading_y: float = 0
+
+        
 
     ###############################################################################
     # Call from the Input class to set values

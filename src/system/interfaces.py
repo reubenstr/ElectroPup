@@ -53,6 +53,8 @@ class MotionState(StrEnum):
     POSE = "pose"
     WALK = "walk"
 
+    IDLE = "idle"
+
     TRANSITION = "transition"
 
 

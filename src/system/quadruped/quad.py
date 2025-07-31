@@ -62,8 +62,7 @@ class Quad(object):
         self.legs: Dict[LegName, Leg] = {}
 
         # Initialize legs at the neutral position
-        ik_parameters = IKParameters()
-        ik_parameters.height_translation = (IKParameters().height_translation_min + IKParameters().height_translation_max) / 2
+        ik_parameters = IKParameters()        
         base_foot_positions = self.get_base_foot_points()
         self.set_body_pose_by_transform_inputs(ik_parameters, base_foot_positions)
 

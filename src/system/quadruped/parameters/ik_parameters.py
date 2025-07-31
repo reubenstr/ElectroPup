@@ -8,7 +8,7 @@ from dataclasses import dataclass
 @dataclass
 class IKParameters:
     ###############################################################################
-    # Rotation limits parameters (degrees)
+    # Rotation limits parameters (degrees) Can be modified
     ###############################################################################
     roll_min: float = -30
     roll_max: float = 30
@@ -18,12 +18,12 @@ class IKParameters:
     yaw_max: float = 30
 
     ###############################################################################
-    # Translation limits parameters (meters)
+    # Translation limits parameters (meters) Can be modified
     ###############################################################################
     forward_translation_min: float = -0.050
     forward_translation_max: float = 0.050
-    side_translation_min: float = -0.100
-    side_translation_max: float = 0.100
+    side_translation_min: float = -0.050
+    side_translation_max: float = 0.050
 
     # Highest allowable position of body center, must no be higher than the physical leg lengths.
     height_translation_max: float = 0.275
