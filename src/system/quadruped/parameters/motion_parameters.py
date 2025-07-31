@@ -48,8 +48,8 @@ class MotionParameters:
     ###############################################################################
 
     def set_heading_x(self, value: float):
-        self._heading_x = process_value(value, self.deadzone)
-        self.heading_raw = process_value(value, self.deadzone)
+        self._heading_x = process_value(-value, self.deadzone)
+        self.heading_raw = process_value(-value, self.deadzone)
 
     def set_heading_y(self, value: float):
         self._heading_y = process_value(value, self.deadzone)

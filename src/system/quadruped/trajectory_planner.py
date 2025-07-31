@@ -5,7 +5,7 @@ from typing import Dict, Tuple
 from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
 from system.quadruped.gait_planner import GaitPlanner
 from system.quadruped.quad import LegName
-from system.quadruped.gait_planner import Gait
+from system.quadruped.gait_planner import Gait, Phase
 from system.quadruped.interfaces import Trajectories, Trajectory
 from system.utilities.utilities import log_scale_value
 
@@ -110,6 +110,18 @@ class TrajectoryPlanner:
             foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
             foot_points[leg_name] = foot_point
         return foot_points
+    
+    # TEMP
+    def is_leg_in_swing(self, gait: Gait, leg: LegName, phase_time: float):
+        gait_planner: GaitPlanner = self.gait_factory(gait)
+        phase, normalized_time = gait_planner.get_leg_phase_time(leg, phase_time)
+        return phase is Phase.SWING
+
+
+    
+    ###############################################################################
+    # Visualizations
+    ###############################################################################
     
     def get_trajectories(self, gait: Gait, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
