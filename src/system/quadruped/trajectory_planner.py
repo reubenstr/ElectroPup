@@ -64,15 +64,15 @@ class TrajectoryPlanner:
             turning_radius = max_cor
             cor = Point(0, max_cor, 0)
         elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:
-            # Straight walking       
+            # Straight walking
             turning_radius = max_cor
             cor = Point(0, copysign(turning_radius, angular_velocity or 1.0), 0)
         elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:
-            # In-place rotation        
+            # In-place rotation
             turning_radius = 0.0
-            cor = Point(0, 0, 0)        
+            cor = Point(0, 0, 0)
         else:
-            # Curved walking      
+            # Curved walking
             turning_radius = (forward_velocity / angular_velocity) / 5
             cor = Point(0, turning_radius, 0)
 

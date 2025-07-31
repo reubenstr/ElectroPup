@@ -68,7 +68,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
     }
   }, [quadData, hold, computePlotData]);
 
-  const defaultZoomLevel = 1;
+  const defaultZoomLevel = 0.7;
 
   const getGridSettings = (showGrid: boolean) => {
     if (showGrid) {
