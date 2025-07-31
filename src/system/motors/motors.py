@@ -181,11 +181,12 @@ class Motors:
         with self.comm_lock:
             self.motors_on = False
             for motor in self.motors.values():
-                print(f"[{self.tag}] disabling motor: {motor.name}")
-                if not motor.cmd_motor_off():
-                    print(f"[{self.tag}][ALL] error, disable all motors failed!")
-                    return False
-                sleep(self.motor_disable_sequence_delay_seconds)
+                if self.allow_enable and motor.allow_motion:
+                    print(f"[{self.tag}] disabling motor: {motor.name}")
+                    if not motor.cmd_motor_off():
+                        print(f"[{self.tag}][ALL] error, disable all motors failed!")
+                        return False
+                    sleep(self.motor_disable_sequence_delay_seconds)
             print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
             self.motors_enabled = False
             return True
@@ -358,6 +359,14 @@ class Motors:
             return can_info.loop_completion_time_ms
         else:
             return 0
+        
+    def get_status(self) -> Status:
+        if self.is_error():
+            return Status.ERROR
+        if self.is_motors_enabled():
+            return Status.ACTIVE
+        else:
+            return Status.STANDBY
 
     def is_error(self) -> bool:
         for can_info in self.can_infos.values():

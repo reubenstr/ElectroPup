@@ -1,4 +1,4 @@
-import can
+
 from threading import Thread, Lock, Event
 from dataclasses import dataclass
 from enum import Enum, StrEnum, IntEnum
@@ -18,7 +18,8 @@ class InputMode(StrEnum):
 
 # Commands from the touch and gamepad inputs
 class InputCommand(StrEnum):
-    NO_UPDATE = "no_update"
+    NO_UPDATE = "no_update"   
+    DISABLE_ENABLE_MOTORS = "disable_enable_motors"
     E_STOP = "e_stop"
     CLEAR_ERRORS = "clear_errors"
 

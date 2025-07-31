@@ -113,7 +113,9 @@ interface SystemStatus {
         can0: number;
         can1: number;        
     };
-
+    motor: {
+        status: Status
+    };
     gpio: {
         status: Status;
     };

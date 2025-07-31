@@ -2,9 +2,10 @@
 import os
 import time
 import zmq
+import atexit
 import argparse
 import threading
-from rich import print
+from rich import print # Overrides print and injects colors
 from flask import request, Flask, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -24,7 +25,30 @@ app = Flask(__name__, static_folder=DIST_DIR, template_folder=DIST_DIR)
 
 CORS(app)
 app.config["SECRET_KEY"] = "secret_token_that_is_ok_to_be_hardcoded"
+
+# Use threading-based async mode
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+
+###############################################################################
+# Thread-local ZMQ sockets
+###############################################################################
+
+push_socket = None
+
+def init_push_socket():
+    global push_socket
+    if push_socket is None:
+        context = zmq.Context.instance()
+        push_socket = context.socket(zmq.PUSH)
+        push_socket.connect("tcp://127.0.0.1:5560")
+
+def cleanup():
+    global push_socket
+    if push_socket:
+        push_socket.close()
+    zmq.Context.instance().term()
+
+atexit.register(cleanup)          
 
 ###############################################################################
 # Routes - Serve React Frontend
@@ -52,10 +76,9 @@ def handle_connect():
 @socketio.on("message")
 def handle_message(msg):
     try:
-        context = zmq.Context.instance()
-        with context.socket(zmq.PUSH) as socket:
-            socket.connect("tcp://127.0.0.1:5560")
-            socket.send_string(msg)
+        if push_socket is None:
+            init_push_socket()
+        push_socket.send_string(msg)
     except Exception as e:
         print(f"ZMQ send error: {e}")
 
@@ -71,33 +94,29 @@ def handle_disconnect():
 
 def forward_data_to_ui():
     print("Forwarding data thread starting")
-    print(f"Message rate throttled to one message every {FORWARD_DATA_RATE_LIMIT_MS} seconds")
+    print(f"Message rate throttled to a message every {FORWARD_DATA_RATE_LIMIT_MS} seconds")
 
     context = zmq.Context.instance()
     pull_socket = context.socket(zmq.PULL)
     pull_socket.connect("tcp://127.0.0.1:5559")
 
-    poller = zmq.Poller()
-    poller.register(pull_socket, zmq.POLLIN)
-
     last_emit_time = 0
 
     while True:
         try:
-            socks = dict(poller.poll(timeout=100))  # 100 ms timeout
-            if pull_socket in socks and socks[pull_socket] == zmq.POLLIN:
-                message = pull_socket.recv_string()
-                now = time.time()
-                if now - last_emit_time >= FORWARD_DATA_RATE_LIMIT_MS:
-                    socketio.emit("message", message)
-                    last_emit_time = now
+            message = pull_socket.recv_string(flags=zmq.NOBLOCK)
+            now = time.time()
+            if now - last_emit_time >= FORWARD_DATA_RATE_LIMIT_MS:
+                socketio.emit("message", message)
+                last_emit_time = now
+        except zmq.Again:
+            time.sleep(0.01)  # No message, avoid busy waiting
         except zmq.ZMQError as e:
             print(f"ZMQ Error: {e}")
             break
         except Exception as e:
             print(f"Unexpected error: {e}")
             break
-    pull_socket.close()
 
 ###############################################################################
 # Main Entry Point
@@ -113,6 +132,7 @@ if __name__ == "__main__":
 
     print(f"Running in {'development' if is_dev else 'production'} mode on port {port}")
 
+    # Start background thread for forwarding ZMQ messages to UI
     threading.Thread(target=forward_data_to_ui, daemon=True).start()
 
     socketio.run(app, host="0.0.0.0", port=port, debug=is_dev)

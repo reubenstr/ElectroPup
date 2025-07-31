@@ -76,7 +76,7 @@ export default function Viewer() {
                 </View>
             </View>
 
-            <View style={styles.baseColumnContainer}>               
+            <View style={styles.baseColumnContainer}>
                 <View style={styles.baseColumnCenter}>
                     <View style={styles.centerColumnIndicatorRow}>
                         <StatusIndicator
@@ -90,7 +90,7 @@ export default function Viewer() {
                             name='OpMode'
                             value={quadData?.status?.opMode?.state}
                             style={{ width: 100 }}
-                        />                     
+                        />
                         <StatusIndicator
                             name='Target'
                             value={quadData?.status?.targetMotion?.state}
@@ -99,7 +99,13 @@ export default function Viewer() {
                         <StatusIndicator
                             name='Motion'
                             value={quadData?.status?.motion?.state}
-                            style={{ width: 100 }}
+                            style={{
+                                width: 100,
+                                backgroundColor:
+                                    quadData?.status?.motion?.state === 'standby'
+                                        ? '#ff9800'
+                                        : undefined,
+                            }}
                         />
                         <StatusIndicator
                             name='Gait'
@@ -125,7 +131,7 @@ export default function Viewer() {
                                 <ContactIndicator
                                     name='LB'
                                     state={quadData?.contacts?.leftBack}
-                                />                              
+                                />
                             </View>
 
                             <View style={OverlayStyles.rightContacts}>
@@ -136,7 +142,7 @@ export default function Viewer() {
                                 <ContactIndicator
                                     name='RB'
                                     state={quadData?.contacts?.rightBack}
-                                />                               
+                                />
                             </View>
 
                             <View style={OverlayStyles.leftMotors}>
@@ -167,7 +173,7 @@ export default function Viewer() {
                                         </Text>
                                         <Text>
                                             Pitch: {isNaN(Number(quadData?.status?.imu?.pitch)) ? 'N/A' : Number(quadData?.status?.imu?.pitch).toFixed(2)}°
-                                            </Text>
+                                        </Text>
                                     </View>
                                 </View>
                             </View>
@@ -219,7 +225,12 @@ export default function Viewer() {
                         </View>
                     </View>
 
-                    <View style={styles.centerColumnIndicatorRow}>                      
+                    <View style={styles.centerColumnIndicatorRow}>
+                         <StatusIndicator
+                            name='MOT'
+                            status={quadData?.status?.motor?.status}
+                        />
+                        <View style={styles.verticalLine} />
                         <StatusIndicator
                             name='IK'
                             status={quadData?.status?.ik?.status}
@@ -228,7 +239,7 @@ export default function Viewer() {
                             name='JA'
                             status={quadData?.status?.jointAngle?.status}
                         />
-                        <View style={styles.verticalLine} />                      
+                        <View style={styles.verticalLine} />
                         <StatusIndicator
                             name='GPIO'
                             status={quadData?.status?.gpio?.status}
@@ -244,7 +255,7 @@ export default function Viewer() {
                         <StatusIndicator
                             name='IMU'
                             status={quadData?.status?.imu?.status}
-                        />                      
+                        />
                         <StatusIndicator
                             name='CAN0'
                             status={quadData?.status?.can0?.status}
@@ -272,7 +283,7 @@ export default function Viewer() {
                     </View>
 
                 </View>
-               
+
             </View>
         </View>
     );
@@ -288,13 +299,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flex: 1,
         width: '100%',
-    },   
+    },
     baseColumnCenter: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 10,
-    },    
+    },
     controlRowBottom: {
         flex: 1,
         justifyContent: 'flex-start',

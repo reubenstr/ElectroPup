@@ -93,6 +93,7 @@ class SystemStatus:
     input: Input = field(default_factory=Input)
     loopTimes: LoopTimes = field(default_factory=LoopTimes)
 
+    motor: GenericStatus = field(default_factory=GenericStatus)
     gpio: Gpio = field(default_factory=Gpio)
     smbus: SMBus = field(default_factory=SMBus)
     power_sensor: PowerSensor = field(default_factory=PowerSensor)

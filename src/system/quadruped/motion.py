@@ -20,8 +20,10 @@ from system.utilities.utilities import safe_divide, scale_value
     Applies gaits and transitions to the quadruped.
     Processes user inputs such as speed and direction.
 
-    Note: transitions between gaits use a basic transition and should be updated 
-    in the future for a fluid transition process.
+    Notes: 
+        Gait transitions are primative and should be updated for smoother transitions
+
+        Stand/sit transitions should be updated to use current joint angles to prevent unwanted movements.
 """
 
 
@@ -45,6 +47,10 @@ class Motion:
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
         self.phase_time_rate_fast: float = 0.025
+
+        self.pose_time: float = 0
+        self.pose_time_rate: float = 0.025
+        self.pose_period: float = 3
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
         self.transition_planner = TransitionPlanner(touchdown_period=0.25, arc_period=0.5, height=0.035)
@@ -92,7 +98,9 @@ class Motion:
             with self.lock:
                 self.loop_completion_time_ms = (time() - loop_time) * 1000
 
-    def _process_dt(self):
+    def _process_dt(self):       
+        self.pose_time += self.pose_time_rate
+
         if self.motion_parameters.forward_raw > 0:
             dt = scale_value(self.motion_parameters.forward_raw, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
             self.phase_time += dt
@@ -106,7 +114,7 @@ class Motion:
             print(f"[{self.tag}] target state changed to: {self.target_motion_state}") 
 
             if self.target_motion_state is MotionState.STAND or self.target_motion_state is MotionState.SIT:
-                self.phase_time = 0
+                self.pose_time = 0
                 self.motion_state = self.target_motion_state
             else:                           
                 self._create_transition(self.target_motion_state, self.gait)
@@ -124,9 +132,22 @@ class Motion:
             pass
 
         elif self.motion_state is MotionState.STAND:
+
+            t_start = IKParameters().height_translation_min
+            t_end = IKParameters().height_translation_max
+
+            ik_parameters = IKParameters()
+            ik_parameters.height_translation = scale_value(self.pose_time, 0, self.pose_period, t_start, t_end)
+
             base_foot_points = self.quad.get_base_foot_points()
-            error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+            error = self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
             self._set_error(error)
+
+            print(self.pose_time, self.pose_period, ik_parameters.height_translation)
+
+            if self.pose_time > self.pose_period:
+                self.motion_state = MotionState.WALK
+
 
         elif self.motion_state is MotionState.SIT:
             pass

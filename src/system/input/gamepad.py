@@ -135,7 +135,7 @@ class Gamepad:
 
     def btn_share_changed_callback(self, state):
         if state == True:
-            pass
+            self._send_input_command_as_event(InputCommand.DISABLE_ENABLE_MOTORS)
 
     def btn_options_changed_callback(self, state):
         if state == True:
@@ -166,24 +166,12 @@ class Gamepad:
     """ AXIS JOY-STICKS """
 
     def axis_left_x_changed_callback(self, value):
-        self.ik_parameters.roll = scale_value(
-            value,
-            -1.0,
-            1.0,
-            self.ik_parameters.roll_min,
-            self.ik_parameters.roll_max,
-        )
+        self.ik_parameters.set_roll(value)
 
     def axis_left_y_changed_callback(self, value):
         value *= -1
 
-        self.ik_parameters.pitch = scale_value(
-            value,
-            -1.0,
-            1.0,
-            self.ik_parameters.pitch_min,
-            self.ik_parameters.pitch_max,
-        )
+        self.ik_parameters.set_pitch(value)
 
         sign = copysign(1, value)
         if abs(value) < DEADZONE:
@@ -202,13 +190,7 @@ class Gamepad:
 
     def axis_right_x_changed_callback(self, value):
 
-        self.ik_parameters.yaw = scale_value(
-            value,
-            1.0,
-            -1.0,
-            self.ik_parameters.yaw_min,
-            self.ik_parameters.yaw_max,
-        )
+        self.ik_parameters.set_yaw(value)
 
         sign = copysign(1, value)
         if abs(value) < DEADZONE:
@@ -227,14 +209,8 @@ class Gamepad:
 
     def axis_right_y_changed_callback(self, value):
         value *= -1
-
-        self.ik_parameters.height_translation = scale_value(
-            value,
-            -1,
-            1,
-            self.ik_parameters.height_translation_min,
-            self.ik_parameters.height_translation_max,
-        )
+     
+        self.ik_parameters.set_height_translation(value)
 
         sign = copysign(1, value)
         if abs(value) < DEADZONE:

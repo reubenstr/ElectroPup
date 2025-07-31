@@ -7,7 +7,7 @@ import traceback
 import subprocess
 from time import sleep
 from rich import print  # Overrides print and injects colors
-from typing import  Dict, List
+from typing import Dict, List
 
 from system.quadruped.quad import Quad
 from system.quadruped.gait_planner import Gait
@@ -44,11 +44,9 @@ class Main:
         self.motors = Motors(allow_enable)
         self.aux = Aux()
 
-        self.motor_enable_flag: bool = False
-
         self.main_loop_rate_ms = 0.025
         self.loop_time: float = 0
-        self.loop_completion_time_ms: float = 0    
+        self.loop_completion_time_ms: float = 0
 
         if self.op_mode == OpModes.SIM:
             self.motion.set_target_motion_state(MotionState.WALK)
@@ -59,31 +57,47 @@ class Main:
     # Callback from Input(s)
     ###############################################################################
 
-    def controller_event_callback(self, event: InputCommand):
-        print(f"[MAIN] Controller event received: {event.name}")
-      
-        if event == InputCommand.STAND:
+    def controller_event_callback(self, event: InputCommand):   
+
+        if event is InputCommand.DISABLE_ENABLE_MOTORS:
+            if self.op_mode is OpModes.LIVE:  
+                if self.motors.is_motors_enabled():  
+                    self.motors.disable_all_motors() 
+                else:
+                    self.motors.enable_all_motors()
+            
+
+        if self.op_mode is OpModes.LIVE: 
+            if self.motion.get_motion_state() is MotionState.STANDBY: 
+                if not self.motors.is_motors_enabled():
+                    print(f"[MAIN] Controller event {event.name} blocked, motors not enabled.")
+                    return
+                       
+        if event is InputCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
             self.motor_enable_flag = True
 
-        if event == InputCommand.SIT:
+        if event is InputCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)
 
-        if event == InputCommand.POSE:
+        if event is InputCommand.POSE:
             self.motion.set_target_motion_state(MotionState.POSE)
 
-        if event == InputCommand.WALK:
+        if event is InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event == InputCommand.GAIT_WALK:
+        if event is InputCommand.GAIT_WALK:
             self.motion.set_target_gait(Gait.WALK)
 
-        if event == InputCommand.GAIT_TROT:
+        if event is InputCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
 
-        if event == InputCommand.CLEAR_ERRORS:
+        if event is InputCommand.CLEAR_ERRORS:
             self.clear_errors()
 
+        print(f"[MAIN] Controller event received: {event.name}")
+
+       
     ###############################################################################
     # Main Loop
     ###############################################################################
@@ -91,13 +105,11 @@ class Main:
     def run(self):
         while True:
 
-            self.check_motors()
-
             self.update_inputs()
 
             self.apply_joints_angles()
 
-            #self.process_aux()
+            # self.process_aux()
 
             self.forward_states()
 
@@ -106,21 +118,13 @@ class Main:
     ###############################################################################
     # Loop Methods
     ###############################################################################
- 
-    def check_motors(self):   
-        if self.motor_enable_flag:
-            if not self.motors.is_motors_enabled():
-                self.motors.enable_all_motors()
-        else:
-            if self.motors.is_motors_enabled():
-                self.motors.disable_all_motors()
 
     def update_inputs(self):
         self.motion.set_ik_parameters(self.input.get_ik_parameters())
         self.motion.set_motion_parameters(self.input.get_motion_parameters())
 
     def apply_joints_angles(self):
-         if not self.motors.is_error():
+        if not self.motors.is_error():
             if self.motion.motion_state is not MotionState.STANDBY:
 
                 if self.motion.motion_state is MotionState.SIT or self.motion.motion_state is MotionState.STAND:
@@ -168,7 +172,7 @@ class Main:
             if motor.is_comms_error() == True:
                 message.motor_communication_error = True
             voltage_accumulator += motor.voltage
-        message.battery_voltage = voltage_accumulator / len(motors) 
+        message.battery_voltage = voltage_accumulator / len(motors)
         message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
         self.aux.send_at_rate(message.pack())
 
@@ -186,7 +190,8 @@ class Main:
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
         system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
         system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
-
+ 
+        system_status.motor.status = self.motors.get_status()
         # system_status.gpio.status = self.hardware.get_gpio_status()
         system_status.smbus.status = self.hardware.get_smbus_status()
         # system_status.power_sensor.status = self.hardware.get_power_sensor_status()
@@ -198,11 +203,11 @@ class Main:
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
-        self.forwarder.set_sim_quad(self.motion.get_quad())       
+        self.forwarder.set_sim_quad(self.motion.get_quad())
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         self.forwarder.set_motors_states(self.motors.get_all_motor_states())
-           
+
         trajectories, rings, transitions = self.motion.get_trajectories()
         self.forwarder.set_trajectories(trajectories)
         self.forwarder.set_rings(rings)
@@ -237,7 +242,6 @@ class Main:
         live_quad.set_joint_angles_degrees(leg_angles)
         self.forwarder.set_live_quad(live_quad)
 
-
     def sleep_loop(self):
         """
         Keep a consistance loop rate by sleeping the delta of processing time.
@@ -249,7 +253,7 @@ class Main:
         if sleep_time > 0:
             sleep(sleep_time)
 
-        #if delta > self.main_loop_rate_ms:
+        # if delta > self.main_loop_rate_ms:
         #    print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
         # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
