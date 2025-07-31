@@ -49,36 +49,33 @@ class TrajectoryPlanner:
     ###############################################################################
     # Methods
     ###############################################################################
-   
 
     def _calculate_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-    
-        deadzone = 0.05
-        max_cor = 50.0  # Max allowable CoR offset (acts like "infinity")
 
+        deadzone = 0.025
+        max_cor = 50.0
+
+        # Calculate CoR (center-of-rotation)
         if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:
             # Standing still
             turning_radius = max_cor
-            cor = Point(0, copysign(turning_radius, angular_velocity or 1.0), 0)
-
+            cor = Point(0, max_cor, 0)
         elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:
-            # Straight walking
+            # Straight walking       
             turning_radius = max_cor
             cor = Point(0, copysign(turning_radius, angular_velocity or 1.0), 0)
-
         elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:
-            # In-place rotation
+            # In-place rotation        
             turning_radius = 0.0
-            cor = Point(0, 0, 0)
-
+            cor = Point(0, 0, 0)        
         else:
-            # General curved walking
+            # Curved walking      
             turning_radius = (forward_velocity / angular_velocity) / 5
             cor = Point(0, turning_radius, 0)
-      
+
         # Get the radius from CoR to the leg's nominal foot position
         foot_radius = get_distance_xy(cor, base_foot_point)
         if turning_radius > 0:
@@ -103,27 +100,28 @@ class TrajectoryPlanner:
 
         return foot_point, foot_radius, cor
 
-    def get_foot_points(self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float) -> Dict[LegName, Point]: 
+    def get_foot_points(
+        self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float
+    ) -> Dict[LegName, Point]:
         foot_points: Dict[LegName, Point] = {}
         for leg_name in LegName:
             base_foot_point = base_foot_points[leg_name]
             foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
             foot_points[leg_name] = foot_point
         return foot_points
-    
-    # TEMP
+
     def is_leg_in_swing(self, gait: Gait, leg: LegName, phase_time: float):
         gait_planner: GaitPlanner = self.gait_factory(gait)
         phase, normalized_time = gait_planner.get_leg_phase_time(leg, phase_time)
         return phase is Phase.SWING
 
-
-    
     ###############################################################################
     # Visualizations
     ###############################################################################
-    
-    def get_trajectories(self, gait: Gait, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity) -> Tuple[Trajectories, Trajectories, Trajectories]:
+
+    def get_trajectories(
+        self, gait: Gait, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity
+    ) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
         """
