@@ -103,7 +103,7 @@ class TrajectoryPlanner:
 
         return foot_point, foot_radius, cor
 
-    def get_foot_points(self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float):
+    def get_foot_points(self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float) -> Dict[LegName, Point]: 
         foot_points: Dict[LegName, Point] = {}
         for leg_name in LegName:
             base_foot_point = base_foot_points[leg_name]

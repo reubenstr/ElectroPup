@@ -43,6 +43,7 @@ export interface PlotData {
     trajectories: CoordinateSeries[];
     transitions: CoordinateSeries[];
     rings: CoordinateSeries[];
+    holdTrajectories: CoordinateSeries[];
 }
 
 export interface MotorValues {

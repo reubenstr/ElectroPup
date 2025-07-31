@@ -208,10 +208,11 @@ class Main:
         # self.forwarder.set_contacts(self.hardware.get_contacts())
         self.forwarder.set_motors_states(self.motors.get_all_motor_states())
 
-        trajectories, rings, transitions = self.motion.get_trajectories()
+        trajectories, rings, transitions, hold_trajectories = self.motion.get_trajectories()
         self.forwarder.set_trajectories(trajectories)
         self.forwarder.set_rings(rings)
         self.forwarder.set_transitions(transitions)
+        self.forwarder.set_hold_trajectories(hold_trajectories)
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 

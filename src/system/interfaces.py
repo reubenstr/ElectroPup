@@ -47,14 +47,10 @@ class Status(StrEnum):
 class MotionState(StrEnum):
     NONE = "none"
     STANDBY = "standby"
-
     STAND = "stand"
     SIT = "sit"
     POSE = "pose"
-    WALK = "walk"
-
-    IDLE = "idle"
-
+    WALK = "walk"   
     TRANSITION = "transition"
 
 

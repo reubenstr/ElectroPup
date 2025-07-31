@@ -36,6 +36,7 @@ class Forwarder:
         self.ik_parameters = None
         self.trajectories = None
         self.transitions = None
+        self.hold_trajectories = None
         self.rings = None
         self.system_status: SystemStatus = None
         self.contacts: Contacts = None
@@ -72,6 +73,10 @@ class Forwarder:
     def set_transitions(self, trajectories):
         with self.data_lock:
             self.transitions = trajectories
+
+    def set_hold_trajectories(self, trajectories):
+        with self.data_lock:
+            self.hold_trajectories = trajectories
 
     def set_rings(self, rings):
         with self.data_lock:
@@ -206,4 +211,14 @@ class Forwarder:
                 trajectory_data["z"] = [scale(point.z) for point in points]
                 plot["transitions"].append(trajectory_data)
       
+        if self.hold_trajectories:           
+            plot["holdTrajectories"] = []
+            for i, points in enumerate(self.hold_trajectories):
+                trajectory_data = {}
+                trajectory_data["name"] = "leg" + str(i)
+                trajectory_data["x"] = [scale(point.x) for point in points]
+                trajectory_data["y"] = [scale(point.y) for point in points]
+                trajectory_data["z"] = [scale(point.z) for point in points]
+                plot["holdTrajectories"].append(trajectory_data)
+        
         return plot

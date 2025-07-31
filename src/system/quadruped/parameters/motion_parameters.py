@@ -71,7 +71,7 @@ class MotionParameters:
         heading_rate_seconds: float
     ) -> tuple[float, float]:
         """
-        Method to update heading with a time-based ramp.
+        Provides heading with a time-based ramp.
         
         Args:
             heading: Current heading value.           
