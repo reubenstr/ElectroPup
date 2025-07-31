@@ -201,17 +201,13 @@ class Motion:
             error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
             self._set_error(error)
 
-        elif self.motion_state is MotionState.WALK:    
-            foot_points: Dict[LegName, Point] = {}
-            for leg_name in LegName:
-                base_foot_point = self.quad.get_base_foot_point(leg_name)
+        elif self.motion_state is MotionState.WALK:  
+            #TEMP
+            angular_velocity = self.motion_parameters.get_heading_raw()
+            forward_velocity = self.motion_parameters.get_forward_raw()
 
-                # TEMP ARGS
-                angular_velocity = self.motion_parameters.get_heading_raw()
-                forward_velocity = self.motion_parameters.get_forward_raw()
-                foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.phase_time, angular_velocity, forward_velocity)
-                foot_points[leg_name] = foot_point
-
+            base_foot_points = self.quad.get_base_foot_points()
+            foot_points = self.trajector_planner.get_foot_points(self.gait, base_foot_points, self.phase_time, angular_velocity, forward_velocity)
             error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
             self._set_error(error)
 
@@ -234,7 +230,7 @@ class Motion:
             heading = 0
             for leg_name in LegName:
                 base_foot_point = self.quad.get_base_foot_point(leg_name)
-                foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, phase_time, heading)
+                foot_point = self.trajector_planner.get_foot_points(self.gait, leg_name, base_foot_point, phase_time, heading)
                 target_foot_points[leg_name] = foot_point
         else:
             target_foot_points = self.quad.get_base_foot_points()

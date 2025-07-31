@@ -49,10 +49,7 @@ class TrajectoryPlanner:
     ###############################################################################
     # Methods
     ###############################################################################
-
-    def get_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
-        foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
-        return foot_point
+   
 
     def _calculate_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
         """
@@ -106,6 +103,14 @@ class TrajectoryPlanner:
 
         return foot_point, foot_radius, cor
 
+    def get_foot_points(self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float):
+        foot_points: Dict[LegName, Point] = {}
+        for leg_name in LegName:
+            base_foot_point = base_foot_points[leg_name]
+            foot_point, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+            foot_points[leg_name] = foot_point
+        return foot_points
+    
     def get_trajectories(self, gait: Gait, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
