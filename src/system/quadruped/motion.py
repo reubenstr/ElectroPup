@@ -65,7 +65,7 @@ class Motion:
         self.angular_velocity_target: float = 0  # [-1, 1]
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
-        
+
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.transition_start_foot_points: Dict[LegName, Point] = {}
@@ -75,7 +75,7 @@ class Motion:
         self.soft_transition_angular_velocity: float = 0
         self.soft_transition_forward_velocity: float = 0
         self.soft_transition_legs_started_swing: Dict[LegName, bool] = []
-        self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points() 
+        self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points()
 
         self.min_loop_rate_seconds: float = 0.050
         self.loop_completion_time_ms: float = 0.0
@@ -147,25 +147,24 @@ class Motion:
         self.angular_velocity, self.angular_velocity_time = self.motion_parameters.slew_heading(
             self.angular_velocity, self.angular_velocity_time, self.angular_velocity_slew_rate_seconds
         )
-        self.forward_velocity = self.motion_parameters.get_forward_raw() 
-    
+        self.forward_velocity = self.motion_parameters.get_forward_raw()
+
     def _process_dt(self):
         self.pose_time += self.pose_time_rate
 
         scaled_forward_velocity = 0
         scaled_angular_velocity = 0
         if self.motion_parameters.get_forward_raw() > 0:
-             scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
+            scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
         elif self.motion_parameters.get_forward_raw() < 0:
-             scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
+            scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
         if self.motion_parameters.get_heading_raw() > 0:
             scaled_angular_velocity = scale_value(self.motion_parameters.get_heading_raw(), 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
         elif self.motion_parameters.get_heading_raw() < 0:
             scaled_angular_velocity = scale_value(self.motion_parameters.get_heading_raw(), -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
         self.phase_time += max(scaled_forward_velocity, scaled_angular_velocity, key=abs)
 
-        self.transition_time += self.transition_time_rate       
-   
+        self.transition_time += self.transition_time_rate
 
     def _process_motion_state_changes(self):
         if self.previous_target_motion_state is not self.target_motion_state:
@@ -221,24 +220,23 @@ class Motion:
             self._set_error(error)
 
         elif self.motion_state is MotionState.WALK:
-                       
-            # Get foot points in latest trajectory.         
+
+            # Get foot points in latest trajectory.
             new_foot_points = self.trajector_planner.get_foot_points(
                 self.gait, self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
             )
-            
+
             if not self.soft_transition_flag:
                 # Check distance of current and new foot positions
                 current_foot_points = self.quad.get_foot_points()
                 for leg in LegName:
                     d = get_distance_xy(current_foot_points[leg], new_foot_points[leg])
                     if abs(d) > 0.03:
-                        print("HOLD CREATED ****")
-                        self.soft_transition_flag = True                        
+                        self.soft_transition_flag = True
                         self.soft_transition_legs_started_swing = {LegName.FL: False, LegName.FR: False, LegName.BL: False, LegName.BR: False}
                         break
 
-            if self.soft_transition_flag:           
+            if self.soft_transition_flag:
                 # Update list of legs in or completed the swing phase
                 for leg in LegName:
                     if self.trajector_planner.is_leg_in_swing(self.gait, leg, self.phase_time):
@@ -247,7 +245,7 @@ class Motion:
                 if all(self.soft_transition_legs_started_swing.values()):
                     self.soft_transition_flag = False
 
-            if self.soft_transition_flag:  
+            if self.soft_transition_flag:
                 # Get foot positions from hold.
                 old_foot_points = self.trajector_planner.get_foot_points(
                     self.gait, self.quad.get_base_foot_points(), self.phase_time, self.soft_transition_angular_velocity, self.soft_transition_forward_velocity
@@ -260,22 +258,18 @@ class Motion:
 
                 error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
                 self._set_error(error)
-            else:     
+            else:
                 self.soft_transition_angular_velocity = self.angular_velocity
                 self.soft_transition_forward_velocity = self.forward_velocity
 
                 error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
                 self._set_error(error)
 
-            
-
-            # TEMP
-            if self.soft_transition_flag:
-                print(self.soft_transition_flag)
-
         elif self.motion_state is MotionState.TRANSITION:
             if self.transition_time < self.transition_planner.get_period():
-                combined_foot_points = self.transition_planner.get_foot_positions(self.transition_time, self.transition_start_foot_points, self.transition_end_foot_points)
+                combined_foot_points = self.transition_planner.get_foot_positions(
+                    self.transition_time, self.transition_start_foot_points, self.transition_end_foot_points
+                )
                 error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
                 self._set_error(error)
             else:
@@ -290,13 +284,15 @@ class Motion:
         if self.target_motion_state is MotionState.WALK:
             phase_time = 0
             angular_velocity = 0
-            forward_velocity = 0         
-            target_foot_points = self.trajector_planner.get_foot_points(self.gait, self.quad.get_base_foot_points(), phase_time, angular_velocity, forward_velocity)
+            forward_velocity = 0
+            target_foot_points = self.trajector_planner.get_foot_points(
+                self.gait, self.quad.get_base_foot_points(), phase_time, angular_velocity, forward_velocity
+            )
         else:
             target_foot_points = self.quad.get_base_foot_points()
 
         self.motion_state = MotionState.TRANSITION
-        self.transition_time = 0    
+        self.transition_time = 0
         self.transition_start_foot_points = self.quad.get_foot_points()
         self.transition_end_foot_points = target_foot_points
 
@@ -360,7 +356,7 @@ class Motion:
             return self.quad
 
     def get_trajectories(self) -> Tuple[Trajectories, Trajectories, Trajectories, Trajectories]:
-        with self.lock:          
+        with self.lock:
             trajectories = None
             rings = None
             transitions = None
