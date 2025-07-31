@@ -21,9 +21,7 @@ from system.utilities.utilities import safe_divide, scale_value
     Processes user inputs such as speed and direction.
 
     Notes: 
-        Gait transitions are primative and should be updated for smoother transitions
-
-        Stand/sit transitions should be updated to use current joint angles to prevent unwanted movements.
+        Gait transitions are primative and should be updated for smoother transitions        
 """
 
 
@@ -31,9 +29,9 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.STANDBY
-        self.target_motion_state: MotionState = MotionState.STANDBY
-        self.previous_target_motion_state: MotionState = MotionState.STANDBY
+        self.motion_state: MotionState = MotionState.WALK
+        self.target_motion_state: MotionState = MotionState.WALK
+        self.previous_target_motion_state: MotionState = MotionState.WALK
         self.gait: Gait = Gait.WALK
         self.target_gait: Gait = Gait.WALK
 
@@ -43,26 +41,31 @@ class Motion:
         self.quad = Quad()
         self.ik_status = Status.STANDBY
         self.joint_angle_status = Status.STANDBY
-
+    
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
         self.phase_time_rate_fast: float = 0.025
-
+   
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.025
         self.pose_period: float = 1
-
+    
         self.transition_time: float = 0
         self.transition_time_rate: float = 0.025
+
+        self.idle_time: float = 0
+        self.idle_time_trigger_seconds: float = 3000000
+        self.idle_flag: bool = True
+
+        self.heading: float= 0 # [0, 1] 
+        self.heading_target: float = 0  # [0, 1]
+        self.heading_rate_seconds: float = 2 # From -1 to 0, or 0 to 1
+        self.heading_time: float = 0
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.start_foot_points: Dict[LegName, Point] = {}
         self.end_foot_points: Dict[LegName, Point] = {}
-
-        self.idle_time: float = 0
-        self.idle_time_trigger_seconds: float = 3
-        self.idle_flag: bool = True
 
         self.min_loop_rate_seconds: float = 0.050
         self.loop_completion_time_ms: float = 0.0
@@ -106,24 +109,28 @@ class Motion:
             with self.lock:
                 self.loop_completion_time_ms = (time() - loop_time) * 1000
 
-    def _check_idle(self):        
+    def _check_idle(self):
         if self.motion_state is MotionState.WALK:
             if abs(self.motion_parameters.get_forward_raw()) > self.motion_parameters.deadzone:
-                self.idle_flag = False 
-                self.idle_time = time()        
+                self.idle_flag = False
+                self.idle_time = time()
 
             if abs(self.motion_parameters.get_heading_raw()) > self.motion_parameters.deadzone:
-                self.idle_flag = False 
+                self.idle_flag = False
                 self.idle_time = time()
-        
-            if time() - self.idle_time > self.idle_time_trigger_seconds:  
+
+            if time() - self.idle_time > self.idle_time_trigger_seconds:
                 if self.idle_flag == False:
                     self.idle_flag = True
                     if self.idle_flag:
                         print(f"[{self.tag}] idle")
                         self.target_motion_state = MotionState.POSE
-                        self._create_transition()   
-    
+                        self._create_transition()
+        else:
+            if self.motion_state is MotionState.TRANSITION:
+                self.idle_flag = False
+                self.idle_time = time()
+
     def _process_dt(self):
         self.pose_time += self.pose_time_rate
 
@@ -135,6 +142,11 @@ class Motion:
             self.phase_time += dt
 
         self.transition_time += self.transition_time_rate
+       
+        #self.heading, self.heading_time = self.motion_parameters.slew_heading(self.heading, self.heading_time, self.heading_rate_seconds)
+        self.heading = self.motion_parameters.get_heading_raw()
+        # TEMP
+
 
     def _process_motion_state_changes(self):
         if self.previous_target_motion_state is not self.target_motion_state:
@@ -189,13 +201,15 @@ class Motion:
             error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
             self._set_error(error)
 
-        elif self.motion_state is MotionState.WALK:
-            heading = self.motion_parameters.get_heading_raw()
-
+        elif self.motion_state is MotionState.WALK:    
             foot_points: Dict[LegName, Point] = {}
             for leg_name in LegName:
                 base_foot_point = self.quad.get_base_foot_point(leg_name)
-                foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.phase_time, heading)
+
+                # TEMP ARGS
+                angular_velocity = self.motion_parameters.get_heading_raw()
+                forward_velocity = self.motion_parameters.get_forward_raw()
+                foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, self.phase_time, angular_velocity, forward_velocity)
                 foot_points[leg_name] = foot_point
 
             error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), foot_points)
@@ -213,27 +227,17 @@ class Motion:
 
     def _create_transition(self):
         """Get start and end foot points and init the tranistion"""
-        target_foot_points: Dict[LegName, Point] = {}
+        target_foot_points: Dict[LegName, Point] = {}            
 
-        if self.target_motion_state is MotionState.STANDBY:
-            pass
-
-        elif self.target_motion_state is MotionState.STAND:
-            target_foot_points = self.quad.get_base_foot_points()
-
-        elif self.target_motion_state is MotionState.SIT:
-            target_foot_points = self.quad.get_base_foot_points()
-
-        elif self.target_motion_state is MotionState.POSE:
-            target_foot_points = self.quad.get_base_foot_points()
-
-        elif self.target_motion_state is MotionState.WALK:
+        if self.target_motion_state is MotionState.WALK:
             phase_time = 0
             heading = 0
             for leg_name in LegName:
                 base_foot_point = self.quad.get_base_foot_point(leg_name)
                 foot_point = self.trajector_planner.get_foot_point(self.gait, leg_name, base_foot_point, phase_time, heading)
                 target_foot_points[leg_name] = foot_point
+        else:
+            target_foot_points = self.quad.get_base_foot_points()
 
         self.motion_state = MotionState.TRANSITION
         self.transition_time = 0
@@ -265,13 +269,16 @@ class Motion:
             self.motion_parameters = motion_parameters
 
     def set_target_motion_state(self, state: MotionState):
-        if state is not MotionState.STAND and self.motion_state is MotionState.STANDBY:
-            return
-        if state is MotionState.STAND or state is MotionState.SIT:
-            if self.motion_state is MotionState.STAND or self.motion_state is MotionState.SIT:
-                return                
-        with self.lock:
-            self.target_motion_state = state
+        allowed_transitions = {
+            MotionState.STAND: {MotionState.STANDBY, MotionState.SIT},
+            MotionState.SIT: {MotionState.POSE, MotionState.WALK},
+            MotionState.POSE: {MotionState.WALK, MotionState.TRANSITION},
+            MotionState.WALK: {MotionState.POSE, MotionState.TRANSITION},
+        }
+
+        if state in allowed_transitions and self.motion_state in allowed_transitions[state]:
+            with self.lock:
+                self.target_motion_state = state
 
     def get_motion_state(self) -> MotionState:
         with self.lock:
@@ -308,7 +315,7 @@ class Motion:
                 (
                     trajectories,
                     rings,
-                ) = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.heading_raw)
+                ) = self.trajector_planner.get_trajectories(self.gait, base_foot_points, self.motion_parameters.get_heading_raw(), self.motion_parameters.forward_raw)
             if self.motion_state is MotionState.TRANSITION:
                 transitions = self.transition_planner.get_transitions(self.start_foot_points, self.end_foot_points)
             return trajectories, rings, transitions

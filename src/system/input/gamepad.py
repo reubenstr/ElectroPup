@@ -8,7 +8,7 @@ from system.input.gamepad_interface import PS4
 from system.interfaces import Status, InputCommand
 from system.quadruped.parameters.ik_parameters import IKParameters
 from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.utilities.utilities import scale_value
+
 
 """
     Converts gamepad inputs into motion parameters ready to be consumed by kinematics calculations.
@@ -23,10 +23,6 @@ DPAD_DIRECTION_LEFT = -1
 DPAD_DIRECTION_CENTER = 0
 DPAD_DIRECTION_DOWN = 1
 DPAD_DIRECTION_RIGHT = 1
-
-# All axis have a deadzone around the middle where the value is unpredicable
-DEADZONE = 0.025
-
 
 class Gamepad:
     def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
@@ -169,62 +165,16 @@ class Gamepad:
 
     def axis_left_y_changed_callback(self, value):
         value *= -1
-
         self.ik_parameters.set_pitch(value)
-
-        sign = copysign(1, value)
-        if abs(value) < DEADZONE:
-            self.motion_parameters.update_forward_raw(0)
-        else:
-            self.motion_parameters.update_forward_raw(
-                sign
-                * scale_value(
-                    abs(value),
-                    DEADZONE,
-                    1,
-                    0,
-                    1,
-                )
-            )
+        self.motion_parameters.set_forward_raw(value)
 
     def axis_right_x_changed_callback(self, value):
-
         self.ik_parameters.set_yaw(value)
+        self.motion_parameters.set_heading_x(value)       
 
-        sign = copysign(1, value)
-        if abs(value) < DEADZONE:
-            self.motion_parameters.update_heading_x(0)
-        else:
-            self.motion_parameters.update_heading_x(
-                sign
-                * scale_value(
-                    abs(value),
-                    DEADZONE,
-                    1,
-                    0,
-                    1,
-                )
-            )
-
-    def axis_right_y_changed_callback(self, value):
-        value *= -1
-     
+    def axis_right_y_changed_callback(self, value):  
         self.ik_parameters.set_height_translation(value)
-
-        sign = copysign(1, value)
-        if abs(value) < DEADZONE:
-            self.motion_parameters.update_heading_y(0)
-        else:
-            self.motion_parameters.update_heading_y(
-                sign
-                * scale_value(
-                    abs(value),
-                    DEADZONE,
-                    1,
-                    0,
-                    1,
-                )
-            )
+        self.motion_parameters.set_heading_y(value)
 
     ###############################################################################
     # Worker (threaded)
