@@ -53,7 +53,6 @@ class Gamepad:
         self.gamepad_inferface.addButtonChangedHandler("SHARE", self.btn_share_changed_callback)
         self.gamepad_inferface.addButtonChangedHandler("OPTIONS", self.btn_options_changed_callback)
         self.gamepad_inferface.addButtonChangedHandler("PS", self.btn_ps_changed_callback)
-
         self.gamepad_inferface.addAxisMovedHandler("LEFT-X", self.axis_left_x_changed_callback)
         self.gamepad_inferface.addAxisMovedHandler("LEFT-Y", self.axis_left_y_changed_callback)
         self.gamepad_inferface.addAxisMovedHandler("RIGHT-X", self.axis_right_x_changed_callback)
@@ -73,7 +72,7 @@ class Gamepad:
         # Thread
         self.thread_handle = None
         self.exit_event = Event()
-        self.WORKER_SLEEP_TIME_MS: float = 0.025
+        self.worker_rate_seconds: float = 0.025
         self.gamepad_last_battery_check_time: float = 0
         self.gamepad_battery_check_rate_seconds: float = 1.0
 
@@ -266,7 +265,7 @@ class Gamepad:
             else:
                 self.status = Status.STANDBY
 
-            sleep(self.WORKER_SLEEP_TIME_MS)
+            sleep(self.worker_rate_seconds)
 
     ###############################################################################
     # Methods

@@ -35,7 +35,7 @@ class IKParameters:
     height_translation_min: float = 0.04
 
     ###############################################################################
-    # Running values, do not change, will be overwritten
+    # Default running values, do not change, will be overwritten
     ###############################################################################
     roll: float = 0
     pitch: float = 0

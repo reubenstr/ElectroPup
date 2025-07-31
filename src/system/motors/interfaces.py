@@ -1,8 +1,9 @@
 import can
-from threading import Thread, Lock , Event
+from threading import Thread, Lock, Event
 from enum import IntEnum, Enum, StrEnum
 from dataclasses import dataclass
 from system.interfaces import Status
+
 
 class MotorSpeeds(IntEnum):
     SLOW = 1000
@@ -10,29 +11,31 @@ class MotorSpeeds(IntEnum):
 
 
 class MotorName(StrEnum):
-    FLA = 'FLA'
-    FLH = 'FLH'
-    FLK = 'FLK'
-    FRA = 'FRA'
-    FRH = 'FRH'
-    FRK = 'FRK'
-    BLA = 'BLA'
-    BLH = 'BLH'
-    BLK = 'BLK'
-    BRA = 'BRA'
-    BRH = 'BRH'
-    BRK = 'BRK'
+    FLA = "FLA"
+    FLH = "FLH"
+    FLK = "FLK"
+    FRA = "FRA"
+    FRH = "FRH"
+    FRK = "FRK"
+    BLA = "BLA"
+    BLH = "BLH"
+    BLK = "BLK"
+    BRA = "BRA"
+    BRH = "BRH"
+    BRK = "BRK"
+
 
 @dataclass
-class MotorInfo:  
-    name:MotorName
+class MotorInfo:
+    name: MotorName
     can_channel: str
     id: int
     min_angle: float
     max_angle: float
     inverse_rotation: bool
     allow_motion: bool
-    allow_comms: bool   
+    allow_comms: bool
+
 
 @dataclass
 class CanInfo:
@@ -44,4 +47,3 @@ class CanInfo:
     exit_event: Event
     loop_completion_time_ms: float = 0.01
     worker_running_flag: bool = False
-

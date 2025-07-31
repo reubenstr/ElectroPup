@@ -1,20 +1,18 @@
-#!/usr/bin/env python3
+import time
+import struct
+import threading
+import subprocess
 
 """
     Gamepad Interface provides buttons and axis inputs from the gamepad driver as events.
 
-    Original significantly modified from: https://github.com/piborg/Gamepad
+    Significantly modified from: https://github.com/piborg/Gamepad
     Key changes:
         Events only
         Non-blocking connections
         Auto reconnections
         Removes exceptions for status bool to check connection state
 """
-
-import time
-import struct
-import threading
-import subprocess
 
 class GamepadInterface:
     EVENT_CODE_BUTTON = 0x01

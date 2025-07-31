@@ -4,6 +4,12 @@ from typing import List
 from system.motors.interfaces import MotorInfo, MotorName
 from system.quadruped.parameters.frame_parameters import FrameParameters
 
+"""
+    Motor configurations.
+
+    allow_motion and allow_comms are useful for development to limit active motors.
+
+"""
 
 def motor_list() -> List[MotorInfo]:
     fp = FrameParameters()
