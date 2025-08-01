@@ -1,0 +1,82 @@
+Date : 2025-08-01 12:38:12
+Directory : /home/pc/Desktop/projects/ElectroPup/src/system
+Total : 46 files,  4606 codes, 1262 comments, 1251 blanks, all 7119 lines
+
+Languages
++--------------+------------+------------+------------+------------+------------+
+| language     | files      | code       | comment    | blank      | total      |
++--------------+------------+------------+------------+------------+------------+
+| Python       |         44 |      4,568 |      1,257 |      1,231 |      7,056 |
+| Shell Script |          1 |         25 |          5 |          8 |         38 |
+| Markdown     |          1 |         13 |          0 |         12 |         25 |
++--------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                      | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                         |         46 |      4,606 |      1,262 |      1,251 |      7,119 |
+| . (Files)                                                                                 |          4 |        296 |         30 |         99 |        425 |
+| auxiliary                                                                                 |          5 |        182 |         35 |         67 |        284 |
+| gamepad                                                                                   |          4 |        637 |         97 |        102 |        836 |
+| hardware                                                                                  |          4 |        609 |        183 |        183 |        975 |
+| input                                                                                     |          4 |        765 |        118 |        154 |      1,037 |
+| motors                                                                                    |          6 |        837 |        163 |        178 |      1,178 |
+| quadruped                                                                                 |         17 |      1,220 |        629 |        456 |      2,305 |
+| quadruped (Files)                                                                         |         12 |      1,082 |        568 |        398 |      2,048 |
+| quadruped/parameters                                                                      |          5 |        138 |         61 |         58 |        257 |
+| utilities                                                                                 |          2 |         60 |          7 |         12 |         79 |
++-------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+
+| filename                                                                                  | language     | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+
+| /home/pc/Desktop/projects/ElectroPup/src/system/__init__.py                               | Python       |          0 |          0 |          1 |          1 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/README.md                       | Markdown     |         13 |          0 |         12 |         25 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/aux.py                          | Python       |        117 |         21 |         38 |        176 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/crc32.py                        | Python       |         12 |          0 |          3 |         15 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/heartbeat.py                    | Python       |         15 |          9 |          6 |         30 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/install_heartbeat.sh            | Shell Script |         25 |          5 |          8 |         38 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/forwarder.py                              | Python       |        156 |         29 |         40 |        225 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/gamepad/__init__.py                       | Python       |          0 |          0 |          1 |          1 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/gamepad/gamepad.py                        | Python       |        180 |         34 |         45 |        259 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/gamepad/gamepad_interface.py              | Python       |        446 |         63 |         53 |        562 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/gamepad/moving_average.py                 | Python       |         11 |          0 |          3 |         14 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/hardware/bno055_driver.py                 | Python       |         93 |         20 |         32 |        145 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/hardware/hardware.py                      | Python       |        187 |         27 |         64 |        278 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/hardware/i2c_scanner.py                   | Python       |         21 |          7 |          7 |         35 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/hardware/ina228_driver.py                 | Python       |        308 |        129 |         80 |        517 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/input/gamepad.py                          | Python       |        165 |         31 |         55 |        251 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/input/gamepad_interface.py                | Python       |        449 |         62 |         52 |        563 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/input/input.py                            | Python       |         45 |         12 |         17 |         74 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/input/touch.py                            | Python       |        106 |         13 |         30 |        149 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/interfaces.py                             | Python       |         66 |          1 |         25 |         92 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/__init__.py                        | Python       |          0 |          0 |          1 |          1 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/can_interface.py                   | Python       |        195 |         55 |         39 |        289 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/interfaces.py                      | Python       |         41 |          0 |          9 |         50 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/motor.py                           | Python       |        223 |         45 |         45 |        313 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/motor_list.py                      | Python       |         37 |          6 |          7 |         50 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/motors/motors.py                          | Python       |        341 |         57 |         77 |        475 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/__init__.py                     | Python       |          0 |          0 |          1 |          1 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/exceptions.py                   | Python       |          4 |          8 |          1 |         13 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/gait_planner.py                 | Python       |         61 |         19 |         20 |        100 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/interfaces.py                   | Python       |         17 |          0 |          6 |         23 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/kinematics.py                   | Python       |         44 |        165 |         36 |        245 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/leg.py                          | Python       |         65 |         55 |         27 |        147 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/motion.py                       | Python       |        317 |         32 |         91 |        440 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/frame_parameters.py  | Python       |         16 |         12 |         11 |         39 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/ik_parameters.py     | Python       |         41 |         21 |         18 |         80 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/motion_parameters.py | Python       |         47 |         28 |         20 |         95 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/poses.py             | Python       |         19 |          0 |          2 |         21 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/utilities.py         | Python       |         15 |          0 |          7 |         22 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/point.py                        | Python       |        178 |         49 |         96 |        323 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/quad.py                         | Python       |        164 |         76 |         42 |        282 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/trajectory_planner.py           | Python       |        110 |         31 |         29 |        170 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/transformations.py              | Python       |         31 |        125 |         28 |        184 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/quadruped/transition_planner.py           | Python       |         91 |          8 |         21 |        120 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/status.py                                 | Python       |         74 |          0 |         33 |        107 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/utilities/key_converter.py                | Python       |         18 |          2 |          3 |         23 |
+| /home/pc/Desktop/projects/ElectroPup/src/system/utilities/utilities.py                    | Python       |         42 |          5 |          9 |         56 |
+| Total                                                                                     |              |      4,606 |      1,262 |      1,251 |      7,119 |
++-------------------------------------------------------------------------------------------+--------------+------------+------------+------------+------------+

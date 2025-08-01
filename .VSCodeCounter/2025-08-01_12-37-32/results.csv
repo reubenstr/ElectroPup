@@ -1,0 +1,122 @@
+"filename", "language", "Python", "Markdown", "TypeScript", "JavaScript", "TypeScript JSX", "HTML", "JSON", "JSON with Comments", "Groovy", "Batch", "Properties", "XML", "Shell Script", "comment", "blank", "total"
+"/home/pc/Desktop/projects/ElectroPup/src/README.md", "Markdown", 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 21
+"/home/pc/Desktop/projects/ElectroPup/src/main.py", "Python", 232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 68, 342
+"/home/pc/Desktop/projects/ElectroPup/src/model/README.md", "Markdown", 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 25
+"/home/pc/Desktop/projects/ElectroPup/src/model/assets/README.md", "Markdown", 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3
+"/home/pc/Desktop/projects/ElectroPup/src/model/electro-pup.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 177, 0, 4, 49, 230
+"/home/pc/Desktop/projects/ElectroPup/src/model/scene.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 5, 25
+"/home/pc/Desktop/projects/ElectroPup/src/plot.py", "Python", 95, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 32, 154
+"/home/pc/Desktop/projects/ElectroPup/src/server.py", "Python", 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 32, 138
+"/home/pc/Desktop/projects/ElectroPup/src/setup/install_live.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 6, 9, 45
+"/home/pc/Desktop/projects/ElectroPup/src/sim.py", "Python", 77, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 34, 124
+"/home/pc/Desktop/projects/ElectroPup/src/system/__init__.py", "Python", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"/home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/README.md", "Markdown", 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 25
+"/home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/aux.py", "Python", 117, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 38, 176
+"/home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/crc32.py", "Python", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"/home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/heartbeat.py", "Python", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 6, 30
+"/home/pc/Desktop/projects/ElectroPup/src/system/auxiliary/install_heartbeat.sh", "Shell Script", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 5, 8, 38
+"/home/pc/Desktop/projects/ElectroPup/src/system/forwarder.py", "Python", 156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 29, 40, 225
+"/home/pc/Desktop/projects/ElectroPup/src/system/gamepad/__init__.py", "Python", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"/home/pc/Desktop/projects/ElectroPup/src/system/gamepad/gamepad.py", "Python", 180, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 45, 259
+"/home/pc/Desktop/projects/ElectroPup/src/system/gamepad/gamepad_interface.py", "Python", 446, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 53, 562
+"/home/pc/Desktop/projects/ElectroPup/src/system/gamepad/moving_average.py", "Python", 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"/home/pc/Desktop/projects/ElectroPup/src/system/hardware/bno055_driver.py", "Python", 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 32, 145
+"/home/pc/Desktop/projects/ElectroPup/src/system/hardware/hardware.py", "Python", 187, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 64, 278
+"/home/pc/Desktop/projects/ElectroPup/src/system/hardware/i2c_scanner.py", "Python", 21, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 35
+"/home/pc/Desktop/projects/ElectroPup/src/system/hardware/ina228_driver.py", "Python", 308, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 129, 80, 517
+"/home/pc/Desktop/projects/ElectroPup/src/system/input/gamepad.py", "Python", 165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 55, 251
+"/home/pc/Desktop/projects/ElectroPup/src/system/input/gamepad_interface.py", "Python", 449, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 52, 563
+"/home/pc/Desktop/projects/ElectroPup/src/system/input/input.py", "Python", 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 17, 74
+"/home/pc/Desktop/projects/ElectroPup/src/system/input/touch.py", "Python", 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 30, 149
+"/home/pc/Desktop/projects/ElectroPup/src/system/interfaces.py", "Python", 66, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 25, 92
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/__init__.py", "Python", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/can_interface.py", "Python", 195, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 55, 39, 289
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/interfaces.py", "Python", 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 50
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/motor.py", "Python", 223, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 45, 313
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/motor_list.py", "Python", 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 7, 50
+"/home/pc/Desktop/projects/ElectroPup/src/system/motors/motors.py", "Python", 341, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 77, 475
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/__init__.py", "Python", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/exceptions.py", "Python", 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 13
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/gait_planner.py", "Python", 61, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 20, 100
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/interfaces.py", "Python", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 23
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/kinematics.py", "Python", 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 165, 36, 245
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/leg.py", "Python", 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 55, 27, 147
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/motion.py", "Python", 317, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 91, 440
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/frame_parameters.py", "Python", 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 11, 39
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/ik_parameters.py", "Python", 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 18, 80
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/motion_parameters.py", "Python", 47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 20, 95
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/poses.py", "Python", 19, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 21
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/parameters/utilities.py", "Python", 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 22
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/point.py", "Python", 178, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 96, 323
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/quad.py", "Python", 164, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 76, 42, 282
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/trajectory_planner.py", "Python", 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 29, 170
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/transformations.py", "Python", 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 28, 184
+"/home/pc/Desktop/projects/ElectroPup/src/system/quadruped/transition_planner.py", "Python", 91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 21, 120
+"/home/pc/Desktop/projects/ElectroPup/src/system/status.py", "Python", 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 107
+"/home/pc/Desktop/projects/ElectroPup/src/system/utilities/key_converter.py", "Python", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 23
+"/home/pc/Desktop/projects/ElectroPup/src/system/utilities/utilities.py", "Python", 42, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 9, 56
+"/home/pc/Desktop/projects/ElectroPup/src/ui/.pnp.cjs", "JavaScript", 0, 0, 0, 21448, 0, 0, 0, 0, 0, 0, 0, 0, 0, 234, 87, 21769
+"/home/pc/Desktop/projects/ElectroPup/src/ui/.pnp.loader.mjs", "JavaScript", 0, 0, 0, 1958, 0, 0, 0, 0, 0, 0, 0, 0, 0, 150, 19, 2127
+"/home/pc/Desktop/projects/ElectroPup/src/ui/README.md", "Markdown", 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 51
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/build.gradle", "Groovy", 0, 0, 0, 0, 0, 0, 0, 0, 88, 0, 0, 0, 0, 68, 22, 178
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/debug/AndroidManifest.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 3, 8
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/AndroidManifest.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 32
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/drawable/ic_launcher_background.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 6
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/drawable/rn_edit_text_material.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 23, 3, 38
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 5
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/values-night/colors.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/values/colors.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 6
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/values/strings.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 6
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/app/src/main/res/values/styles.xml", "XML", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 12
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/build.gradle", "Groovy", 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 2, 6, 38
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/gradle.properties", "Properties", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 34, 13, 59
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/gradle/wrapper/gradle-wrapper.properties", "Properties", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 1, 8
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/gradlew.bat", "Batch", 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 0, 0, 32, 22, 95
+"/home/pc/Desktop/projects/ElectroPup/src/ui/android/settings.gradle", "Groovy", 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 0, 7, 40
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app.json", "JSON", 0, 0, 0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 0, 1, 52
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/+not-found.tsx", "TypeScript JSX", 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 32
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/_layout.tsx", "TypeScript JSX", 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0, 0, 0, 1, 11, 140
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/config.tsx", "TypeScript JSX", 0, 0, 0, 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 86
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/controller.tsx", "TypeScript JSX", 0, 0, 0, 0, 347, 0, 0, 0, 0, 0, 0, 0, 0, 6, 27, 380
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/data.tsx", "TypeScript JSX", 0, 0, 0, 0, 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 85
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/index.tsx", "TypeScript JSX", 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 20
+"/home/pc/Desktop/projects/ElectroPup/src/ui/app/viewer.tsx", "TypeScript JSX", 0, 0, 0, 0, 476, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 513
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/MotorTable.tsx", "TypeScript JSX", 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 120
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/MotorTooltip.tsx", "TypeScript JSX", 0, 0, 0, 0, 68, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10, 82
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/Plot3D.tsx", "TypeScript JSX", 0, 0, 0, 0, 370, 0, 0, 0, 0, 0, 0, 0, 0, 0, 40, 410
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/ServerSelector.tsx", "TypeScript JSX", 0, 0, 0, 0, 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 203
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/indicators/ContactIndicators.tsx", "TypeScript JSX", 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 40
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/indicators/MotorIndicator.tsx", "TypeScript JSX", 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 39
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/indicators/StatusIndicator.tsx", "TypeScript JSX", 0, 0, 0, 0, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 63
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/modals/AddServerEndpointModal.tsx", "TypeScript JSX", 0, 0, 0, 0, 172, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 190
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/modals/ConfirmationModal.tsx", "TypeScript JSX", 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 50
+"/home/pc/Desktop/projects/ElectroPup/src/ui/components/verticalText.tsx", "TypeScript JSX", 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 33
+"/home/pc/Desktop/projects/ElectroPup/src/ui/constants/Colors.ts", "TypeScript", 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 27
+"/home/pc/Desktop/projects/ElectroPup/src/ui/constants/motorNames.ts", "TypeScript", 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 17
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/+not-found.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/_expo/static/js/web/entry-3a32780351d1656a01d4f06e068ed478.js", "JavaScript", 0, 0, 0, 1251, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 2, 1335
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/_expo/static/js/web/react-plotly-21a57620921009d90dc35ed7de453c14.js", "JavaScript", 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 51, 0, 71
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/_sitemap.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/config.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/data.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/index.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/dist/viewer.html", "HTML", 0, 0, 0, 0, 0, 559, 0, 0, 0, 0, 0, 0, 0, 0, 0, 559
+"/home/pc/Desktop/projects/ElectroPup/src/ui/eslint.config.js", "JavaScript", 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 11
+"/home/pc/Desktop/projects/ElectroPup/src/ui/hooks/useColorScheme.ts", "TypeScript", 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2
+"/home/pc/Desktop/projects/ElectroPup/src/ui/hooks/useColorScheme.web.ts", "TypeScript", 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 6, 22
+"/home/pc/Desktop/projects/ElectroPup/src/ui/hooks/useThemeColor.ts", "TypeScript", 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 22
+"/home/pc/Desktop/projects/ElectroPup/src/ui/interfaces/messages.tsx", "TypeScript JSX", 0, 0, 0, 0, 174, 0, 0, 0, 0, 0, 0, 0, 0, 2, 20, 196
+"/home/pc/Desktop/projects/ElectroPup/src/ui/package-lock.json", "JSON", 0, 0, 0, 0, 0, 0, 16924, 0, 0, 0, 0, 0, 0, 0, 1, 16925
+"/home/pc/Desktop/projects/ElectroPup/src/ui/package.json", "JSON", 0, 0, 0, 0, 0, 0, 68, 0, 0, 0, 0, 0, 0, 0, 1, 69
+"/home/pc/Desktop/projects/ElectroPup/src/ui/services/config/configDefaults.ts", "TypeScript", 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"/home/pc/Desktop/projects/ElectroPup/src/ui/services/config/configTypes.ts", "TypeScript", 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 20
+"/home/pc/Desktop/projects/ElectroPup/src/ui/services/config/useConfigStore.tsx", "TypeScript JSX", 0, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 60
+"/home/pc/Desktop/projects/ElectroPup/src/ui/services/storage/storage.ts", "TypeScript", 0, 0, 37, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 7, 48
+"/home/pc/Desktop/projects/ElectroPup/src/ui/services/useDataTransfer.tsx", "TypeScript JSX", 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 3, 12, 71
+"/home/pc/Desktop/projects/ElectroPup/src/ui/styles/buttonStyles.tsx", "TypeScript JSX", 0, 0, 0, 0, 87, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 91
+"/home/pc/Desktop/projects/ElectroPup/src/ui/styles/colors.ts", "TypeScript", 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 45
+"/home/pc/Desktop/projects/ElectroPup/src/ui/styles/modalStyles.tsx", "TypeScript JSX", 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17
+"/home/pc/Desktop/projects/ElectroPup/src/ui/tsconfig.json", "JSON with Comments", 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 1, 19
+"/home/pc/Desktop/projects/ElectroPup/src/zero_motors.py", "Python", 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 26, 173
+"Total", "-", 5184, 68, 168, 24685, 2639, 3354, 17043, 18, 151, 41, 19, 287, 55, 2105, 2040, 57857

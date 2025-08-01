@@ -17,15 +17,15 @@ ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my 
 
 For ROS2 example of a quadruped robot dog see [Zuko](https://github.com/reubenstr/zuko).
 
-# 🕑 Status
+# Status
 
 Work in progress, see TODO section for major tasks.
 
-# 📁 Docs
+# Docs
 
 See the docs directory for bill of materials (BOM), 3D printed parts info, and notes on software, design, and assembly.
 
-# 🧮 Kinematics
+# Kinematics
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
@@ -33,7 +33,7 @@ Inverse kinematics, leg position, and gamepad inputs are verifed using a live pl
 
 Run plot.py to start the plot. A gamepad is required to update the plot but if a gamepad is not connected the plot will display a static pose.
 
-# ⏯ Simulation
+# Simulation
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
 
@@ -41,7 +41,7 @@ Simulation is performed in [MuJoCo](https://mujoco.org/).
 
 Run ./sim.py to start the simulation. A gamepad is required to drive the robot as keyboard input is not yet added.
 
-# ⚡ PCBs
+# PCBs
 
 PCBs are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB.
 
@@ -72,7 +72,7 @@ Provides direct connection to RPi header for the following breakouts:
 
 The current version of the Auxiliary Board uses a STM32 Black Pill dev board for quicker development and assembly since there will likely be future revisions with more advanced features such as a built in speaker amplifier.
 
-# 🏋️ Motors
+# Motors
 
 The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be purchased from [Aliexpress](https://www.aliexpress.us/item/3256805950420462.html?spm=a2g0o.order_list.order_list_main.5.32491802no3XMa&gatewayAdapt=glo2usa).
 
@@ -132,7 +132,7 @@ The zero-motors.py script is a quick way to verify correct motor configuration a
 
 The zero_motors.py script applies an offset after zeroing a motor as a convience to continue calibration without power cycling.
 
-# 🌐 CAN Bus
+# CAN Bus
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-can-bus-controller.png" width="800">
 
@@ -148,7 +148,7 @@ ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech 
 
 Future controller additions may include commands to flip the quadruped after a rollover, change gaits, hop, etc.
 
-# 💻 Environment and IDEs 
+# Environment and IDEs 
 
 There are three hardware/software environments described below.
 
@@ -171,7 +171,7 @@ A STM32F401 Black Pill dev kit operates the auxiliary board to display the motor
 
 Uses VSCode with PlatformIO on the PC/Laptop for development.
 
-# ⚙️ Parts
+# Parts
 
 The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for strength and ease of printing. See these excellent blog posts for more information: [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker) and [edemargerie](https://www.instructables.com/Comparing-Impact-Resistance-of-21-Filaments-for-3D/).
 
@@ -197,11 +197,11 @@ All parts have export permissions to allow copying the workspace for modificatio
 - [PCB](https://cad.onshape.com/documents/c8a855826c37bd92b89d9f0e)
 - [Neopixels](https://cad.onshape.com/documents/567292ac55c75b2efa25b7d5)
 
-# 🔋 Battery Pack 
+# Battery Pack 
 
 In progress.
 
-# 🚧 TODO  
+# TODO  
 
 ### Major
 
@@ -227,11 +227,11 @@ In progress.
 - add current sensor for entire system
 - rework PCBs to move DC-DC from Power Carrier to Auxiliary Board
 
-# ❓ Questions
+# Questions
 
 For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues).
 
-# 👏 Credits
+# Credits
 
 Inverse kinematics and leg points for plotting was sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/).
 

@@ -7,7 +7,7 @@ Fully loaded:
 Abduction at zero degrees, legs at 45 degrees
 
 Idle (motors off): 
-Suspended: 1.08A @ 20.0vDC = 21.6 watts
+Suspended: 1.08A @ 20vDC = 21.6 watts
 Standing: 1.79A @ 20vDC = 33.8 watts
  
 
