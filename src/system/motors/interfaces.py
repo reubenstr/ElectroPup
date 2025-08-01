@@ -2,7 +2,8 @@ import can
 from threading import Thread, Lock, Event
 from enum import IntEnum, Enum, StrEnum
 from dataclasses import dataclass
-from system.interfaces import Status
+
+from interfaces import Status
 
 
 class MotorSpeeds(IntEnum):

@@ -9,20 +9,20 @@ from time import sleep
 from rich import print  # Overrides print and injects colors
 from typing import Dict, List
 
-from system.quadruped.quad import Quad
-from system.quadruped.gait_planner import Gait
-from system.quadruped.interfaces import LegName, AngleUnits
-from system.input.input import Input
-from system.quadruped.motion import Motion
-from system.hardware.hardware import Hardware
-from system.motors.motors import Motor, Motors
-from system.motors.interfaces import MotorName, MotorSpeeds
-from system.auxiliary.aux import Aux, AuxMessage
-from system.utilities.utilities import *
+from quadruped.quad import Quad
+from quadruped.gait_planner import Gait
+from quadruped.interfaces import LegName, AngleUnits
+from input.input import Input
+from quadruped.motion import Motion
+from hardware.hardware import Hardware
+from motors.motors import Motor, Motors
+from motors.interfaces import MotorName, MotorSpeeds
+from auxiliary.aux import Aux, AuxMessage
+from utilities.utilities import *
 
-from system.interfaces import OpModes, Status, InputCommand, MotionState
-from system.status import SystemStatus
-from system.forwarder import Forwarder
+from interfaces import OpModes, Status, InputCommand, MotionState
+from status import SystemStatus
+from forwarder import Forwarder
 
 """
     ElectroPup main application.

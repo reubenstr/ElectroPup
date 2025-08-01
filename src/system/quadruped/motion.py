@@ -6,16 +6,16 @@ import numpy as np
 from itertools import product
 from rich import print  # Overrides print and injects colors
 
-from system.quadruped.interfaces import QuadErrorState
-from system.quadruped.point import Point, get_distance_xy, angle_between_xy
-from system.quadruped.quad import Quad, LegName
-from system.quadruped.transition_planner import TransitionPlanner
-from system.quadruped.parameters.ik_parameters import IKParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.quadruped.gait_planner import Gait
-from system.quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from system.interfaces import MotionState, Status
-from system.utilities.utilities import safe_divide, scale_value, angle_difference_deg
+from quadruped.interfaces import QuadErrorState
+from quadruped.point import Point, get_distance_xy, angle_between_xy
+from quadruped.quad import Quad, LegName
+from quadruped.transition_planner import TransitionPlanner
+from quadruped.parameters.ik_parameters import IKParameters
+from quadruped.parameters.motion_parameters import MotionParameters
+from quadruped.gait_planner import Gait
+from quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
+from interfaces import MotionState, Status
+from utilities.utilities import safe_divide, scale_value, angle_difference_deg
 
 
 """

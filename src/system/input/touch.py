@@ -7,11 +7,11 @@ from typing import Optional
 from copy import deepcopy
 import json
 
-from system.input.gamepad_interface import PS4
-from system.interfaces import Status, InputCommand
-from system.quadruped.parameters.ik_parameters import IKParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.utilities.utilities import scale_value
+from input.gamepad_interface import PS4
+from interfaces import Status, InputCommand
+from quadruped.parameters.ik_parameters import IKParameters
+from quadruped.parameters.motion_parameters import MotionParameters
+from utilities.utilities import scale_value
 
 
 @dataclass

@@ -1,12 +1,12 @@
 from smbus2 import SMBus
 from time import time, sleep
 from math import atan2, degrees, sqrt
-from system.interfaces import Status
 from threading import Thread, Event, Lock
 
-from system.hardware.ina228_driver import INA228
-from system.hardware.bno055_driver import BNO055
-from system.interfaces import ImuData
+from interfaces import Status
+from hardware.ina228_driver import INA228
+from hardware.bno055_driver import BNO055
+from interfaces import ImuData
 
 
 '''

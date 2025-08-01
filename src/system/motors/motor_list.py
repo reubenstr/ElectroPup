@@ -1,8 +1,8 @@
 
 from typing import List
 
-from system.motors.interfaces import MotorInfo, MotorName
-from system.quadruped.parameters.frame_parameters import FrameParameters
+from motors.interfaces import MotorInfo, MotorName
+from quadruped.parameters.frame_parameters import FrameParameters
 
 """
     Motor configurations.

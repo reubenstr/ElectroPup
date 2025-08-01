@@ -4,10 +4,10 @@ from threading import Thread, Event
 from copy import deepcopy
 from math import copysign
 
-from system.input.gamepad_interface import PS4
-from system.interfaces import Status, InputCommand
-from system.quadruped.parameters.ik_parameters import IKParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
+from input.gamepad_interface import PS4
+from interfaces import Status, InputCommand
+from quadruped.parameters.ik_parameters import IKParameters
+from quadruped.parameters.motion_parameters import MotionParameters
 
 
 """

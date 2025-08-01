@@ -2,12 +2,12 @@ from math import radians, copysign
 import numpy as np
 from typing import Dict, Tuple
 
-from system.quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
-from system.quadruped.gait_planner import GaitPlanner
-from system.quadruped.quad import LegName
-from system.quadruped.gait_planner import Gait, Phase
-from system.quadruped.interfaces import Trajectories, Trajectory
-from system.utilities.utilities import log_scale_value
+from quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
+from quadruped.gait_planner import GaitPlanner
+from quadruped.quad import LegName
+from quadruped.gait_planner import Gait, Phase
+from quadruped.interfaces import Trajectories, Trajectory
+from utilities.utilities import log_scale_value
 
 
 class TrajectoryPlanner:

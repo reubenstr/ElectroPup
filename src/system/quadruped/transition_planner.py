@@ -2,9 +2,9 @@ from math import pi, sin
 from enum import Enum
 from typing import Dict
 import numpy as np
-from system.quadruped.quad import LegName
-from system.quadruped.point import Point
-from system.quadruped.interfaces import Trajectories, Trajectory
+from quadruped.quad import LegName
+from quadruped.point import Point
+from quadruped.interfaces import Trajectories, Trajectory
 
 
 class Phase(Enum):
