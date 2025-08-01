@@ -45,3 +45,12 @@ def log_scale_value(value, old_min, old_max, new_min, new_max):
     log_value = log(value)
 
     return (log_value - log_old_min) / (log_old_max - log_old_min) * (new_max - new_min) + new_min
+
+@staticmethod
+def angle_difference_deg(a, b):
+    """
+    Returns the smallest difference between two angles in degrees.
+    Result is in range [-180, 180].
+    """
+    diff = (a - b + 180) % 360 - 180
+    return diff
