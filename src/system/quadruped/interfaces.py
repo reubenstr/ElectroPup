@@ -7,10 +7,10 @@ Trajectory: TypeAlias = List[Point]
 Trajectories: TypeAlias = List[Trajectory]
 
 class LegName(Enum):
-    FL = "FL"
     FR = "FR"
-    BL = "BL"
+    FL = "FL"
     BR = "BR"
+    BL = "BL"
 
 class QuadErrorState(Enum):
     NONE = 1

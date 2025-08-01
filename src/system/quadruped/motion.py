@@ -40,12 +40,9 @@ class Motion:
         self.gait: Gait = Gait.WALK
         self.target_gait: Gait = Gait.WALK
 
-        self.ik_parameters = IKParameters()
-        self.motion_parameters = MotionParameters()
-
         self.quad = Quad()
-        self.ik_status = Status.STANDBY
-        self.joint_angle_status = Status.STANDBY
+        self.motion_parameters: MotionParameters = MotionParameters()
+        self.ik_parameters: IKParameters = IKParameters()
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
@@ -69,15 +66,15 @@ class Motion:
         self.angular_velocity_time: float = 0
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
-        
+
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.transition_start_foot_points: Dict[LegName, Point] = {}
         self.transition_end_foot_points: Dict[LegName, Point] = {}
         self.transition_angular_velocity: float = 0
         self.transition_forward_velocity: float = 0
         self.transition_angle_threadhold: float = 20
-       
-        self.soft_transition_flag: bool = False       
+
+        self.soft_transition_flag: bool = False
         self.soft_transition_legs_started_swing: Dict[LegName, bool] = []
         self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points()
 
@@ -220,9 +217,8 @@ class Motion:
         )
 
         base_foot_points = self.quad.get_base_foot_points()
-        error = self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
-        self._set_error(error)
-
+        self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
+        
         if self.pose_time > self.pose_period:
             self.motion_state = MotionState.POSE
 
@@ -233,32 +229,36 @@ class Motion:
         )
 
         base_foot_points = self.quad.get_base_foot_points()
-        error = self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
-        self._set_error(error)
-
+        self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
+       
         if self.pose_time > self.pose_period:
             self.pose_time = self.pose_period
 
     def _process_motion_state_pose(self):
         base_foot_points = self.quad.get_base_foot_points()
-        error = self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
-        self._set_error(error)
-
+        self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+   
     def _process_motion_state_walk(self):
         # Get foot points in latest trajectory.
         new_foot_points = self.trajector_planner.get_foot_points(
             self.gait, self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
         )
-     
+
         if self.transition_allow_flag:
-            # Large heading changes trigger a transition.           
-            old_twist_angle = self.trajector_planner.get_twist_angle(self.gait, self.quad.get_base_foot_points(), LegName.FL, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity)
-            new_twist_angle = self.trajector_planner.get_twist_angle(self.gait, self.quad.get_base_foot_points(), LegName.FL, self.phase_time, self.angular_velocity, self.forward_velocity)
+            # Large heading changes trigger a transition.
+            old_twist_angle = self.trajector_planner.get_twist_angle(
+                self.gait, self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
+            )
+            new_twist_angle = self.trajector_planner.get_twist_angle(
+                self.gait, self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.forward_velocity
+            )
             delta = abs(angle_difference_deg(old_twist_angle, new_twist_angle))
             if delta > self.transition_angle_threadhold:
-                print(f"[{self.tag}] abrupt heading change detected, from {round(old_twist_angle, 2)} to {round(new_twist_angle, 2)} with delta {round(delta, 2)}")
+                print(
+                    f"[{self.tag}] abrupt heading change detected, from {round(old_twist_angle, 2)} to {round(new_twist_angle, 2)} with delta {round(delta, 2)}"
+                )
                 self._create_transition()
-                return     
+                return
 
             if not self.soft_transition_flag:
                 # Check distance of current and new foot positions
@@ -268,8 +268,8 @@ class Motion:
                     if abs(distance) > 0.03:
                         print(f"[{self.tag}] large walking distance detected, {delta}")
                         self.soft_transition_flag = True
-                        self.soft_transition_legs_started_swing = {LegName.FL: False, LegName.FR: False, LegName.BL: False, LegName.BR: False}
-                        break        
+                        self.soft_transition_legs_started_swing = {LegName.FR: False, LegName.FL: False, LegName.BR: False, LegName.BL: False}
+                        break
 
         if self.soft_transition_flag:
             # Update list of legs in or completed the swing phase
@@ -291,25 +291,21 @@ class Motion:
             for leg in LegName:
                 combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
-            error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
-            self._set_error(error)
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)           
         else:
             self.transition_angular_velocity = self.angular_velocity
             self.transition_forward_velocity = self.forward_velocity
 
-            error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
-            self._set_error(error)
-
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
+            
         self.transition_allow_flag = True
-      
 
     def _process_motion_state_transition(self):
         if self.transition_time < self.transition_planner.get_period():
             combined_foot_points = self.transition_planner.get_foot_positions(
                 self.transition_time, self.transition_start_foot_points, self.transition_end_foot_points
             )
-            error = self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
-            self._set_error(error)
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)            
         else:
             self.phase_time = 0
             self.pose_time = 0
@@ -326,7 +322,7 @@ class Motion:
         target_foot_points: Dict[LegName, Point] = {}
 
         if self.target_motion_state is MotionState.WALK:
-            phase_time = 0        
+            phase_time = 0
             target_foot_points = self.trajector_planner.get_foot_points(
                 self.gait, self.quad.get_base_foot_points(), phase_time, self.angular_velocity, self.forward_velocity
             )
@@ -339,11 +335,6 @@ class Motion:
         self.transition_end_foot_points = target_foot_points
         self.transition_angular_velocity = self.angular_velocity
         self.transition_forward_velocity = self.forward_velocity
-        
-
-    def _set_error(self, error: QuadErrorState):
-        self.ik_status = Status.ERROR if error is QuadErrorState.KINEMATICS else Status.STANDBY
-        self.joint_angle_status = Status.ERROR if error is QuadErrorState.JOINT else Status.STANDBY
 
     ###############################################################################
     # Methods
@@ -429,11 +420,3 @@ class Motion:
     def get_loop_time_ms(self) -> float:
         with self.lock:
             return self.loop_completion_time_ms
-
-    def get_ik_status(self) -> Status:
-        with self.lock:
-            return self.ik_status
-
-    def get_joint_angle_status(self) -> Status:
-        with self.lock:
-            return self.joint_angle_status

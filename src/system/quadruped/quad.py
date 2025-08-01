@@ -50,7 +50,6 @@ class Quad(object):
 
     def __init__(self):
         self.frame_parameters = FrameParameters()
-
         self.hip_length = self.frame_parameters.hip_length
         self.upper_leg_length = self.frame_parameters.upper_leg_length
         self.lower_leg_length = self.frame_parameters.lower_leg_length
@@ -58,6 +57,9 @@ class Quad(object):
         self.body_length = self.frame_parameters.body_length
         self.foot_length = self.frame_parameters.foot_length
         self.foot_width = self.frame_parameters.foot_width
+
+        self.joint_angle_error: bool = False
+        self.ik_error: bool = False
 
         self.legs: Dict[LegName, Leg] = {}
 
@@ -86,10 +88,10 @@ class Quad(object):
         offset = 0
 
         global_foot_positions = {}
-        global_foot_positions[LegName.FL] = Point(l / 2, -w / 2 - l1 - offset, 0)
-        global_foot_positions[LegName.FR] = Point(l / 2, w / 2 + l1 + offset, 0)
-        global_foot_positions[LegName.BL] = Point(-l / 2, -w / 2 - l1 - offset, 0)
-        global_foot_positions[LegName.BR] = Point(-l / 2, w / 2 + l1 + offset, 0)
+        global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
+        global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
 
         return global_foot_positions
 
@@ -119,17 +121,6 @@ class Quad(object):
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
 
-            self.legs[LegName.FL] = Leg(
-                0,
-                0,
-                0,
-                self.hip_length,
-                self.upper_leg_length,
-                self.lower_leg_length,
-                kinematics.t_front_left(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.FL],
-                leg12=False,
-            )
             self.legs[LegName.FR] = Leg(
                 0,
                 0,
@@ -137,20 +128,20 @@ class Quad(object):
                 self.hip_length,
                 self.upper_leg_length,
                 self.lower_leg_length,
-                kinematics.t_front_right(ht_body, self.body_length, self.body_width),
+                kinematics.t_front_left(ht_body, self.body_length, self.body_width),
                 foot_positions[LegName.FR],
-                leg12=True,
+                leg12=False,
             )
-            self.legs[LegName.BL] = Leg(
+            self.legs[LegName.FL] = Leg(
                 0,
                 0,
                 0,
                 self.hip_length,
                 self.upper_leg_length,
                 self.lower_leg_length,
-                kinematics.t_back_left(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.BL],
-                leg12=False,
+                kinematics.t_front_right(ht_body, self.body_length, self.body_width),
+                foot_positions[LegName.FL],
+                leg12=True,
             )
             self.legs[LegName.BR] = Leg(
                 0,
@@ -159,20 +150,35 @@ class Quad(object):
                 self.hip_length,
                 self.upper_leg_length,
                 self.lower_leg_length,
-                kinematics.t_back_right(ht_body, self.body_length, self.body_width),
+                kinematics.t_back_left(ht_body, self.body_length, self.body_width),
                 foot_positions[LegName.BR],
+                leg12=False,
+            )
+            self.legs[LegName.BL] = Leg(
+                0,
+                0,
+                0,
+                self.hip_length,
+                self.upper_leg_length,
+                self.lower_leg_length,
+                kinematics.t_back_right(ht_body, self.body_length, self.body_width),
+                foot_positions[LegName.BL],
                 leg12=True,
             )
 
             error_string = self.check_joint_angles(self.legs)
             if error_string != None:
                 print(error_string)
+                self.joint_angle_error = True
                 return QuadErrorState.JOINT
 
         except DomainBreach as error:
             print(error)
+            self.ik_error = True
             return QuadErrorState.KINEMATICS
 
+        self.joint_angle_error = False
+        self.ik_error = False
         return QuadErrorState.NONE
 
     def get_body_coordinates(self) -> dict[LegName, Point]:
@@ -181,10 +187,10 @@ class Quad(object):
         """
 
         return {
-            LegName.BR: self.legs[LegName.BR].get_hip_point(),
-            LegName.FR: self.legs[LegName.FR].get_hip_point(),
-            LegName.FL: self.legs[LegName.FL].get_hip_point(),
             LegName.BL: self.legs[LegName.BL].get_hip_point(),
+            LegName.FL: self.legs[LegName.FL].get_hip_point(),
+            LegName.FR: self.legs[LegName.FR].get_hip_point(),
+            LegName.BR: self.legs[LegName.BR].get_hip_point(),
         }
 
     def get_leg_coordinates(self) -> dict[LegName, list[Point]]:
@@ -193,10 +199,10 @@ class Quad(object):
         """
 
         return {
-            LegName.BR: self.legs[LegName.BR].get_leg_points(),
-            LegName.FR: self.legs[LegName.FR].get_leg_points(),
-            LegName.FL: self.legs[LegName.FL].get_leg_points(),
             LegName.BL: self.legs[LegName.BL].get_leg_points(),
+            LegName.FL: self.legs[LegName.FL].get_leg_points(),
+            LegName.FR: self.legs[LegName.FR].get_leg_points(),
+            LegName.BR: self.legs[LegName.BR].get_leg_points(),
         }
     
 
@@ -206,10 +212,10 @@ class Quad(object):
         """
 
         return {
-            LegName.BR: self.legs[LegName.BR].get_foot_point(),
-            LegName.FR: self.legs[LegName.FR].get_foot_point(),
-            LegName.FL: self.legs[LegName.FL].get_foot_point(),
             LegName.BL: self.legs[LegName.BL].get_foot_point(),
+            LegName.FL: self.legs[LegName.FL].get_foot_point(),
+            LegName.FR: self.legs[LegName.FR].get_foot_point(),
+            LegName.BR: self.legs[LegName.BR].get_foot_point(),
         }
 
 
@@ -223,16 +229,16 @@ class Quad(object):
         """
         if units is AngleUnits.RADIANS:
             joint_angles = {}
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
             joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_radians()
-            joint_angles[LegName.BL] = self.legs[LegName.BR].get_leg_angles_in_radians()
-            joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_radians()
+            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
+            joint_angles[LegName.BR] = self.legs[LegName.BL].get_leg_angles_in_radians()
+            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_radians()
         elif units is AngleUnits.DEGREES:
             joint_angles = {}
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
             joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_degrees()
-            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_degrees()
+            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
             joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_degrees()
+            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_degrees()
 
         return joint_angles
 
@@ -279,3 +285,9 @@ class Quad(object):
 
     def get_num_legs(self) -> int:
         return len(self.legs)
+    
+    def get_joint_angle_error(self) -> bool:
+        return self.joint_angle_error
+    
+    def get_ik_error(self) -> bool:
+        return self.ik_error

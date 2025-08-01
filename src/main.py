@@ -127,24 +127,27 @@ class Main:
         if not self.motors.is_error():
             if self.motion.motion_state is not MotionState.STANDBY:
 
+                if self.motion.get_quad().get_ik_error() or self.motion.get_quad().get_joint_angle_error():
+                    return
+
                 if self.motion.motion_state is MotionState.SIT or self.motion.motion_state is MotionState.STAND:
                     speed = MotorSpeeds.SLOW
                 else:
                     speed = MotorSpeeds.MOTION
 
                 joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
-                self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL]["abduction"])
-                self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FL]["hip"])
-                self.motors.set_motor_targets(MotorName.FLK, speed, joint_angles[LegName.FL]["knee"])
-                self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FR]["abduction"])
-                self.motors.set_motor_targets(MotorName.FRH, speed, joint_angles[LegName.FR]["hip"])
-                self.motors.set_motor_targets(MotorName.FRK, speed, joint_angles[LegName.FR]["knee"])
-                self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BL]["abduction"])
-                self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BL]["hip"])
-                self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BL]["knee"])
-                self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BR]["abduction"])
-                self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BR]["hip"])
-                self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR]["knee"])
+                self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FR]["abduction"])
+                self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FR]["hip"])
+                self.motors.set_motor_targets(MotorName.FLK, speed, joint_angles[LegName.FR]["knee"])
+                self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FL]["abduction"])
+                self.motors.set_motor_targets(MotorName.FRH, speed, joint_angles[LegName.FL]["hip"])
+                self.motors.set_motor_targets(MotorName.FRK, speed, joint_angles[LegName.FL]["knee"])
+                self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BR]["abduction"])
+                self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BR]["hip"])
+                self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BR]["knee"])
+                self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BL]["abduction"])
+                self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BL]["hip"])
+                self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BL]["knee"])
 
     def process_aux(self):
         """
@@ -183,8 +186,8 @@ class Main:
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
         system_status.gait.state = self.motion.get_gait()
-        system_status.ik.status = self.motion.get_ik_status()
-        system_status.joint_angle.status = self.motion.get_joint_angle_status()
+        system_status.ik.status = self.motion.get_quad().get_ik_error()
+        system_status.joint_angle.status = self.motion.get_quad().get_joint_angle_error()
         system_status.input.state = self.input.get_input_mode()
         system_status.loopTimes.main = self.loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
@@ -217,22 +220,22 @@ class Main:
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
         leg_angles: Dict[LegName, List[float]] = {}
-        leg_angles[LegName.FL] = [
+        leg_angles[LegName.FR] = [
             self.motors.get_motor_position(MotorName.FLA),
             self.motors.get_motor_position(MotorName.FLH),
             self.motors.get_motor_position(MotorName.FLK),
         ]
-        leg_angles[LegName.FR] = [
+        leg_angles[LegName.FL] = [
             self.motors.get_motor_position(MotorName.FRA),
             self.motors.get_motor_position(MotorName.FRH),
             self.motors.get_motor_position(MotorName.FRK),
         ]
-        leg_angles[LegName.BL] = [
+        leg_angles[LegName.BR] = [
             self.motors.get_motor_position(MotorName.BLA),
             self.motors.get_motor_position(MotorName.BLH),
             self.motors.get_motor_position(MotorName.BLK),
         ]
-        leg_angles[LegName.BR] = [
+        leg_angles[LegName.BL] = [
             self.motors.get_motor_position(MotorName.BRA),
             self.motors.get_motor_position(MotorName.BRH),
             self.motors.get_motor_position(MotorName.BRK),

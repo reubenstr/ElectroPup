@@ -25,10 +25,10 @@ class TrajectoryPlanner:
                 stride_length=0.075,
                 step_height=0.05,
                 phase_offsets={
-                    LegName.FL: 0.0,
-                    LegName.BR: 0.25,
-                    LegName.FR: 0.5,
-                    LegName.BL: 0.75,
+                    LegName.FR: 0.0,
+                    LegName.BL: 0.25,
+                    LegName.FL: 0.5,
+                    LegName.BR: 0.75,
                 },
             )
         elif gait == Gait.TROT:
@@ -39,10 +39,10 @@ class TrajectoryPlanner:
                 stride_length=0.075,
                 step_height=0.05,
                 phase_offsets={
-                    LegName.FL: 0.0,
-                    LegName.BR: 0.0,
-                    LegName.FR: 0.5,
-                    LegName.BL: 0.5,
+                    LegName.FR: 0.0,
+                    LegName.BL: 0.0,
+                    LegName.FL: 0.5,
+                    LegName.BR: 0.5,
                 },
             )
 
@@ -59,21 +59,13 @@ class TrajectoryPlanner:
         max_cor = 100
 
         # Calculate CoR (center-of-rotation)
-        if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:
-            # Standing still
-            #turning_radius = max_cor
+        if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:           
             cor = Point(0, max_cor, 0)
-        elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:
-            # Straight walking
-            #urning_radius = max_cor
+        elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:          
             cor = Point(0, max_cor, 0)
-        elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:
-            # In-place rotation
-            #turning_radius = 0.0
+        elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:           
             cor = Point(0, 0, 0)
-        else:
-            # Curved walking
-            #turning_radius = (forward_velocity / angular_velocity) / 5
+        else:          
             cor = Point(0, (forward_velocity / angular_velocity) / 5, 0)
 
         # Get the radius from CoR to the leg's nominal foot position
