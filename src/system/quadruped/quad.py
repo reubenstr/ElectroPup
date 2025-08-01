@@ -10,10 +10,10 @@ from . import kinematics
 from . import transformations
 from . exceptions import DomainBreach
 from . interfaces import LegName, AngleUnits, QuadErrorState
-from system.quadruped.parameters.frame_parameters import FrameParameters
-from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.quadruped.parameters.ik_parameters import IKParameters
-from system.quadruped.point import Point
+from quadruped.parameters.frame_parameters import FrameParameters
+from quadruped.parameters.motion_parameters import MotionParameters
+from quadruped.parameters.ik_parameters import IKParameters
+from quadruped.point import Point
 
 
 

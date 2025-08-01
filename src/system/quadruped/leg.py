@@ -4,7 +4,7 @@ from typing import List, Dict
 
 from . import kinematics
 from . import transformations
-from system.quadruped.point import Point
+from quadruped.point import Point
 
 
 class Leg(object):

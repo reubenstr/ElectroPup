@@ -12,13 +12,10 @@ from threading import Thread, Event, Lock
 from typing import Dict, List
 from enum import Enum
 
-# Local
-from system.motors.motor import Motor
-from system.motors.motor_list import motor_list
-from system.motors.interfaces import CanInfo, MotorZeroInfo
-from system.interfaces import Status
-
-
+from motors.motor import Motor
+from motors.motor_list import motor_list
+from motors.interfaces import CanInfo, MotorZeroInfo
+from interfaces import Status
 
 """
 Controls a collection of MG4010E-i10v3 actuators on a single CAN bus network.

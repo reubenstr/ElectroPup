@@ -1,8 +1,8 @@
 import numpy as np
 from enum import Enum, StrEnum
 from typing import Dict, List
-from system.quadruped.quad import LegName
-from system.quadruped.point import Point
+from quadruped.quad import LegName
+from quadruped.point import Point
 
 
 class Gait(StrEnum):

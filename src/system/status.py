@@ -1,7 +1,8 @@
 from enum import Enum
 from dataclasses import dataclass, field
-from system.interfaces import MotionState, OpModes, Status, InputMode
-from system.quadruped.gait_planner import Gait
+
+from interfaces import MotionState, OpModes, Status, InputMode
+from quadruped.gait_planner import Gait
 
 
 @dataclass

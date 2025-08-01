@@ -11,11 +11,11 @@ from copy import deepcopy
 from threading import Event
 from dataclasses import dataclass, asdict
 
-from system.utilities.key_converter import KeyConverter
-from system.status import SystemStatus
-from system.quadruped.quad import Quad
-from system.interfaces import Contacts
-from system.quadruped.parameters.ik_parameters import IKParameters
+from utilities.key_converter import KeyConverter
+from status import SystemStatus
+from quadruped.quad import Quad
+from interfaces import Contacts
+from quadruped.parameters.ik_parameters import IKParameters
 
 
 """

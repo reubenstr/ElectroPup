@@ -1,9 +1,9 @@
 from typing import Callable, Optional
-from system.input.gamepad import Gamepad
-from system.input.touch import Touch
-from system.interfaces import InputMode, InputCommand, Status
-from system.quadruped.parameters.motion_parameters import MotionParameters
-from system.quadruped.parameters.ik_parameters import IKParameters
+from input.gamepad import Gamepad
+from input.touch import Touch
+from interfaces import InputMode, InputCommand, Status
+from quadruped.parameters.motion_parameters import MotionParameters
+from quadruped.parameters.ik_parameters import IKParameters
 
 """
     Multiplexes multiple inputs: gamepad and UI (touch)

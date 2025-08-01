@@ -1,7 +1,7 @@
 
 from enum import Enum
 from typing import List, Dict, TypeAlias, Tuple
-from system.quadruped.point import Point
+from quadruped.point import Point
 
 Trajectory: TypeAlias = List[Point]
 Trajectories: TypeAlias = List[Trajectory]
