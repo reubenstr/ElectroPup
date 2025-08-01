@@ -6,7 +6,7 @@ Generates a wireframe 3D plot of athe quadruped. Gamepad controls poses to demon
 
 Starts the MuJoCu physics simulation of the quadruped. Gamepad controls poses and motion.
 
-# live.py
+# main.py
 
 Executes on the quadruped's Raspberry Pi with a CAN shield. Gamepad connects over Bluetooth to control the robot.
 

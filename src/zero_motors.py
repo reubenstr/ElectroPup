@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+import os
+import sys
+from time import sleep
+from collections import OrderedDict
+import curses
+
+from system.motors.motors import Motors
 
 """
     Utility to zero motors and verify motor layout.
@@ -8,166 +15,193 @@
     Motors require a power cycle for a new zero to take effect!
 """
 
-import os
-import sys
-from time import sleep
-from collections import OrderedDict
-import curses
-
-# Local:
-from system.motors.motors import Motors
 
 motor_model = "MG4010E-i10v3"
+import sys
+import time
+import math
+import threading
+from typing import List
 
-motor_info = OrderedDict({       
-    'FLA': {'description' : 'front left abduction'},
-    'FLH': {'description' : 'front left hip'},
-    'FLK': {'description' : 'front left knee'},
-    'FRA': {'description' : 'front right abduction'},
-    'FRH': {'description' : 'front right hip'},
-    'FRK': {'description' : 'front right knee'},
-    'BLA': {'description' : 'back left abduction'},
-    'BLH': {'description' : 'back left hip'},
-    'BLK': {'description' : 'back left knee'},
-    'BRA': {'description' : 'back right abduction'},
-    'BRH': {'description' : 'back right hip'},
-    'BRK': {'description' : 'back right knee'}})
+from prompt_toolkit import Application
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Layout
+from prompt_toolkit.layout.containers import HSplit, Window
+from prompt_toolkit.layout.controls import FormattedTextControl
+from prompt_toolkit.styles import Style
 
-for key in motor_info.keys():
-    motor_info[key]['angle'] = 0
-    motor_info[key]['offset'] = 0
-    motor_info[key]['error'] = False
-    motor_info[key]['zeroed'] = False
+from system.hardware.hardware import Hardware
+from system.motors.motors import Motors
+from system.motors.interfaces import MotorZeroInfo
 
-motor_tags_front = ["FLA", "FLH", "FLK", "FRA", "FRH", "FRK"]
-motor_interface_front = Motors(can_bus_id="can0", motor_tags=motor_tags_front)    
-motor_interface_front.disable_all_motors()
+"""
+    This script creates an interface to zero the position of the motors.
 
-motor_tags_back = ["BLA", "BLH", "BLK", "BRA", "BRH", "BRK"]
-motor_interface_back = Motors(can_bus_id="can1", motor_tags=motor_tags_back)  
-motor_interface_back.disable_all_motors()
+"""
 
-def get_motor_interface_from_tag(motor_tag : str):
-    if motor_tag in motor_tags_front:
-        return motor_interface_front
-    elif motor_tag in motor_tags_back:
-        return motor_interface_back
-    
-def get_motor_angle_from_tag(motor_tag : str):    
-    motor_interface = get_motor_interface_from_tag(motor_tag=motor_tag)   
-    success = motor_interface.op_fetch_motor_angle(motor_tag=motor_tag) 
-    if success: 
-        angle = motor_interface.get_motor_position(motor_name=motor_tag)
-        return angle
-            
-def main(stdscr):  
-    row = 0
-          
-    curses.cbreak()
-    curses.curs_set(0)
-    stdscr.nodelay(True) 
-    stdscr.clear()
-          
-    if curses.has_colors():
-        curses.start_color()     
-        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)     
-        curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE)  
-        curses.init_pair(3, curses.COLOR_WHITE, curses.COLOR_RED) 
-          
-    # Upon startup the motor driver reports angles 0 to 360
-    # To prevent issues of wrong initial directions, this library
-    # uses -180 to 180 conventions. Flag start up angles > 180 requiring
-    # an offset to match the desired convention.
-    for motor_tag in motor_tags_front:
-        angle = get_motor_angle_from_tag(motor_tag=motor_tag)
-        if angle and angle > 180:          
-            motor_interface_front.set_apply_negative_offset_angle_flag(motor_tag=motor_tag, value=True)
-    for motor_tag in motor_tags_back:
-        angle = get_motor_angle_from_tag(motor_tag=motor_tag)
-        if angle and angle > 180:
-            motor_interface_back.set_apply_negative_offset_angle_flag(motor_tag=motor_tag, value=True)
-    
-    while True:
-        try: 
-            char = stdscr.getch()  
-            if char != -1:    
-                if char == curses.KEY_UP:
-                    if row > 0:
-                        row -= 1
-                elif char == curses.KEY_DOWN:    
-                    if row < len(motor_info) - 1:
-                        row += 1
-                elif chr(char).lower() == 'q':  # Check for 'q' to exit
-                    break
-                elif chr(char) == '0': # Check for '0' to zero motor
-                    motor_tag =  list(motor_info.keys())[row] 
-                    offset  = get_motor_angle_from_tag(motor_tag)
-                    if offset:
-                        motor_info[motor_tag]['offset'] = offset
-                        motor_interface = get_motor_interface_from_tag(motor_tag)
-                        success = motor_interface.set_zero_to_current_position(motor_tag=motor_tag)
-                        if success:                            
-                            motor_info[motor_tag]['zeroed'] = True   
-                        else:
-                            motor_info[motor_tag]['error'] = True
-                              
-            stdscr.addstr(0, 0, " State |  Angle | Tag | Description\n")
-            stdscr.addstr(1, 0, "—————————————————————————————————\n")          
-            for index, motor_tag in enumerate(motor_info): 
-                angle = get_motor_angle_from_tag(motor_tag)
-                if angle:
-                    angle -= motor_info[motor_tag]['offset']                   
-                    angle = f'{angle:>6.2f}'
-                else:
-                    angle = '  N/A '
-                
-                if motor_info[motor_tag]['error']:
-                    state = ' ERROR'
-                elif motor_info[motor_tag]['zeroed']:
-                    state = 'ZEROED'
-                else:
-                    state = ' STBY '
-                    
-                motor_interface = get_motor_interface_from_tag(motor_tag)
-                if motor_interface.get_motor(motor_tag).reply_timeout_count > 0:
-                    state = ' ERROR'                    
-                               
-                description = motor_info[motor_tag]['description']
-                text = f'{state} | {angle} | {motor_tag} | {description}'
-                color_pair = 2 if index == row else 1
-                stdscr.addstr(index + 2, 0, text, curses.color_pair(color_pair))
-                
-            warning = ""
-            for motor_tag, info in motor_info.items():
-                if info['zeroed']:
-                    warning = "Power cycle required for zero to take effect!"
-                        
-            stdscr.addstr(14, 0, "—————————————————————————————————")
-            stdscr.addstr(15, 0, warning, curses.color_pair(3))
-            stdscr.addstr(16, 0, "0 = zero, arrows = move row, q = quit")    
-               
-        except KeyboardInterrupt:
-            break        
-        
-    motor_interface_front.shutdown()
-    motor_interface_back.shutdown()
+motors = Motors(allow_enable=False)
+
+motors.start()
+
+num_motors = 12
+motor_infos: List[MotorZeroInfo] = []
+selected_index = [0]
+exit_event = threading.Event()
+
+
+# Styles for displayed text.
+style = Style.from_dict(
+    {
+        "text": "fg:default bg:default",
+        "selected": "fg:blue bg:default bold",
+        "error": "fg:red bold",
+        "warn": "fg:yellow bold",
+        "fault": "fg:yellow bold",
+        "ready": "fg:green bold",
+    }
+)
+
+
+def clear_screen():
+    # ANSI escape codes for "clear screen" and "move cursor to top-left"
+    sys.stdout.write("\033[2J\033[H")
+    sys.stdout.flush()
+
+
+def get_motor_line(i):
+    if len(motor_infos) < i + 1:
+        return [("class:text", "  No motor data!")]
+
+    info: MotorZeroInfo = motor_infos[i]
+
+    # Pick state label and style
+    if info.allow_comms == False:
+        state_style = "warn"
+        state_text = "COMM DISABLED"
+    elif info.comms_error:
+        state_style = "error"
+        state_text = "COMM ERROR"
+    elif info.hardware_error:
+        state_style = "fault"
+        state_text = "MOTOR FAULT"
+    else:
+        state_style = "ready"
+        state_text = "READY"
+
+    position = f"{info.position:7.2f}"
+    motor_name = info.motor_name
+    motor_id = info.motor_id
+    can_id = info.can_id
+
+    line_style = "selected" if i == selected_index[0] else "text"
+
+    return [
+        ("class:" + state_style, f"{state_text:13} "),
+        (
+            "class:" + line_style,
+            f"| {position}° | {motor_id:2} | {motor_name:18} | {can_id}",
+        ),
+    ]
+
+
+motor_windows = [
+    Window(
+        content=FormattedTextControl(lambda i=i: get_motor_line(i)),
+        height=1,
+        always_hide_cursor=True,
+    )
+    for i in range(num_motors)
+]
+
+layout = Layout(
+    HSplit(
+        [
+            Window(
+                height=1,
+                always_hide_cursor=True,
+                content=FormattedTextControl(
+                    [
+                        (
+                            "class:text",
+                            "   State      |   Angle  | ID |       Name         | CAN ",
+                        )
+                    ]
+                ),
+            ),
+            Window(
+                height=1,
+                always_hide_cursor=True,
+                content=FormattedTextControl(
+                    [
+                        (
+                            "class:text",
+                            "--------------------------------------------------------",
+                        )
+                    ]
+                ),
+            ),
+            *motor_windows,
+            Window(
+                height=1,
+                always_hide_cursor=True,
+                content=FormattedTextControl("Use ↑/↓ to move, 0 to zero, q to exit\n"),
+                style="reverse",
+            ),
+            Window(
+                height=1,
+                always_hide_cursor=True,
+                content=FormattedTextControl("Warning: power cycle required for zero to take effect!\n"),
+                style="bg:darkred",
+            ),
+        ]
+    )
+)
+
+kb = KeyBindings()
+
+@kb.add("up")
+def move_up(event):
+    selected_index[0] = (selected_index[0] - 1) % num_motors
+
+
+@kb.add("down")
+def move_down(event):
+    selected_index[0] = (selected_index[0] + 1) % num_motors
+
+
+@kb.add("0")
+def select(event):
+    motor_name = motor_infos[selected_index[0]].motor_name
+    motors.set_zero_to_current_position(motor_name)
+
+
+@kb.add("c-c")
+@kb.add("q")
+def _(event):
+    clear_screen()
+    print("Shutting down...")
+    exit_event.set()
+    motors.shutdown()   
+    event.app.exit()
+
+
+app = Application(layout=layout, key_bindings=kb, style=style, full_screen=True)
+
+
+def update_periodically():
+    global motor_infos
+    while not exit_event.is_set():
+        motor_infos = motors.get_all_motor_zero_info()
+        app.invalidate()
+        time.sleep(0.05)
+
+
+threading.Thread(target=update_periodically, daemon=True).start()
+
 
 ###############################################################################
 # Entry
 ###############################################################################
 if __name__ == "__main__":
-    
-    # Redirect stdout to os.devnull
-    original_stdout = sys.stdout 
-    sys.stdout = open(os.devnull, 'w')
-
-    try:
-        curses.wrapper(main)
-    except curses.error as e: 
-        sys.stdout.close() 
-        sys.stdout = original_stdout              
-        print(f'Error: {__file__} requires more rows in the terminal to display properly!')  
-        exit()              
-    finally:
-        sys.stdout.close() 
-        sys.stdout = original_stdout 
+    clear_screen()
+    app.run()

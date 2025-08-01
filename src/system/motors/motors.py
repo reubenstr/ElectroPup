@@ -9,14 +9,15 @@ from dataclasses import dataclass
 from time import time, sleep
 from rich import print  # Overrides print and injects colors
 from threading import Thread, Event, Lock
-from typing import Dict
+from typing import Dict, List
 from enum import Enum
 
 # Local
 from system.motors.motor import Motor
 from system.motors.motor_list import motor_list
-from system.motors.interfaces import CanInfo
+from system.motors.interfaces import CanInfo, MotorZeroInfo
 from system.interfaces import Status
+
 
 
 """
@@ -147,15 +148,16 @@ class Motors:
     # Per Motor
     ###############################################################################
 
-    def set_zero_to_current_position(self, motor_tag: str):
-        start = time()
-        motor_id = self.motors[motor_tag].id
-        success = self.can_interface.cmd_set_zero_to_current_pos(motor_id)
+    def set_zero_to_current_position(self, motor_name: str):
+        """ Zero requires power cycle to take effect! """
+        start = time()       
+        motor = self.motors[motor_name]
+        success = motor.cmd_set_zero_to_current_pos()
         if success:
-            print(f"[{self.tag}][{motor_tag}] command set zero to current position completed, success: {success}, time: {time() - start:0.3f}")
-            self.motors[motor_tag].reply_timeout_count = 0
+            print(f"[{self.tag}][{motor_name}] command set zero to current position completed, success: {success}, time: {time() - start:0.3f}")
+            self.motors[motor_name].reply_timeout_count = 0
         else:
-            self.motors[motor_tag].reply_timeout_count += 1
+            self.motors[motor_name].reply_timeout_count += 1
         return success
 
     ###############################################################################
@@ -414,8 +416,26 @@ class Motors:
                 faults["lostInputProtection"] = motor.lost_input_protection
                 state["faults"] = faults
                 states[motor.name.name] = state
-
         return states
+    
+    
+    def get_all_motor_zero_info(self) -> List[MotorZeroInfo]:
+        """ Pack motor info for zeroing script """
+        infos: List[MotorZeroInfo] = []
+        for key, motor in self.motors.items():
+            infos.append(
+               MotorZeroInfo(
+                    can_id=motor.can_channel,
+                    motor_name=motor.name,
+                    motor_id=motor.motor_id,
+                    allow_comms=motor.allow_comms,
+                    allow_motion=motor.allow_motion,
+                    position=motor.position_degrees,                    
+                    comms_error=motor.is_comms_error(), 
+                    hardware_error=motor.is_hardware_error(),
+                )
+            )
+        return infos
 
     def shutdown(self):
         self._stop()

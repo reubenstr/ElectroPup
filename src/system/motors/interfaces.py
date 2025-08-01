@@ -47,3 +47,16 @@ class CanInfo:
     exit_event: Event
     loop_completion_time_ms: float = 0.01
     worker_running_flag: bool = False
+
+# For zeroing script.
+@dataclass
+class MotorZeroInfo:
+    can_id: int
+    motor_name: str
+    motor_id: int
+    allow_comms: bool
+    allow_motion: bool
+    position: float
+    comms_error: bool   
+    hardware_error: bool
+    
