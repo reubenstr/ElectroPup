@@ -2,20 +2,19 @@ from time import time, sleep
 from typing import List
 from threading import Thread, Lock, Event
 from typing import List, Dict, Tuple
-import numpy as np
 from itertools import product
 from rich import print  # Overrides print and injects colors
 
-from quadruped.interfaces import QuadErrorState
-from quadruped.point import Point, get_distance_xy, angle_between_xy
+from quadruped.point import Point, get_distance_xy
 from quadruped.quad import Quad, LegName
 from quadruped.transition_planner import TransitionPlanner
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.gait_planner import Gait
 from quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from interfaces import MotionState, Status
-from utilities.utilities import safe_divide, scale_value, angle_difference_deg
+from interfaces import  Status
+from quadruped.interfaces import MotionState
+from utilities.utilities import scale_value, angle_difference_deg
 
 
 """
@@ -24,9 +23,6 @@ from utilities.utilities import safe_divide, scale_value, angle_difference_deg
 
     Notes: 
 
-
-
-
 """
 
 
@@ -34,9 +30,9 @@ class Motion:
     def __init__(self):
         self.tag = "Motion"
 
-        self.motion_state: MotionState = MotionState.WALK
-        self.target_motion_state: MotionState = MotionState.WALK
-        self.previous_target_motion_state: MotionState = MotionState.WALK
+        self.motion_state: MotionState = MotionState.STANDBY
+        self.target_motion_state: MotionState = MotionState.STANDBY
+        self.previous_target_motion_state: MotionState = MotionState.STANDBY
         self.gait: Gait = Gait.WALK
         self.target_gait: Gait = Gait.WALK
 

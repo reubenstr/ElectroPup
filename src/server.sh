@@ -15,7 +15,6 @@ else
 fi
 source .venv/bin/activate
 
-# Find local python and start the server
 if [ -f "system/server.py" ]; then
     echo "Starting server..."
 else

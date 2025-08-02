@@ -6,7 +6,7 @@ from threading import Thread, Event, Lock
 from interfaces import Status
 from hardware.ina228_driver import INA228
 from hardware.bno055_driver import BNO055
-from interfaces import ImuData
+from hardware.interfaces import ImuData
 
 
 '''

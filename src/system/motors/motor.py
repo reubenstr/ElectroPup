@@ -155,7 +155,9 @@ class Motor:
         """
         Sets speed and angle of the motor.
         Datasheet named as: cmd_motor_multi_angle_2
-        """       
+        """    
+
+        angle = angle * -1.0 if self.inverse_rotation else angle   
 
         speed_low_byte = speed & 0x00FF
         speed_high_byte = speed >> 8 & 0x00FF
@@ -246,7 +248,8 @@ class Motor:
                 )  # Byte 7
 
                 converted_position_degrees = (self.convert_twos_compliment_64(raw_position) >> 8) / 1000.0
-                self.position_degrees = converted_position_degrees - 360.0 if self.apply_position_offset else converted_position_degrees
+                offset_position_degrees = converted_position_degrees - 360.0 if self.apply_position_offset else converted_position_degrees
+                self.position_degrees = offset_position_degrees * -1.0 if self.inverse_rotation else offset_position_degrees
 
                 if self.prints_enabled:
                     print(f"[{self.tag }][M{reply_motor_id}] req_motor_multi_angle reply, position: {self.position_degrees} degrees")

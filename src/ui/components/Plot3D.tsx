@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Platform, View, Text, StyleSheet, LayoutChangeEvent, TouchableOpacity } from 'react-native';
-import { QuadData } from '@/interfaces/messages';
+import { PlotDataExtras, QuadData } from '@/interfaces/messages';
 import { Switch } from 'react-native-paper';
-import { PlotData } from '@/interfaces/messages';
+import { PlotDataQuad } from '@/interfaces/messages';
 
 interface Plot3DProps {
   quadData?: QuadData;
@@ -47,16 +47,18 @@ export default function Plot3D({ quadData }: Plot3DProps) {
       const plotData: any[] = []
 
       if (quadData.plotSim && checkedValues.sim) {
-        plotData.push(...generatePlotData(quadData.plotSim));
+        plotData.push(...generateQuadPlotData(quadData.plotSim, '#00cd00'));
       }
 
       if (quadData.plotLive && checkedValues.live) {
-        plotData.push(...generatePlotData(quadData.plotLive));
+        plotData.push(...generateQuadPlotData(quadData.plotLive, '#bd0000ff'));
       }
+
+      plotData.push(...generateExtrasPlotData(quadData.plotExtras));
 
       return plotData;
     };
-  }, [legColor, checkedValues]);
+  }, [checkedValues]);
 
   useEffect(() => {
     if (quadData) {
@@ -149,7 +151,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
   };
 
 
-  const generatePlotData = (plotData: PlotData): any[] => {
+  const generateQuadPlotData = (plotData: PlotDataQuad, legColor: string): any[] => {
     const newPlotData: any = [];
 
     if (plotData.body) {
@@ -161,7 +163,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
         mode: 'markers+lines',
         name: 'body',
         showlegend: false,
-        marker: { color: 'blue' },
+        marker: { color: legColor },
         line: {
           shape: 'linear',
           width: 5, color: 'black'
@@ -197,7 +199,13 @@ export default function Plot3D({ quadData }: Plot3DProps) {
           opacity: 0.1,
           color: '#ffa801'
         });
-    }
+    }  
+
+    return newPlotData;
+  }
+  
+  const generateExtrasPlotData = (plotData: PlotDataExtras): any[] => {
+    const newPlotData: any = [];
 
     if (plotData.trajectories) {
       plotData.trajectories.map((trajectory, index) => {
@@ -269,6 +277,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
 
     return newPlotData;
   }
+
 
   if (Platform.OS !== 'web') {
     return (

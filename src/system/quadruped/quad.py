@@ -48,7 +48,7 @@ class Quad(object):
     """
  
 
-    def __init__(self):
+    def __init__(self, supress_prints: bool = False):
         self.frame_parameters = FrameParameters()
         self.hip_length = self.frame_parameters.hip_length
         self.upper_leg_length = self.frame_parameters.upper_leg_length
@@ -57,6 +57,8 @@ class Quad(object):
         self.body_length = self.frame_parameters.body_length
         self.foot_length = self.frame_parameters.foot_length
         self.foot_width = self.frame_parameters.foot_width
+
+        self.tag = 'Quad'
 
         self.joint_angle_error: bool = False
         self.ik_error: bool = False
@@ -166,20 +168,26 @@ class Quad(object):
                 leg12=True,
             )
 
-            error_string = self.check_joint_angles(self.legs)
+            error_string = self.check_joint_angles()
             if error_string != None:
                 print(error_string)
                 self.joint_angle_error = True
-                return QuadErrorState.JOINT
+                return
+            
+            error_string = self.check_ground_penetration()
+            if error_string != None:
+                print(error_string)
+                self.joint_angle_error = True
+                return             
 
         except DomainBreach as error:
             print(error)
             self.ik_error = True
-            return QuadErrorState.KINEMATICS
+            return
 
         self.joint_angle_error = False
         self.ik_error = False
-        return QuadErrorState.NONE
+        
 
     def get_body_coordinates(self) -> dict[LegName, Point]:
         """
@@ -242,7 +250,7 @@ class Quad(object):
 
         return joint_angles
 
-    def check_joint_angles(self, legs: Dict[str, Leg]):
+    def check_joint_angles(self):
         """Checks the bounds of joint angles
         Args:
             Legs dictionary to check
@@ -251,7 +259,7 @@ class Quad(object):
             string: error (string describes the error)
         """
 
-        for key, leg in legs.items():
+        for key, leg in self.legs.items():
             angles = leg.get_leg_angles_in_radians()
             abduction = angles["abduction"]
             hip = angles["hip"]
@@ -263,9 +271,23 @@ class Quad(object):
             if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
 
+
+    def check_ground_penetration(self):
+        """Checks for joint points penetrating the ground       
+        Returns:
+            None: no error
+            string: error (string describes the error)
+        """
+        leg_coords = self.get_leg_coordinates()
+        for leg_name, points in leg_coords.items():
+            for point in points:
+                if point.z < -0.001:
+                    return f"[{self.tag}] Leg {leg_name} has a joint angle penetrating the ground at [{round(point.x, 3)}, {round(point.y, 3)}, {round(point.z, 3)}]!"
+        return None            
+    
     
     def set_joint_angles_degrees(self, leg_angles: Dict[LegName, List[float]]):
-        ''' Set the joint angles for all four legs for wireframe and simulation verification.
+        ''' Set the joint angles for all four legs for simulation.
 
         Args:
             Dict of legs containing list of angles as floats in degrees.

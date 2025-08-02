@@ -36,10 +36,13 @@ interface CoordinateSeries {
     z: number[];
 }
 
-export interface PlotData {   
+export interface PlotDataQuad {   
     body: CoordinateSeries;
     legs: CoordinateSeries[];
-    mesh: CoordinateSeries;
+    mesh: CoordinateSeries;   
+}
+
+export interface PlotDataExtras {     
     trajectories: CoordinateSeries[];
     transitions: CoordinateSeries[];
     rings: CoordinateSeries[];
@@ -184,8 +187,9 @@ interface IkParameters {
 
 export interface QuadData {
     timestamp: number;
-    plotSim: PlotData;
-    plotLive: PlotData;
+    plotSim: PlotDataQuad;
+    plotLive: PlotDataQuad;
+    plotExtras: PlotDataExtras;
     status: SystemStatus;
     contacts: Contacts;
     motors: {

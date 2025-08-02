@@ -7,7 +7,7 @@ from quadruped.parameters.frame_parameters import FrameParameters
 """
     Motor configurations.
 
-    allow_motion and allow_comms are useful for development to limit active motors.
+    Use allow_motion and allow_comms during development to limit active motors and comms errors.
 
 """
 
@@ -21,7 +21,7 @@ def motor_list() -> List[MotorInfo]:
             id=1,
             min_angle=fp.abduction_joint_lower_bounds,
             max_angle=fp.abduction_joint_upper_bounds,
-            inverse_rotation=False,     
+            inverse_rotation=True,     
             allow_motion=True,
             allow_comms=True,
         ),
@@ -31,9 +31,9 @@ def motor_list() -> List[MotorInfo]:
             id=2,
             min_angle=fp.hip_joint_lower_bounds,
             max_angle=fp.hip_joint_upper_bounds,
-            inverse_rotation=False,     
-            allow_motion=False,
-            allow_comms=False,
+            inverse_rotation=True,     
+            allow_motion=True,
+            allow_comms=True,
         ),
          MotorInfo(
             name=MotorName.FLK,
@@ -41,9 +41,9 @@ def motor_list() -> List[MotorInfo]:
             id=3,
             min_angle=fp.knee_joint_lower_bounds,
             max_angle=fp.knee_joint_upper_bounds,
-            inverse_rotation=False,     
-            allow_motion=False,
-            allow_comms=False,
+            inverse_rotation=True,     
+            allow_motion=True,
+            allow_comms=True,
         ),
 
 

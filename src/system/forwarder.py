@@ -1,20 +1,15 @@
-import re
 import zmq
 import time
 import json
-import math
 import threading
-import numpy as np
-from typing import Dict
-from math import radians
 from copy import deepcopy
 from threading import Event
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 
 from utilities.key_converter import KeyConverter
 from status import SystemStatus
 from quadruped.quad import Quad
-from interfaces import Contacts
+from hardware.interfaces import Contacts
 from quadruped.parameters.ik_parameters import IKParameters
 
 
@@ -111,8 +106,9 @@ class Forwarder:
             self.message_id += 1
             data["timestamp"] = int(time.time() * 1000)
             with self.data_lock:
-                data["plotSim"] = self._create_plot_data(self.sim_quad)
-                data["plotLive"] = self._create_plot_data(self.live_quad)
+                data["plotSim"] = self._create_quad_plot_data(self.sim_quad)
+                data["plotLive"] = self._create_quad_plot_data(self.live_quad)
+                data["plotExtras"] = self._create_extras_plot()
                 data["status"] = None if self.system_status is None else asdict(self.system_status)
                 data["contacts"] = None if self.contacts is None else asdict(self.contacts)
                 data["motors"] = self.motor_states
@@ -133,30 +129,20 @@ class Forwarder:
     # Private Methods
     ###############################################################################
 
-    def _create_plot_data(self, quad: Quad):
-        """
-        Convert a hexapod object into points for the UI.
-        """
-
-        def scale(value: float) -> float:
-            """
-            The kinematics uses a different convention that standard ploting libaries,
-            therefore rotate the points to match the expected convention of the UI plotting library.
-            """
-            return round(value * 1000, 2)
+    def _create_quad_plot_data(self, quad: Quad):
+        """Convert a quad object into points for the UI."""
 
         plot = {}
         if quad:
-            
             plot["body"] = {}
-            plot["body"]["name"] = "body"   
+            plot["body"]["name"] = "body"
             plot["body"]["x"] = []
             plot["body"]["y"] = []
-            plot["body"]["z"] = []      
-            for leg_name, point in quad.get_body_coordinates().items():  
-                plot["body"]["x"].append(scale(point.x))
-                plot["body"]["y"].append(scale(point.y))
-                plot["body"]["z"].append(scale(point.z))
+            plot["body"]["z"] = []
+            for leg_name, point in quad.get_body_coordinates().items():
+                plot["body"]["x"].append(self.scale(point.x))
+                plot["body"]["y"].append(self.scale(point.y))
+                plot["body"]["z"].append(self.scale(point.z))
             plot["body"]["x"].append(plot["body"]["x"][0])
             plot["body"]["y"].append(plot["body"]["y"][0])
             plot["body"]["z"].append(plot["body"]["z"][0])
@@ -165,9 +151,9 @@ class Forwarder:
             for leg_name, points in quad.get_leg_coordinates().items():
                 leg_data = {}
                 leg_data["name"] = leg_name.name
-                leg_data["x"] = [scale(point.x) for point in points]
-                leg_data["y"] = [scale(point.y) for point in points]
-                leg_data["z"] = [scale(point.z) for point in points]
+                leg_data["x"] = [self.scale(point.x) for point in points]
+                leg_data["y"] = [self.scale(point.y) for point in points]
+                leg_data["z"] = [self.scale(point.z) for point in points]
                 plot["legs"].append(leg_data)
 
             """
@@ -179,16 +165,21 @@ class Forwarder:
             plot["mesh"]["y"] = [scale(point.y) for point in ground_contacts]
             plot["mesh"]["z"] = [(scale(point.z) + dz) for point in ground_contacts]
             """
-   
 
-        if self.trajectories:           
+        return plot
+
+    def _create_extras_plot(self):
+        """Convert trajectories into points for the UI."""
+        plot = {}
+
+        if self.trajectories:
             plot["trajectories"] = []
             for i, points in enumerate(self.trajectories):
                 trajectory_data = {}
                 trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [scale(point.x) for point in points]
-                trajectory_data["y"] = [scale(point.y) for point in points]
-                trajectory_data["z"] = [scale(point.z) for point in points]
+                trajectory_data["x"] = [self.scale(point.x) for point in points]
+                trajectory_data["y"] = [self.scale(point.y) for point in points]
+                trajectory_data["z"] = [self.scale(point.z) for point in points]
                 plot["trajectories"].append(trajectory_data)
 
         if self.rings:
@@ -196,29 +187,37 @@ class Forwarder:
             for i, points in enumerate(self.rings):
                 ring_set = {}
                 ring_set["name"] = "ring" + str(i)
-                ring_set["x"] = [scale(point.x) for point in points]
-                ring_set["y"] = [scale(point.y) for point in points]
-                ring_set["z"] = [scale(point.z) for point in points]
+                ring_set["x"] = [self.scale(point.x) for point in points]
+                ring_set["y"] = [self.scale(point.y) for point in points]
+                ring_set["z"] = [self.scale(point.z) for point in points]
                 plot["rings"].append(ring_set)
-        
+
         if self.transitions:
             plot["transitions"] = []
             for i, points in enumerate(self.transitions):
                 trajectory_data = {}
                 trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [scale(point.x) for point in points]
-                trajectory_data["y"] = [scale(point.y) for point in points]
-                trajectory_data["z"] = [scale(point.z) for point in points]
+                trajectory_data["x"] = [self.scale(point.x) for point in points]
+                trajectory_data["y"] = [self.scale(point.y) for point in points]
+                trajectory_data["z"] = [self.scale(point.z) for point in points]
                 plot["transitions"].append(trajectory_data)
-      
-        if self.hold_trajectories:           
+
+        if self.hold_trajectories:
             plot["holdTrajectories"] = []
             for i, points in enumerate(self.hold_trajectories):
                 trajectory_data = {}
                 trajectory_data["name"] = "leg" + str(i)
-                trajectory_data["x"] = [scale(point.x) for point in points]
-                trajectory_data["y"] = [scale(point.y) for point in points]
-                trajectory_data["z"] = [scale(point.z) for point in points]
+                trajectory_data["x"] = [self.scale(point.x) for point in points]
+                trajectory_data["y"] = [self.scale(point.y) for point in points]
+                trajectory_data["z"] = [self.scale(point.z) for point in points]
                 plot["holdTrajectories"].append(trajectory_data)
-        
+
         return plot
+
+    @staticmethod
+    def scale(value: float) -> float:
+        """
+        The kinematics uses a different convention that standard ploting libaries,
+        therefore rotate the points to match the expected convention of the UI plotting library.
+        """
+        return round(value * 1000, 2)

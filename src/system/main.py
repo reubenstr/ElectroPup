@@ -11,7 +11,8 @@ from typing import Dict, List
 
 from quadruped.quad import Quad
 from quadruped.gait_planner import Gait
-from quadruped.interfaces import LegName, AngleUnits
+from quadruped.interfaces import LegName, AngleUnits, MotionState
+from input.interfaces import InputCommand
 from input.input import Input
 from quadruped.motion import Motion
 from hardware.hardware import Hardware
@@ -19,8 +20,7 @@ from motors.motors import Motor, Motors
 from motors.interfaces import MotorName, MotorSpeeds
 from auxiliary.aux import Aux, AuxMessage
 from utilities.utilities import *
-
-from interfaces import OpModes, Status, InputCommand, MotionState
+from interfaces import OpModes, Status
 from status import SystemStatus
 from forwarder import Forwarder
 
@@ -57,22 +57,23 @@ class Main:
     # Callback from Input(s)
     ###############################################################################
 
-    def controller_event_callback(self, event: InputCommand):   
+    def controller_event_callback(self, event: InputCommand):
 
         if event is InputCommand.DISABLE_ENABLE_MOTORS:
-            if self.op_mode is OpModes.LIVE:  
-                if self.motors.is_motors_enabled():  
-                    self.motors.disable_all_motors() 
+            if self.op_mode is OpModes.LIVE:
+                if self.motors.is_motors_enabled():
+                    self.motors.disable_all_motors()
                 else:
                     self.motors.enable_all_motors()
-            
+            else:
+                print(f"[MAIN] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
 
-        if self.op_mode is OpModes.LIVE: 
-            if self.motion.get_motion_state() is MotionState.STANDBY: 
+        if self.op_mode is OpModes.LIVE:
+            if self.motion.get_motion_state() is MotionState.STANDBY:
                 if not self.motors.is_motors_enabled():
                     print(f"[MAIN] Controller event {event.name} blocked, motors not enabled.")
                     return
-                       
+
         if event is InputCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
             self.motor_enable_flag = True
@@ -97,7 +98,6 @@ class Main:
 
         print(f"[MAIN] Controller event received: {event.name}")
 
-       
     ###############################################################################
     # Main Loop
     ###############################################################################
@@ -193,7 +193,7 @@ class Main:
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
         system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
         system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
- 
+
         system_status.motor.status = self.motors.get_status()
         # system_status.gpio.status = self.hardware.get_gpio_status()
         system_status.smbus.status = self.hardware.get_smbus_status()
@@ -220,22 +220,22 @@ class Main:
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
         leg_angles: Dict[LegName, List[float]] = {}
-        leg_angles[LegName.FR] = [
+        leg_angles[LegName.FL] = [
             self.motors.get_motor_position(MotorName.FLA),
             self.motors.get_motor_position(MotorName.FLH),
             self.motors.get_motor_position(MotorName.FLK),
         ]
-        leg_angles[LegName.FL] = [
+        leg_angles[LegName.FR] = [
             self.motors.get_motor_position(MotorName.FRA),
             self.motors.get_motor_position(MotorName.FRH),
             self.motors.get_motor_position(MotorName.FRK),
         ]
-        leg_angles[LegName.BR] = [
+        leg_angles[LegName.BL] = [
             self.motors.get_motor_position(MotorName.BLA),
             self.motors.get_motor_position(MotorName.BLH),
             self.motors.get_motor_position(MotorName.BLK),
         ]
-        leg_angles[LegName.BL] = [
+        leg_angles[LegName.BR] = [
             self.motors.get_motor_position(MotorName.BRA),
             self.motors.get_motor_position(MotorName.BRH),
             self.motors.get_motor_position(MotorName.BRK),

@@ -49,6 +49,7 @@ class Motors:
         self.motors_enabled: bool = False
         self.motor_enable_sequence_delay_seconds: float = 0.250
         self.motor_disable_sequence_delay_seconds: float = 0.125
+        self.allow_position_updates: bool = True
 
         self.min_loop_rate_seconds: float = 0.050
 
@@ -163,7 +164,7 @@ class Motors:
 
     def enable_all_motors(self):
         start = time()
-        with self.comm_lock:
+        with self.comm_lock:            
             for motor in self.motors.values():
                 if self.allow_enable and motor.allow_motion:
                     print(f"[{self.tag}] enabling motor: {motor.name}")
@@ -173,12 +174,13 @@ class Motors:
                     sleep(self.motor_enable_sequence_delay_seconds)
             print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
             self.motors_enabled = True
+            self.allow_position_updates = True
             return True
 
     def disable_all_motors(self):
         start = time()
-        with self.comm_lock:
-            self.motors_on = False
+        with self.comm_lock:    
+            self.allow_position_updates = False       
             for motor in self.motors.values():
                 if self.allow_enable and motor.allow_motion:
                     print(f"[{self.tag}] disabling motor: {motor.name}")
@@ -187,7 +189,7 @@ class Motors:
                         return False
                     sleep(self.motor_disable_sequence_delay_seconds)
             print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
-            self.motors_enabled = False
+            self.motors_enabled = False            
             return True
 
     def clear_errors_all_motors(self):
@@ -319,7 +321,8 @@ class Motors:
 
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
-                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
+                            if self.allow_position_updates:
+                                motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
                             motor.req_position()
                             motor.req_state_1()
                             motor.req_state_2()

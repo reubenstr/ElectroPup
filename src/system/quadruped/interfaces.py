@@ -1,5 +1,5 @@
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import List, Dict, TypeAlias, Tuple
 from quadruped.point import Point
 
@@ -20,3 +20,13 @@ class QuadErrorState(Enum):
 class AngleUnits(Enum):
     DEGREES = 1
     RADIANS = 2
+
+class MotionState(StrEnum):
+    NONE = "none"
+    STANDBY = "standby"
+    STAND = "stand"
+    SIT = "sit"
+    POSE = "pose"
+    WALK = "walk"   
+    TRANSITION = "transition"
+    

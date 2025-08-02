@@ -7,8 +7,8 @@ from interfaces import Status
 
 
 class MotorSpeeds(IntEnum):
-    SLOW = 1000
-    MOTION = 2000
+    SLOW = 500
+    MOTION = 1000
 
 
 class MotorName(StrEnum):
@@ -49,6 +49,7 @@ class CanInfo:
     loop_completion_time_ms: float = 0.01
     worker_running_flag: bool = False
 
+
 # For zeroing script.
 @dataclass
 class MotorZeroInfo:
@@ -58,6 +59,5 @@ class MotorZeroInfo:
     allow_comms: bool
     allow_motion: bool
     position: float
-    comms_error: bool   
+    comms_error: bool
     hardware_error: bool
-    
