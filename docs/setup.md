@@ -173,9 +173,33 @@ npm expo start --web
 
 
 
+# Gamepad
 
+Assumes the gamepad is a Playstation 4 controller.
+The gamepad interface is setup for a PS4 controller but can be modified to accept any standard gamepad.
 
+Reset the controller:
+Power on the controller and press the button inside the hole on back rightside
 
+sudo bluetoothctl
+scan on
+
+press and hold PS and Share button until controller flashes
+wait for scan to show Wireless Controller and copy gamepad's MAC address
+Example output: 
+[NEW] Device 84:30:95:48:0F:3C Wireless Controller
+
+scan off
+pair  <mac-address> 
+trust <mac-address>
+connect <mac-address>
+
+devices 
+power cycle controller
+
+Optional, check functionality, will show a stream of axis and button values:
+sudo apt-get install joystick
+jstest /dev/input/js0
 
 
 ###############################################################################
@@ -203,30 +227,7 @@ sudo raspi-config
 
 
 
-###############################################################################
-# PS4 Controller
-###############################################################################
 
-Reset the controller (hole on back rightside is reset button)
-
-sudo bluetoothctl
-scan on
-press and hold PS and Share button until controller flashes
-wait for scan to show Wireless Controller, copy MAC
-stop scan
-connect 84:30:95:48:0F:3C
-devices 84:30:95:48:0F:3C
-power cycle controller
-
-Tool to check for events: evtest (sudo apt install evtest)
-Should show 3 Wireless Controller event types
-
-
-Optional:
-sudo apt-get install joystick
-	Test joystick: jstest /dev/input/js0
-
-Check gamepad battery level: upower -i $(upower -e | grep battery)
 
 ###############################################################################
 # Serial 
@@ -247,11 +248,6 @@ reboot
 # Manual Testing (or Development)
 
 cd ./ElectroPup/src
-
-
-
-
-
 
 
 # Tools
