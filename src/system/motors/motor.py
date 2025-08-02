@@ -4,18 +4,39 @@ from rich import print
 from can.interface import Bus
 from typing import Optional
 
-from . interfaces import MotorName
+from .interfaces import MotorName
 
 """
+    Motor:
+        mg4010e-i10-v3
 
-https://wiki.openelab.io/lkmtech/mg4010e-i10-v3-dual-encoder-robot-motor
+    Info link:
+        https://wiki.openelab.io/lkmtech/mg4010e-i10-v3-dual-encoder-robot-motor
 
+    Basic specs:
+        Rated torque: 2.5Nm
+        Rated speed: 260rpm
+        Rated voltage: 24V
+        Rated current: 3.5A
+        Communication: CAN
+        Encoders: Dual (motor shaft and output shaft)
+        Gearbox: 1:10 reduction ratio
+        Weight: 250g
+
+    Hardware driver notes:
+        Does not contain a min and max position, there software is required to check for physical limits.
+        
+        CAN is not able to set the torque limit, speed limit, etc. Only the UART interface is capable
+        of setting these parameters. The torque limit is used to create 'compliance'. A best guess is implemented.
+    
+    Software driver iver Notes:
+        Upon startup the motor driver reports angles 0 to 360 degrees.
+        To prevent issues of wrong initial directions, this library
+        uses a -180 to 180 convention.
+        Start up angles > 180 flag an offset to match the desired convention.
+
+        Pid params are saved in RAM and must be applied after each power cycle.  
 """
-
-# Upon startup the motor driver reports angles 0 to 360
-# To prevent issues of wrong initial directions, this library
-# uses -180 to 180 conventions. Flag start up angles > 180 requiring
-# an offset to match the desired convention.
 
 
 class Motor:
@@ -68,12 +89,12 @@ class Motor:
         self.reply_timeout_count: int = 0
 
         # Driver config:
-        self.angle_pid_kp: int = 10
-        self.angle_pid_ki: int = 10
-        self.speed_pid_kp: int = 10
-        self.speed_pid_ki: int = 10
-        self.iq_pid_kp: int = 40
-        self.iq_pid_ki: int = 40
+        self.angle_pid_kp: int = 5  # Position loop, used
+        self.angle_pid_ki: int = 10  # Position loop, used
+        self.speed_pid_kp: int = 10  # Speed loop, not used
+        self.speed_pid_ki: int = 10  # Speed loop, not used
+        self.iq_pid_kp: int = 40  # Torque loop, not used
+        self.iq_pid_ki: int = 40  # Torque loop, not used
 
         # Other config:
         self.apply_position_offset: bool = False
@@ -157,9 +178,9 @@ class Motor:
         """
         Sets speed and angle of the motor.
         Datasheet named as: cmd_motor_multi_angle_2
-        """    
+        """
 
-        angle = angle * -1.0 if self.inverse_rotation else angle   
+        angle = angle * -1.0 if self.inverse_rotation else angle
 
         speed_low_byte = speed & 0x00FF
         speed_high_byte = speed >> 8 & 0x00FF
