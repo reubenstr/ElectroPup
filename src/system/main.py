@@ -109,7 +109,7 @@ class Main:
 
             self.apply_joints_angles()
 
-            # self.process_aux()
+            self.process_aux()
 
             self.forward_states()
 
@@ -155,8 +155,8 @@ class Main:
         """
 
         message = AuxMessage()
-        message.joint_angle_error = self.motion.get_joint_angle_status == Status.ERROR
-        message.inverse_kinematics_error = self.motion.get_ik_status == Status.ERROR
+        message.joint_angle_error = self.motion.get_quad().get_joint_angle_error() == Status.ERROR
+        message.inverse_kinematics_error = self.motion.get_quad().get_ik_error() == Status.ERROR
         message.joystick_error = self.input.gamepad.is_connected() == False
         message.can_error = self.motors.is_can_error()
         message.imuError = False

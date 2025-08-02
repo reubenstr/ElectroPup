@@ -22,7 +22,7 @@ After=multi-user.target
 [Service]
 Type=simple
 WorkingDirectory=$(pwd)
-ExecStart=/usr/bin/python3 -u heartbeat.py  
+ExecStart=$HOME/ElectroPup/src/system/auxiliary/heatbeat/start_heartbeat.sh
 Restart=on-failure
 RestartSec=5s
 

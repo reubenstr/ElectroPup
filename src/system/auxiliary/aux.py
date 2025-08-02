@@ -81,18 +81,22 @@ class PlaySoundMessage:
  
 class Aux():
     def __init__(self):         
-        self.port = '/dev/ttyS0'
+        self.port = '/dev/serial0'
         self.baudrate = 115200
         self.timeout = 0.25        
         self.start_time : float = time.time()        
         self._open()
+        self.error: bool = False
 
         self.send_message_rate_seconds: float = 0.1
         
     def _open(self): 
         try:
             self.ser = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
+            self.error = False
+            print(f"[AUX] serial port opened. Port: {self.port}, baud: {self.baudrate}, timeout: {self.timeout}") 
         except Exception as e:
+            self.error = True
             print(f"[AUX] error, unable open serial port: {self.port}, exception: {e}")            
                                         
     def send_at_rate(self, data : bytes):
@@ -133,7 +137,7 @@ class Aux():
             if message_type == MessageType.SHUTDOWN_RPI:
                 print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
                 sleep(1)
-                os.system("sudo shutdown now") 
+                #os.system("sudo shutdown now") 
             
             
             

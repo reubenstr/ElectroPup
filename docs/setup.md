@@ -96,11 +96,14 @@ pip install --upgrade pip
 
 ### Dependancies
 
-cd ./ElectroPup/src
-pip install -r requirements.txt
+
 
 sudo apt update
+sudo apt install python3-gpiozero
 sudo apt install upower
+
+cd ./ElectroPup/src
+pip install -r requirements.txt
 
 
 # CAN
@@ -202,6 +205,58 @@ sudo apt-get install joystick
 jstest /dev/input/js0
 
 
+
+# Serial 
+
+Serial is for the Auxillary board which is optional hardware.
+
+Append these statements to /boot/firmware/config.txt:
+enable_uart=1
+dtoverlay=uart0
+
+
+
+## IMU
+
+Enable I2C on the Raspberry Pi:
+sudo raspi-config
+
+
+
+# Manual Testing (or Development)
+
+cd ./ElectroPup/src
+
+
+# Tools
+
+Create requirements.txt
+
+cd ./ElectroPup/src
+
+All packages
+pip freeze > requirements.txt
+
+Packages specific to project:
+pip install pipreqs
+pipreqs .
+
+
+
+
+# TEMP: TO BE REMOVED OR ADDED
+sudo apt-get update
+sudo apt-get install python3-pil
+sudo apt-get install python3-numpy
+sudo apt-get install python3-RPi.GPIO
+sudo apt-get install python3-spidev 
+sudo apt-get install python3-python-can
+sudo apt-get install can-utils
+
+Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt
+
+
+
 ###############################################################################
 # aux-board
 ###############################################################################
@@ -216,54 +271,3 @@ https://github.com/VermontCoder/read_sbus
 https://www.digikey.com/en/products/detail/texas-instruments/SN74LVC1G14DBVT/1592006
 
 https://github.com/riuson/lcd-image-converter
-
-
-## IMU
-
-Enable I2C on the Raspberry Pi:
-sudo raspi-config
-
-
-
-
-
-
-
-###############################################################################
-# Serial 
-###############################################################################
-
-python3 -m pip install pyserial
-
-sudo raspi-config
-3) Interface Options
-I6 Serial Port
-Would you like a login shell to be accessible over serial? No
-Would you like the serial port hardware to be enabled? Yes
-reboot
-
-
-
-
-# Manual Testing (or Development)
-
-cd ./ElectroPup/src
-
-
-# Tools
-
-Create requirements.txt
-pip install pipreqs
-pip freeze > requirements.txt
-
-
-# TEMP: TO BE REMOVED OR ADDED
-sudo apt-get update
-sudo apt-get install python3-pil
-sudo apt-get install python3-numpy
-sudo apt-get install python3-RPi.GPIO
-sudo apt-get install python3-spidev 
-sudo apt-get install python3-python-can
-sudo apt-get install can-utils
-
-Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt
