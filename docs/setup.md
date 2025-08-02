@@ -109,6 +109,11 @@ CAN sheild: https://www.waveshare.com/2-ch-can-hat.htm
 
 Installation and setup for Raspberry Pi:
 
+Create temp directory for downloads:
+cd ~
+mkdir temp
+cd temp
+
 wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
 tar zxvf bcm2835-1.60.tar.gz 
 cd bcm2835-1.60/
@@ -124,18 +129,6 @@ unzip WiringPi-master.zip
 cd WiringPi-master/
 sudo ./build 
 
-sudo apt-get update
-sudo apt-get install python3-pip
-sudo apt-get install python3-pil
-sudo apt-get install python3-numpy
-sudo apt-get install python3-RPi.GPIO
-sudo apt-get install python3-spidev 
-sudo apt-get install python3-python-can
-sudo apt-get install can-utils
-
-
-
-
 Append these statements to /boot/firmware/config.txt:
 dtparam=spi=on
 dtoverlay=mcp2515-can1,oscillator=16000000,interrupt=25
@@ -148,18 +141,40 @@ sudo ip link set can1 up type can bitrate 1000000
 sudo ifconfig can0 txqueuelen 65536
 sudo ifconfig can1 txqueuelen 65536
 
-Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt
-
-See the CAN controllers:
+Check for interfaces:
 ifconfig
 
 Loopback test, connect H to H, L to L:
+sudo apt-get install can-utils
 1st terminal:
 	candump can0
 2nd terminal:
 	cansend can1 000#11.22.33.44
 	cansend can1 141#8800000000000000
 	cansend can1 141#8000000000000000
+
+# UI
+
+Install NVM:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+Test if installed:
+nvm --version
+
+Install node.js and npm:
+nvm install --lts
+
+Install packages:
+cd ./ElectroPup/src/ui
+npm install
+
+Start app in development mode:
+npm expo start --web
+
+
+
+
+
 
 
 
@@ -245,3 +260,14 @@ Create requirements.txt
 pip install pipreqs
 pip freeze > requirements.txt
 
+
+# TEMP: TO BE REMOVED OR ADDED
+sudo apt-get update
+sudo apt-get install python3-pil
+sudo apt-get install python3-numpy
+sudo apt-get install python3-RPi.GPIO
+sudo apt-get install python3-spidev 
+sudo apt-get install python3-python-can
+sudo apt-get install can-utils
+
+Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt

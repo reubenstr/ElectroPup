@@ -1,3 +1,5 @@
 # Tools
 
 https://ezgif.com/
+
+sudo apt install htop
