@@ -18,7 +18,7 @@ from motors.interfaces import CanInfo, MotorZeroInfo
 from interfaces import Status
 
 """
-Controls a collection of MG4010E-i10v3 actuators on a single CAN bus network.
+Controls a collection of MG4010E-i10v3 actuators on a multiple CAN bus networks.
 
 Class expects the hardware ID of the actuators to be [1 to number_of_motors]
 
@@ -28,11 +28,16 @@ Application should poll for errors and take action such as shutting down the mot
 
 Actuator driver limitations:
     - The driver does not have a min and max angle, therefore there is a higher risk of collision.
-    - CAN is no able to set torque limit, speed limit, etc. Only the UART interface is capable
-        of setting these parameters. The torque limit is used to create 'compliance'.
+    - CAN is not able to set the torque limit, speed limit, etc. Only the UART interface is capable
+        of setting these parameters. The torque limit is used to create 'compliance'. A best guess is implemented.
+    - pid params are saved in RAM and must be applied after each power cycle.
 
 Motor startup angle reading is 0 to 360, but this library uses a -180 to 180 convention.
 If motors angles at startup are greater than 180 an offset flag is set and angles readings will be offset by -360.
+
+Assumptions:
+    The motors will be powered on prior to the motors.py script from starting.
+
 """
 
 
@@ -180,17 +185,18 @@ class Motors:
     def disable_all_motors(self):
         start = time()
         with self.comm_lock:    
-            self.allow_position_updates = False       
-            for motor in self.motors.values():
-                if self.allow_enable and motor.allow_motion:
-                    print(f"[{self.tag}] disabling motor: {motor.name}")
-                    if not motor.cmd_motor_off():
-                        print(f"[{self.tag}][ALL] error, disable all motors failed!")
-                        return False
-                    sleep(self.motor_disable_sequence_delay_seconds)
-            print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
-            self.motors_enabled = False            
-            return True
+            self.allow_position_updates = False  
+            if self.motors_enabled:     
+                for motor in self.motors.values():
+                    if self.allow_enable and motor.allow_motion:
+                        print(f"[{self.tag}] disabling motor: {motor.name}")
+                        if not motor.cmd_motor_off():
+                            print(f"[{self.tag}][ALL] error, disable all motors failed!")
+                            return False
+                        sleep(self.motor_disable_sequence_delay_seconds)
+                print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
+                self.motors_enabled = False            
+                return True
 
     def clear_errors_all_motors(self):
         start = time()
@@ -306,8 +312,8 @@ class Motors:
                 if motor.position_degrees > 180.0:
                     motor.set_apply_position_offset(True)
                 self.target_positions[key] = motor.position_degrees
-                # SET MOTOR TARGET?
-                # TODO: set PIDs
+                
+        self.set_pid_all_motors()
 
         can_info.worker_running_flag = True
 

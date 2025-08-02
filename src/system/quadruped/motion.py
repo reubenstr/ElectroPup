@@ -185,7 +185,7 @@ class Motion:
 
     def _process_motion_state(self):
         if self.motion_state is MotionState.STANDBY:
-            pass
+            self._process_motion_state_standby()
 
         elif self.motion_state is MotionState.STAND:
             self._process_motion_state_stand()
@@ -206,14 +206,17 @@ class Motion:
     # Motion States
     ###############################################################################
 
+    def _process_motion_state_standby(self):
+        ik_parameters = IKParameters()
+        ik_parameters.height_translation = IKParameters().height_translation_min
+        self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
+        
     def _process_motion_state_stand(self):
         ik_parameters = IKParameters()
         ik_parameters.height_translation = scale_value(
             self.pose_time, 0, self.pose_period, IKParameters().height_translation_min, IKParameters().height_translation_neutral
-        )
-
-        base_foot_points = self.quad.get_base_foot_points()
-        self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
+        )     
+        self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
         
         if self.pose_time > self.pose_period:
             self.motion_state = MotionState.POSE
@@ -222,17 +225,14 @@ class Motion:
         ik_parameters = IKParameters()
         ik_parameters.height_translation = scale_value(
             self.pose_time, 0, self.pose_period, IKParameters().height_translation_neutral, IKParameters().height_translation_min
-        )
-
-        base_foot_points = self.quad.get_base_foot_points()
-        self.quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
+        )      
+        self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
        
         if self.pose_time > self.pose_period:
             self.pose_time = self.pose_period
 
-    def _process_motion_state_pose(self):
-        base_foot_points = self.quad.get_base_foot_points()
-        self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, base_foot_points)
+    def _process_motion_state_pose(self):   
+        self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, self.quad.get_base_foot_points())
    
     def _process_motion_state_walk(self):
         # Get foot points in latest trajectory.

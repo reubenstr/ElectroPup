@@ -45,6 +45,36 @@ def motor_list() -> List[MotorInfo]:
             allow_motion=True,
             allow_comms=True,
         ),
+        MotorInfo(
+            name=MotorName.FRA,
+            can_channel="can0",
+            id=4,
+            min_angle=fp.abduction_joint_lower_bounds,
+            max_angle=fp.abduction_joint_upper_bounds,
+            inverse_rotation=False,     
+            allow_motion=False,
+            allow_comms=True,
+        ),
+         MotorInfo(
+            name=MotorName.FRH,
+            can_channel="can0",
+            id=5,
+            min_angle=fp.hip_joint_lower_bounds,
+            max_angle=fp.hip_joint_upper_bounds,
+            inverse_rotation=True,     
+            allow_motion=False,
+            allow_comms=True,
+        ),
+         MotorInfo(
+            name=MotorName.FRK,
+            can_channel="can0",
+            id=6,
+            min_angle=fp.knee_joint_lower_bounds,
+            max_angle=fp.knee_joint_upper_bounds,
+            inverse_rotation=True,     
+            allow_motion=False,
+            allow_comms=True,
+        ),
 
 
     ]

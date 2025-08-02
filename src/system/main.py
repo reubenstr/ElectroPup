@@ -68,6 +68,10 @@ class Main:
             else:
                 print(f"[MAIN] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
 
+        if event is InputCommand.CLEAR_ERRORS:
+            self.clear_errors()
+            return
+        
         if self.op_mode is OpModes.LIVE:
             if self.motion.get_motion_state() is MotionState.STANDBY:
                 if not self.motors.is_motors_enabled():
@@ -92,9 +96,6 @@ class Main:
 
         if event is InputCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
-
-        if event is InputCommand.CLEAR_ERRORS:
-            self.clear_errors()
 
         print(f"[MAIN] Controller event received: {event.name}")
 
@@ -124,30 +125,32 @@ class Main:
         self.motion.set_motion_parameters(self.input.get_motion_parameters())
 
     def apply_joints_angles(self):
-        if not self.motors.is_error():
-            if self.motion.motion_state is not MotionState.STANDBY:
+        if self.motors.is_error() or \
+            self.motion.get_quad().get_ik_error() or \
+            self.motion.get_quad().get_joint_angle_error():
+            return
 
-                if self.motion.get_quad().get_ik_error() or self.motion.get_quad().get_joint_angle_error():
-                    return
+        if self.motion.motion_state is MotionState.STANDBY or \
+            self.motion.motion_state is MotionState.SIT or \
+            self.motion.motion_state is MotionState.STAND:
+            speed = MotorSpeeds.SLOW
+        else:
+            speed = MotorSpeeds.MOTION
 
-                if self.motion.motion_state is MotionState.SIT or self.motion.motion_state is MotionState.STAND:
-                    speed = MotorSpeeds.SLOW
-                else:
-                    speed = MotorSpeeds.MOTION
-
-                joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
-                self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FR]["abduction"])
-                self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FR]["hip"])
-                self.motors.set_motor_targets(MotorName.FLK, speed, joint_angles[LegName.FR]["knee"])
-                self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FL]["abduction"])
-                self.motors.set_motor_targets(MotorName.FRH, speed, joint_angles[LegName.FL]["hip"])
-                self.motors.set_motor_targets(MotorName.FRK, speed, joint_angles[LegName.FL]["knee"])
-                self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BR]["abduction"])
-                self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BR]["hip"])
-                self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BR]["knee"])
-                self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BL]["abduction"])
-                self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BL]["hip"])
-                self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BL]["knee"])
+        # TODO: comment, map inverse angles
+        joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
+        self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FR]["abduction"])
+        self.motors.set_motor_targets(MotorName.FLH, speed, -joint_angles[LegName.FR]["hip"])
+        self.motors.set_motor_targets(MotorName.FLK, speed, -joint_angles[LegName.FR]["knee"])
+        self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FL]["abduction"])
+        self.motors.set_motor_targets(MotorName.FRH, speed, -joint_angles[LegName.FL]["hip"])
+        self.motors.set_motor_targets(MotorName.FRK, speed, -joint_angles[LegName.FL]["knee"])
+        self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BR]["abduction"])
+        self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BR]["hip"])
+        self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BR]["knee"])
+        self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BL]["abduction"])
+        self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BL]["hip"])
+        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BL]["knee"])      
 
     def process_aux(self):
         """
@@ -155,8 +158,8 @@ class Main:
         """
 
         message = AuxMessage()
-        message.joint_angle_error = self.motion.get_quad().get_joint_angle_error() == Status.ERROR
-        message.inverse_kinematics_error = self.motion.get_quad().get_ik_error() == Status.ERROR
+        message.joint_angle_error = self.motion.get_quad().get_joint_angle_error()
+        message.inverse_kinematics_error = self.motion.get_quad().get_ik_error()
         message.joystick_error = self.input.gamepad.is_connected() == False
         message.can_error = self.motors.is_can_error()
         message.imuError = False
@@ -185,9 +188,9 @@ class Main:
 
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
-        system_status.gait.state = self.motion.get_gait()
-        system_status.ik.status = self.motion.get_quad().get_ik_error()
-        system_status.joint_angle.status = self.motion.get_quad().get_joint_angle_error()
+        system_status.gait.state = self.motion.get_gait()     
+        system_status.ik.status = Status.ERROR if self.motion.get_quad().get_ik_error() else Status.NONE
+        system_status.joint_angle.status = Status.ERROR if self.motion.get_quad().get_joint_angle_error() else Status.NONE
         system_status.input.state = self.input.get_input_mode()
         system_status.loopTimes.main = self.loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
@@ -219,6 +222,7 @@ class Main:
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
 
+        # Get joint angles from physical quadruped.
         leg_angles: Dict[LegName, List[float]] = {}
         leg_angles[LegName.FL] = [
             self.motors.get_motor_position(MotorName.FLA),
@@ -270,7 +274,7 @@ class Main:
 
     def clear_errors(self):
         print("[{MAIN}] clearing errors...")
-        # TODO
+        self.motors.clear_errors_all_motors()
 
     def shutdown(self, full_shutdown_flag: bool):
         print("[MAIN] shutdown...")

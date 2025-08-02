@@ -138,7 +138,7 @@ class Motor:
         reply = self.op_wait_for_reply()
         return reply and self.motor_id == reply.arbitration_id - 0x140
 
-    def cmd_set_pid_to_ram(self, int, angle_kp: int, angle_ki: int, speed_kp: int, speed_ki: int, iq_kp: int, iq_ki: int):
+    def cmd_set_pid_to_ram(self, angle_kp: int, angle_ki: int, speed_kp: int, speed_ki: int, iq_kp: int, iq_ki: int):
         """
         Sets PID parameters to RAM; invalid upon power cycle.
         """

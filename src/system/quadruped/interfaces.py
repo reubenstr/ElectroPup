@@ -16,6 +16,7 @@ class QuadErrorState(Enum):
     NONE = 1
     KINEMATICS = 2
     JOINT = 3
+    GROUND_PENETRATION = 4
 
 class AngleUnits(Enum):
     DEGREES = 1
