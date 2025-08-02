@@ -137,7 +137,7 @@ class Aux():
             if message_type == MessageType.SHUTDOWN_RPI:
                 print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
                 sleep(1)
-                #os.system("sudo shutdown now") 
+                os.system("sudo shutdown now") 
             
             
             

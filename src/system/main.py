@@ -182,6 +182,7 @@ class Main:
         message.battery_voltage = voltage_accumulator / len(motors)
         message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
         self.aux.send_at_rate(message.pack())
+        self.aux.check_for_commands()
 
     def forward_states(self):
         system_status = SystemStatus()
