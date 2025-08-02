@@ -170,9 +170,11 @@ class Motion:
             self.previous_target_motion_state = self.target_motion_state
             print(f"[{self.tag}] target state changed to: {self.target_motion_state}")
 
-            if self.target_motion_state is MotionState.STAND:
+            if self.target_motion_state is MotionState.STANDBY:
+                self.motion_state = MotionState.STANDBY            
+            elif self.target_motion_state is MotionState.STAND:
                 self.pose_time = 0
-                self.motion_state = self.target_motion_state
+                self.motion_state = MotionState.STAND
             else:
                 self._create_transition()
 
@@ -351,7 +353,12 @@ class Motion:
         with self.lock:
             self.motion_parameters = motion_parameters
 
-    def set_target_motion_state(self, state: MotionState):
+    def set_target_motion_state(self, state: MotionState):        
+        if state is MotionState.STANDBY:
+            with self.lock:
+                self.target_motion_state = state
+            return
+        
         allowed_transitions = {
             MotionState.STAND: {MotionState.STANDBY, MotionState.SIT},
             MotionState.SIT: {MotionState.POSE, MotionState.WALK},

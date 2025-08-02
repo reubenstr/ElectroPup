@@ -63,6 +63,7 @@ class Main:
             if self.op_mode is OpModes.LIVE:
                 if self.motors.is_motors_enabled():
                     self.motors.disable_all_motors()
+                    self.motion.set_target_motion_state(MotionState.STANDBY)
                 else:
                     self.motors.enable_all_motors()
             else:
