@@ -79,15 +79,17 @@ class Motor:
         self.apply_position_offset: bool = False
         self.max_reply_timeouts_allow: int = 3
 
+        self.ARBRITATION_BASE_OFFSET: int = 0x140
+
     ###############################################################################
     # Operations
     ###############################################################################
 
     def op_can_send_message(self, motor_id: int, data: list):
         try:
-            identifier = 0x140 + motor_id
+            identifier = self.ARBRITATION_BASE_OFFSET + motor_id
             if self.prints_enabled:
-                print(f"{self.tag} sending message, bus={self.bus.channel_info}, motor_id={motor_id}, arbitration_id={identifier}, data={data}")
+                print(f"{self.tag} sending message, bus={self.bus.channel_info}, motor_id={motor_id}, arbitration_id=0x{identifier:X}, data={data}")
             msg = can.Message(is_extended_id=False, arbitration_id=identifier, data=data)
             self.bus.send(msg)
             self.send_error = False
@@ -95,7 +97,7 @@ class Motor:
         except Exception as e:
             self.send_error = True
             if self.prints_enabled:
-                print(f"[{self.tag}] {type(e).__name__} {e}")
+                print(f"{self.tag}[op_can_send_message] {type(e).__name__} {e}")
             return False
 
     def op_wait_for_reply(self) -> Optional[can.Message]:
@@ -112,7 +114,7 @@ class Motor:
         if not self.op_can_send_message(self.motor_id, [0x88, 0, 0, 0, 0, 0, 0, 0]):
             return False
         reply = self.op_wait_for_reply()
-        success = reply and self.motor_id == reply.arbitration_id - 0x140
+        success = reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
         if success:
             self.enabled = True
         return success
@@ -121,7 +123,7 @@ class Motor:
         if not self.op_can_send_message(self.motor_id, [0x80, 0, 0, 0, 0, 0, 0, 0]):
             return False
         reply = self.op_wait_for_reply()
-        success = reply and self.motor_id == reply.arbitration_id - 0x140
+        success = reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
         if success:
             self.enabled = False
         return success
@@ -130,13 +132,13 @@ class Motor:
         if not self.op_can_send_message(self.motor_id, [0x9B, 0, 0, 0, 0, 0, 0, 0]):
             return False
         reply = self.op_wait_for_reply()
-        return reply and self.motor_id == reply.arbitration_id - 0x140
+        return reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
 
     def cmd_set_zero_to_current_pos(self):
         if not self.op_can_send_message(self.motor_id, [0x19, 0, 0, 0, 0, 0, 0, 0]):
             return False
         reply = self.op_wait_for_reply()
-        return reply and self.motor_id == reply.arbitration_id - 0x140
+        return reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
 
     def cmd_set_pid_to_ram(self, angle_kp: int, angle_ki: int, speed_kp: int, speed_ki: int, iq_kp: int, iq_ki: int):
         """
@@ -145,7 +147,7 @@ class Motor:
         if not self.op_can_send_message(self.motor_id, [0x31, 0, angle_kp, angle_ki, speed_kp, speed_ki, iq_kp, iq_ki]):
             return False
         reply = self.op_wait_for_reply()
-        return reply and self.motor_id == reply.arbitration_id - 0x140
+        return reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
 
     def cmd_set_angle_and_speed(
         self,
@@ -168,7 +170,7 @@ class Motor:
         if not self.op_can_send_message(self.motor_id, [0xA4, 0, speed_low_byte, speed_high_byte, angle_byte_0, angle_byte_1, angle_byte_2, angle_byte_3]):
             return False
         reply = self.op_wait_for_reply()
-        return reply and self.motor_id == reply.arbitration_id - 0x140
+        return reply and self.motor_id == reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
 
     ###############################################################################
     # Requests
@@ -178,7 +180,7 @@ class Motor:
         if self.op_can_send_message(self.motor_id, [0x30, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
-                reply_motor_id = reply.arbitration_id - 0x140
+                reply_motor_id = reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
                 if self.motor_id == reply_motor_id and reply.data:
                     self.angle_kp = reply.data[2]
                     self.angle_ki = reply.data[3]
@@ -195,7 +197,7 @@ class Motor:
         if self.op_can_send_message(self.motor_id, [0x9A, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
-                reply_motor_id = reply.arbitration_id - 0x140
+                reply_motor_id = reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
                 if self.motor_id == reply_motor_id and reply.data:
                     self.temperature = reply.data[1]
                     self.voltage = (reply.data[2] | reply.data[3] << 8) / 100.0  # Datasheet is wrong, not DATA[3] and DATA[4].
@@ -212,7 +214,7 @@ class Motor:
         if self.op_can_send_message(self.motor_id, [0x9C, 0, 0, 0, 0, 0, 0, 0]):
             reply = self.op_wait_for_reply()
             if reply:
-                reply_motor_id = reply.arbitration_id - 0x140
+                reply_motor_id = reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
                 if self.motor_id == reply_motor_id and reply.data:
                     self.temperature = reply.data[1]
                     watts_raw = self.convert_twos_compliment(reply.data[2] | reply.data[3] << 8)
@@ -232,7 +234,7 @@ class Motor:
             return None
         reply = self.op_wait_for_reply()
         if reply:
-            reply_motor_id = reply.arbitration_id - 0x140
+            reply_motor_id = reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
             if self.motor_id == reply_motor_id:
                 reply_data = reply.data
 

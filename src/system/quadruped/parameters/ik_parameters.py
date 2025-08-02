@@ -13,8 +13,8 @@ class IKParameters:
     ###############################################################################
     roll_min: float = -30
     roll_max: float = 30
-    pitch_min: float = -30
-    pitch_max: float = 30
+    pitch_min: float = -25
+    pitch_max: float = 25
     yaw_min: float = -30
     yaw_max: float = 30
 

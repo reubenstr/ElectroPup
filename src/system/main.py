@@ -146,11 +146,11 @@ class Main:
         self.motors.set_motor_targets(MotorName.FRH, speed, -joint_angles[LegName.FL]["hip"])
         self.motors.set_motor_targets(MotorName.FRK, speed, -joint_angles[LegName.FL]["knee"])
         self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BR]["abduction"])
-        self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BR]["hip"])
-        self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BR]["knee"])
+        self.motors.set_motor_targets(MotorName.BLH, speed, -joint_angles[LegName.BR]["hip"])
+        self.motors.set_motor_targets(MotorName.BLK, speed, -joint_angles[LegName.BR]["knee"])
         self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BL]["abduction"])
-        self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BL]["hip"])
-        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BL]["knee"])      
+        self.motors.set_motor_targets(MotorName.BRH, speed, -joint_angles[LegName.BL]["hip"])
+        self.motors.set_motor_targets(MotorName.BRK, speed, -joint_angles[LegName.BL]["knee"])      
 
     def process_aux(self):
         """
