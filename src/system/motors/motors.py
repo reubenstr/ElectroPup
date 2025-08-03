@@ -289,25 +289,31 @@ class Motors:
 
     def _worker(self, can_info: CanInfo):
         can_info.exit_event.clear()
+        rotation: int = 0
 
         print(f"[{self.tag}] worker thread for {can_info.can_channel} started")
         while not can_info.exit_event.is_set():
             loop_time = time()
+            rotation += 1
             for key, motor in self.motors.items():
                 if motor.can_channel == can_info.can_channel:
                     target_angle = self.target_positions[key]
-                    target_speed = self.target_speeds[key]
+                    target_speed = self.target_speeds[key]                    
 
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
-                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
+                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)                           
                             motor.req_position()
-                            #motor.req_state_1()
-                            #motor.req_state_2()
-                        elif motor.allow_comms:
+                            if rotation % 2 == 0:
+                                motor.req_state_1()
+                            if rotation % 2 == 1:
+                                motor.req_state_2()
+                        elif motor.allow_comms:                           
                             motor.req_position()
-                            motor.req_state_1()
-                            motor.req_state_2()
+                            if rotation % 2 == 0:
+                                motor.req_state_1()
+                            if rotation % 2 == 1:
+                                motor.req_state_2()
 
                         motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False
 

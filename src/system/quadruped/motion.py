@@ -12,7 +12,7 @@ from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.gait_planner import Gait
 from quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from interfaces import  Status
+from interfaces import Status
 from quadruped.interfaces import MotionState
 from utilities.utilities import scale_value, angle_difference_deg
 
@@ -33,7 +33,7 @@ class Motion:
 
         self.motion_state: MotionState = MotionState.STANDBY
         self.target_motion_state: MotionState = MotionState.STANDBY
-        self.previous_target_motion_state: MotionState = MotionState.STANDBY        
+        self.previous_target_motion_state: MotionState = MotionState.STANDBY
         self.target_gait: Gait = Gait.WALK
         self.trajector_planner.set_gait(Gait.WALK)
 
@@ -43,14 +43,14 @@ class Motion:
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
-        self.phase_time_rate_fast: float = 0.025
+        self.phase_time_rate_fast: float = 0.010
 
         self.pose_time: float = 0
-        self.pose_time_rate: float = 0.025
+        self.pose_time_rate: float = 0.010
         self.pose_period: float = 1
 
         self.transition_time: float = 0
-        self.transition_time_rate: float = 0.025
+        self.transition_time_rate: float = 0.010
 
         self.idle_time: float = 0
         self.idle_time_trigger_seconds: float = 5
@@ -61,8 +61,6 @@ class Motion:
         self.angular_velocity_target: float = 0  # [-1, 1]
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
-
-        
 
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.transition_start_foot_points: Dict[LegName, Point] = {}
@@ -97,9 +95,8 @@ class Motion:
         if self.thread_handle and self.thread_handle.is_alive():
             self.exit_event.set()
             self.thread_handle.join()
-            
 
-    def _worker(self):  
+    def _worker(self):
         self.exit_event.clear()
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
@@ -119,7 +116,7 @@ class Motion:
                 sleep(self.loop_min_rate_seconds - delta)
 
             with self.lock:
-                self.loop_completion_time_ms = (time() - loop_time) * 1000       
+                self.loop_completion_time_ms = (time() - loop_time) * 1000
 
     def _check_idle(self):
         if self.motion_state is MotionState.WALK:
@@ -172,7 +169,7 @@ class Motion:
             print(f"[{self.tag}] target state changed to: {self.target_motion_state}")
 
             if self.target_motion_state is MotionState.STANDBY:
-                self.motion_state = MotionState.STANDBY            
+                self.motion_state = MotionState.STANDBY
             elif self.target_motion_state is MotionState.STAND:
                 self.pose_time = 0
                 self.motion_state = MotionState.STAND
@@ -181,7 +178,7 @@ class Motion:
 
     def _process_gait_changes(self):
         if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
-            if self.trajector_planner.get_gait() is not self.target_gait:              
+            if self.trajector_planner.get_gait() is not self.target_gait:
                 self.trajector_planner.set_gait(self.target_gait)
                 print(f"[{self.tag}] target gait changed to: {self.target_gait}")
                 self._create_transition()
@@ -213,14 +210,14 @@ class Motion:
         ik_parameters = IKParameters()
         ik_parameters.height_translation = IKParameters().height_translation_min
         self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
-        
+
     def _process_motion_state_stand(self):
         ik_parameters = IKParameters()
         ik_parameters.height_translation = scale_value(
             self.pose_time, 0, self.pose_period, IKParameters().height_translation_min, IKParameters().height_translation_neutral
-        )     
+        )
         self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
-        
+
         if self.pose_time > self.pose_period:
             self.motion_state = MotionState.POSE
 
@@ -228,25 +225,25 @@ class Motion:
         ik_parameters = IKParameters()
         ik_parameters.height_translation = scale_value(
             self.pose_time, 0, self.pose_period, IKParameters().height_translation_neutral, IKParameters().height_translation_min
-        )      
+        )
         self.quad.set_body_pose_by_transform_inputs(ik_parameters, self.quad.get_base_foot_points())
-       
+
         if self.pose_time > self.pose_period:
             self.pose_time = self.pose_period
 
-    def _process_motion_state_pose(self):   
+    def _process_motion_state_pose(self):
         self.quad.set_body_pose_by_transform_inputs(self.ik_parameters, self.quad.get_base_foot_points())
-   
+
     def _process_motion_state_walk(self):
         # Get foot points in latest trajectory.
         new_foot_points = self.trajector_planner.get_foot_points(
-           self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
+            self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
         )
 
         if self.transition_allow_flag:
             # Large heading changes trigger a transition.
             old_twist_angle = self.trajector_planner.get_twist_angle(
-              self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
+                self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
             )
             new_twist_angle = self.trajector_planner.get_twist_angle(
                 self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.forward_velocity
@@ -264,8 +261,8 @@ class Motion:
                 current_foot_points = self.quad.get_foot_points()
                 for leg in LegName:
                     distance = get_distance_xy(current_foot_points[leg], new_foot_points[leg])
-                    if abs(distance) > 0.03:
-                        print(f"[{self.tag}] large walking distance detected, {delta}")
+                    if abs(distance) > 0.050:
+                        print(f"[{self.tag}] large walking distance detected, {distance}")
                         self.soft_transition_flag = True
                         self.soft_transition_legs_started_swing = {LegName.FR: False, LegName.FL: False, LegName.BR: False, LegName.BL: False}
                         break
@@ -290,13 +287,13 @@ class Motion:
             for leg in LegName:
                 combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
-            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)           
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
             self.transition_forward_velocity = self.forward_velocity
 
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
-            
+
         self.transition_allow_flag = True
 
     def _process_motion_state_transition(self):
@@ -304,7 +301,7 @@ class Motion:
             combined_foot_points = self.transition_planner.get_foot_positions(
                 self.transition_time, self.transition_start_foot_points, self.transition_end_foot_points
             )
-            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)            
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.phase_time = 0
             self.pose_time = 0
@@ -354,16 +351,16 @@ class Motion:
         with self.lock:
             self.motion_parameters = motion_parameters
 
-    def set_target_motion_state(self, state: MotionState, force: bool = False):   
+    def set_target_motion_state(self, state: MotionState, force: bool = False):
         if force:
             self.target_motion_state = state
             return
-             
+
         if state is MotionState.STANDBY:
             with self.lock:
                 self.target_motion_state = state
             return
-        
+
         allowed_transitions = {
             # target state : {current states}
             MotionState.STAND: {MotionState.STANDBY, MotionState.SIT},
@@ -401,7 +398,7 @@ class Motion:
             return self.quad
 
     def get_trajectories(self) -> Tuple[Trajectories, Trajectories, Trajectories, Trajectories]:
-       
+
         trajectories = None
         rings = None
         transitions = None

@@ -14,6 +14,9 @@ class TrajectoryPlanner:
     def __init__(self):
         self.gait_planner: GaitPlanner = self.set_gait(Gait.WALK)
 
+        self.trajectory_num_points: int = 50
+        self.ring_num_points: int = 50
+
     ###############################################################################
     # Gaits (can be modified)
     ###############################################################################
@@ -25,7 +28,7 @@ class TrajectoryPlanner:
                 period=1.0,
                 duty_factor=0.75,
                 stride_length=0.150,
-                step_height=0.05,
+                step_height=0.075,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.25,
@@ -39,7 +42,7 @@ class TrajectoryPlanner:
                 period=0.6,
                 duty_factor=0.5,
                 stride_length=0.150,
-                step_height=0.05,
+                step_height=0.075,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -52,24 +55,26 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
-        """
-        Calculate a leg's foot position given the gait_time and heading.
-        """
-
+    def _calculate_cor(self, forward_velocity, angular_velocity) -> Point:
         deadzone = 0.05
         max_cor = 100
 
         # Calculate CoR (center-of-rotation)
         if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:           
-            cor = Point(0, max_cor, 0)
+            return Point(0, max_cor, 0)
         elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:          
-            cor = Point(0, max_cor, 0)
+            return Point(0, max_cor, 0)
         elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:           
-            cor = Point(0, 0, 0)
+            return Point(0, 0, 0)
         else:          
-            cor = Point(0, (forward_velocity / angular_velocity) / 5, 0)
+            return Point(0, (forward_velocity / angular_velocity) / 5, 0)
 
+    
+    def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point):
+        """
+        Calculate a leg's foot position given the gait_time and heading.
+        """
+      
         # Get the radius from CoR to the leg's nominal foot position
         bend_radius = get_distance_xy(cor, base_foot_point)
         if cor.y > 0:
@@ -97,9 +102,10 @@ class TrajectoryPlanner:
         self, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float
     ) -> Dict[LegName, Point]:      
         foot_points: Dict[LegName, Point] = {}
+        cor = self._calculate_cor(forward_velocity, angular_velocity)
         for leg_name in LegName:
             base_foot_point = base_foot_points[leg_name]
-            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
             foot_points[leg_name] = foot_point
         return foot_points
 
@@ -109,7 +115,8 @@ class TrajectoryPlanner:
     
     def get_twist_angle(self, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, angular_velocity: float, forward_velocity: float) -> float:
         base_foot_point = base_foot_points[leg_name]
-        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+        cor = self._calculate_cor(forward_velocity, angular_velocity)
+        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
         return twist_angle
 
     ###############################################################################
@@ -124,11 +131,11 @@ class TrajectoryPlanner:
         """
 
         bend_radius: float = None
-        cor: Point = None
-        ring_num_points: int = 50
+        cor: Point = None        
 
-        timestep = self.gait_planner.period / 50
+        timestep = self.gait_planner.period / self.trajectory_num_points
         gait_times = np.arange(0, self.gait_planner.period, timestep)
+        cor = self._calculate_cor(forward_velocity, angular_velocity)
 
         trajectories: Trajectories = []
         rings: Trajectories = []
@@ -136,22 +143,29 @@ class TrajectoryPlanner:
             base_foot_point = base_foot_points[leg_name]
 
             trajectory: Trajectory = []
-            for gait_time in gait_times:
-                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+            for gait_time in gait_times:                
+                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
                 trajectory.append(foot_point)
             trajectories.append(trajectory)
 
-        rings.append(self.create_circle_trajectory(bend_radius, cor, ring_num_points))
+        rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
 
         return trajectories, rings
 
     @staticmethod
     def create_circle_trajectory(radius: float, center: Point, num_points: int) -> Trajectory:
         angles = np.linspace(0, 2 * np.pi, num_points)
-        x = center.x + radius * np.sin(angles)
-        y = center.y + radius * np.cos(angles)
-        z = np.full_like(angles, center.z)
-        return [Point(xi, yi, zi) for xi, yi, zi in zip(x, y, z)]
+        sin_vals = np.sin(angles)
+        cos_vals = np.cos(angles)
+
+        # Precompute coordinates
+        x = radius * sin_vals + center.x
+        y = radius * cos_vals + center.y
+        z = np.full(num_points, center.z)
+
+        # Construct trajectory
+        trajectory = [Point(float(x[i]), float(y[i]), float(z[i])) for i in range(num_points)]
+        return trajectory
     
 
     ###############################################################################
