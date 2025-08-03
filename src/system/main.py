@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-import time
 import argparse
 import traceback
 import subprocess
-from time import sleep
+from time import sleep, time
 from rich import print  # Overrides print and injects colors
 from typing import Dict, List
 
@@ -44,9 +43,9 @@ class Main:
         self.motors = Motors(allow_enable)
         self.aux = Aux()
 
-        self.main_loop_rate_ms = 0.025
-        self.loop_time: float = 0
-        self.loop_completion_time_ms: float = 0
+        self.main_loop_rate_seconds = 0.025
+        self.main_loop_time: float = 0
+        self.main_loop_completion_time_ms: float = 0
 
         if self.op_mode == OpModes.SIM:
             self.motion.set_target_motion_state(MotionState.WALK, force=True)
@@ -194,7 +193,7 @@ class Main:
         system_status.ik.status = Status.ERROR if self.motion.get_quad().get_ik_error() else Status.NONE
         system_status.joint_angle.status = Status.ERROR if self.motion.get_quad().get_joint_angle_error() else Status.NONE
         system_status.input.state = self.input.get_input_mode()
-        system_status.loopTimes.main = self.loop_completion_time_ms
+        system_status.loopTimes.main = self.main_loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
         system_status.loopTimes.can0 = self.motors.get_can_loop_time("can0")
         system_status.loopTimes.can1 = self.motors.get_can_loop_time("can1")
@@ -257,18 +256,20 @@ class Main:
         Keep a consistance loop rate by sleeping the delta of processing time.
         Sleep required to share the CPU.
         """
-        delta = time.time() - self.loop_time
+        delta = time() - self.main_loop_time
 
-        sleep_time = self.main_loop_rate_ms - delta
+        sleep_time = self.main_loop_rate_seconds - delta
         if sleep_time > 0:
             sleep(sleep_time)
 
         # if delta > self.main_loop_rate_ms:
-        #    print(f"[MAIN] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
+        #    print(f"[Main] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
-        # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
-        self.loop_completion_time_ms = delta * 1000
-        self.loop_time = time.time()
+        #print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
+        self.main_loop_completion_time_ms = (time() - self.main_loop_time) * 1000
+        self.main_loop_time = time()
+
+       
 
     ###############################################################################
     # Helpers

@@ -35,7 +35,7 @@ class MotionParameters:
     ###############################################################################
 
     def set_forward_raw(self, value: float):
-        self.forward_raw = process_value(value, self.deadzone)
+        self.forward_raw = process_value(-value, self.deadzone)
 
     def get_forward_raw(self) -> float:
         return self.forward_raw

@@ -9,8 +9,10 @@ from quadruped.gait_planner import Gait, Phase
 from quadruped.interfaces import Trajectories, Trajectory
 from utilities.utilities import log_scale_value
 
-
 class TrajectoryPlanner:
+
+    def __init__(self):
+        self.gait_planner: GaitPlanner = self.set_gait(Gait.WALK)
 
     ###############################################################################
     # Gaits (can be modified)
@@ -50,7 +52,7 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def _calculate_foot_point(self, gait: Gait, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
+    def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, angular_velocity: float, forward_velocity: float):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
@@ -77,8 +79,7 @@ class TrajectoryPlanner:
         twist_angle = angle_between_xy(cor, base_foot_point)
         twist_angle += 90 if cor.y > 0 else -90
 
-        # Foot swing trajectory (unrotated, origin-relative)
-        gait_planner: GaitPlanner = self.gait_factory(gait)
+        # Foot swing trajectory (unrotated, origin-relative)        
         foot_point: Point = gait_planner.get_foot_position(leg_name, gait_time)
 
         # Project it to the circular arc radius
@@ -93,23 +94,22 @@ class TrajectoryPlanner:
         return foot_point, twist_angle, bend_radius, cor
 
     def get_foot_points(
-        self, gait: Gait, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float
-    ) -> Dict[LegName, Point]:
+        self, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float
+    ) -> Dict[LegName, Point]:      
         foot_points: Dict[LegName, Point] = {}
         for leg_name in LegName:
             base_foot_point = base_foot_points[leg_name]
-            foot_point, _, _, _ = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
             foot_points[leg_name] = foot_point
         return foot_points
 
-    def is_leg_in_swing(self, gait: Gait, leg: LegName, phase_time: float):
-        gait_planner: GaitPlanner = self.gait_factory(gait)
-        phase, normalized_time = gait_planner.get_leg_phase_time(leg, phase_time)
+    def is_leg_in_swing(self, leg: LegName, phase_time: float):        
+        phase, normalized_time = self.gait_planner.get_leg_phase_time(leg, phase_time)
         return phase is Phase.SWING
     
-    def get_twist_angle(self, gait: Gait, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, angular_velocity: float, forward_velocity: float) -> float:
+    def get_twist_angle(self, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, angular_velocity: float, forward_velocity: float) -> float:
         base_foot_point = base_foot_points[leg_name]
-        _, twist_angle, _, _ = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
         return twist_angle
 
     ###############################################################################
@@ -117,16 +117,18 @@ class TrajectoryPlanner:
     ###############################################################################
 
     def get_trajectories(
-        self, gait: Gait, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity
+        self, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity
     ) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
         """
 
-        gait_planner: GaitPlanner = self.gait_factory(gait)
+        bend_radius: float = None
+        cor: Point = None
+        ring_num_points: int = 50
 
-        timestep = gait_planner.period / 100
-        gait_times = np.arange(0, gait_planner.period, timestep)
+        timestep = self.gait_planner.period / 50
+        gait_times = np.arange(0, self.gait_planner.period, timestep)
 
         trajectories: Trajectories = []
         rings: Trajectories = []
@@ -135,27 +137,30 @@ class TrajectoryPlanner:
 
             trajectory: Trajectory = []
             for gait_time in gait_times:
-                foot_point, _, bend_radius, cor = self._calculate_foot_point(gait, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
+                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, angular_velocity, forward_velocity)
                 trajectory.append(foot_point)
-
             trajectories.append(trajectory)
-            rings.append(self.create_circle_trajectory(bend_radius, cor, 100))
+
+        rings.append(self.create_circle_trajectory(bend_radius, cor, ring_num_points))
 
         return trajectories, rings
 
     @staticmethod
     def create_circle_trajectory(radius: float, center: Point, num_points: int) -> Trajectory:
-        """Creates a circle trajectory"""
-        trajectory: Trajectory = []
-        linspace = np.linspace(
-            radians(0),
-            radians(360),
-            num_points,
-        )
-        x = center.x + radius * np.sin(linspace)
-        y = center.y + radius * np.cos(linspace)
-        z = np.full_like(linspace, center.z)
-        for i in range(len(x)):
-            point = Point(x[i], y[i], z[i])
-            trajectory.append(point)
-        return trajectory
+        angles = np.linspace(0, 2 * np.pi, num_points)
+        x = center.x + radius * np.sin(angles)
+        y = center.y + radius * np.cos(angles)
+        z = np.full_like(angles, center.z)
+        return [Point(xi, yi, zi) for xi, yi, zi in zip(x, y, z)]
+    
+
+    ###############################################################################
+    # Getters / Setters
+    ###############################################################################
+
+    def set_gait(self, gait: Gait):
+        self.gait_planner: GaitPlanner = self.gait_factory(gait)
+
+    def get_gait(self) -> Gait:
+        return self.gait_planner.get_gait()
+    

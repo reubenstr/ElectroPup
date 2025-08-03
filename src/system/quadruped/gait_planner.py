@@ -97,3 +97,6 @@ class GaitPlanner:
         phase, phase_time = self.get_leg_phase_time(leg_name, gait_time)
         d, h = self.foot_trajectory_bezier(phase, phase_time)
         return Point(d, 0, h)
+
+    def get_gait(self) -> Gait:
+        return self.gait

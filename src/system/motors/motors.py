@@ -32,8 +32,7 @@ class Motors:
 
         self.motors_enabled: bool = False
         self.motor_enable_sequence_delay_seconds: float = 0.250
-        self.motor_disable_sequence_delay_seconds: float = 0.250
-        self.allow_position_updates: bool = True
+        self.motor_disable_sequence_delay_seconds: float = 0.250     
 
         self.min_loop_rate_seconds: float = 0.025
 
@@ -155,22 +154,19 @@ class Motors:
                         attempt += 1
                         print(f"[{self.tag}][ALL] error, failed to enable {motor.name}, attempt number {attempt}!")
                         if attempt > max_attempts:
-                            self.motors_enabled = False
-                            self.allow_position_updates = False
+                            self.motors_enabled = False                         
                             self.release_can_locks()
                             return False
                         sleep(self.motor_enable_sequence_delay_seconds)
 
                 sleep(self.motor_enable_sequence_delay_seconds)
         print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
-        self.motors_enabled = True
-        self.allow_position_updates = True
+        self.motors_enabled = True     
         self.release_can_locks()
         return True
 
     def disable_all_motors(self):
-        start = time()
-        self.allow_position_updates = False
+        start = time()       
         self.acquire_can_locks()
         if self.motors_enabled:
             for motor in self.motors.values():
@@ -304,11 +300,10 @@ class Motors:
 
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
-                            if self.allow_position_updates:
-                                motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
+                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
                             motor.req_position()
-                            motor.req_state_1()
-                            motor.req_state_2()
+                            #motor.req_state_1()
+                            #motor.req_state_2()
                         elif motor.allow_comms:
                             motor.req_position()
                             motor.req_state_1()
