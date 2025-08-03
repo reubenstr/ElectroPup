@@ -1,8 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { AxisPad, AxisPadTouchEvent } from "@fustaro/react-native-axis-pad";
 import { useDataTransfer } from '@/services/useDataTransfer';
-import { ControlMessage, Command } from '@/interfaces/messages';
 import Plot3D from '@/components/Plot3D';
 import StatusIndicator from '@/components/indicators/StatusIndicator';
 import ContactIndicator from '@/components/indicators/ContactIndicators';
@@ -19,29 +17,6 @@ export default function Viewer() {
     const { quadData: quadData, connected, sendMessage } = useDataTransfer();
 
     const [showMotorInfo, setShowMotorInfo] = useState(false);
-
-    const leftX = useRef<number>(0);
-    const leftY = useRef<number>(0);
-    const rightX = useRef<number>(0);
-    const rightY = useRef<number>(0);
-    const command = useRef<Command>(Command.NO_UPDATE);
-
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            const message: ControlMessage = {
-                leftX: leftX.current,
-                leftY: leftY.current,
-                rightX: rightX.current,
-                rightY: rightY.current,
-                command: command.current
-            }
-            sendMessage(JSON.stringify(message))
-
-            command.current = Command.NO_UPDATE;
-        }, 50);
-
-        return () => clearInterval(intervalId);
-    }, []);
 
     const goTo = (uri: string) => {
         router.push(uri as any)
@@ -197,9 +172,9 @@ export default function Viewer() {
                                 <View style={OverlayStyles.ikColumns}>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Translation</Text>
-                                        <Text>Forward: {quadData?.ikParameters?.forwardTranslation?.toFixed(2)}</Text>
-                                        <Text>Side: {quadData?.ikParameters?.sideTranslation?.toFixed(2)}</Text>
-                                        <Text>Height: {quadData?.ikParameters?.heightTranslation?.toFixed(2)}</Text>
+                                        <Text>Forward: {quadData?.ikParameters?.forwardTranslation?.toFixed(3)}</Text>
+                                        <Text>Side: {quadData?.ikParameters?.sideTranslation?.toFixed(3)}</Text>
+                                        <Text>Height: {quadData?.ikParameters?.heightTranslation?.toFixed(3)}</Text>
                                     </View>
                                     <View style={OverlayStyles.ikColumn}>
                                         <Text style={OverlayStyles.ikText}>Rotation</Text>
