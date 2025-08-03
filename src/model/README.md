@@ -2,6 +2,8 @@
 
 ElectroPup model for MuJoCo physics simulation application.
 
+Use the gamepad (PS4) to pose and walk the quadruped.
+
 See assets folder for links to CAD models.
 
 ## Installation
