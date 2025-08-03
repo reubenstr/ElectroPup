@@ -5,20 +5,79 @@ import mujoco.viewer
 import numpy as np
 from math import radians
 
-from quadruped.quad import Quad, AngleUnits, LegName
-from quadruped.parameters import ik_parameters, motion_parameters
+from quadruped.interfaces import AngleUnits, LegName, MotionState
+from quadruped.motion import Motion, Gait
+from input.interfaces import InputCommand
 from input.input import Input
 
 """
     Shows the quadruped in Mujoco simulation enviroment.
 
-    Only pose is implemented.
+    Connect the gamepad (PS4) to pose and walk the quadruped.
 
-    TODO:
-        Apply the motion controller for walking, etc.
+    Some of the control logic (retricting motions states when motors are disabled) from the live 
+    quadruped (main.py) are removed due to no physical hardware (motors).
 """
 
 # np.set_printoptions(suppress=True)
+
+
+class Main:
+    def __init__(self):
+
+        print(f"[Main] starting")
+
+        self.input = Input(callback=self.controller_event_callback)
+        self.motion = Motion()
+
+        self.motion.set_target_motion_state(MotionState.WALK)
+
+        self.simulation = Simulation()
+
+    def controller_event_callback(self, event: InputCommand):
+
+        if event is InputCommand.STAND:
+            self.motion.set_target_motion_state(MotionState.STAND)
+            self.motor_enable_flag = True
+
+        if event is InputCommand.SIT:
+            self.motion.set_target_motion_state(MotionState.SIT)
+
+        if event is InputCommand.POSE:
+            self.motion.set_target_motion_state(MotionState.POSE)
+
+        if event is InputCommand.WALK:
+            self.motion.set_target_motion_state(MotionState.WALK)
+
+        if event is InputCommand.GAIT_WALK:
+            self.motion.set_target_gait(Gait.WALK)
+
+        if event is InputCommand.GAIT_TROT:
+            self.motion.set_target_gait(Gait.TROT)
+
+        print(f"[MAIN] Controller event received: {event.name}")
+
+    def run(self):
+        while self.simulation.is_running():
+
+            step_start = time.time()
+
+            self.motion.set_ik_parameters(self.input.get_ik_parameters())
+            self.motion.set_motion_parameters(self.input.get_motion_parameters())
+
+            if not self.motion.get_quad().get_ik_error() and not self.motion.get_quad().get_joint_angle_error():
+                joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.RADIANS)
+                # print(joint_angles)
+
+                self.simulation.tick(joint_angles)
+
+            # Delay between simulation steps.
+            time_until_next_step = self.simulation.get_timestep() - (time.time() - step_start)
+            if time_until_next_step > 0:
+                time.sleep(time_until_next_step)
+
+    def shutdown(self):
+        self.input.shutdown()
 
 
 class Simulation:
@@ -61,8 +120,8 @@ class Simulation:
         target_positions["back_right_knee"] = joint_angles[LegName.BR]["knee"]
 
         # Set all joints angles to zero to verify model matches expected zero positions of the inverse kinematics.
-        for key in target_positions.keys():
-            target_positions[key] = radians(45)
+        #for key in target_positions.keys():
+        #    target_positions[key] = radians(45)
 
         # Apply target positions to simulation model.
         for _, (key, value) in enumerate(target_positions.items()):
@@ -79,37 +138,14 @@ class Simulation:
 ###############################################################################
 if __name__ == "__main__":
 
-    simulation = Simulation()
-
-    input = Input()
-    quad = Quad()
-
-    joint_angles = None
-    start = time.time()
+    main = Main()
 
     try:
-        while simulation.is_running():
-            step_start = time.time()
-
-            ik_parameters = input.get_ik_parameters()
-
-            base_foot_points = quad.get_base_foot_points()
-            quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
-
-            if not quad.ik_error and not quad.joint_angle_error:
-                joint_angles = quad.get_joint_angles(AngleUnits.RADIANS)
-                # print(joint_angles)
-
-            simulation.tick(joint_angles)
-
-            # Delay between simulation steps.
-            time_until_next_step = simulation.get_timestep() - (time.time() - step_start)
-            if time_until_next_step > 0:
-                time.sleep(time_until_next_step)
-
+        main.run()
+    except KeyboardInterrupt:
+        print("Keyboard interrupt, exiting")
     except Exception as e:
         print(str(e))
         print(traceback.format_exc())
-
     finally:
-        input.shutdown()
+        main.shutdown()
