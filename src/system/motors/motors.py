@@ -131,15 +131,9 @@ class Motors:
     ###############################################################################
 
     def set_zero_to_current_position(self, motor_name: str):
-        """Zero requires power cycle to take effect!"""
-        start = time()
+        """Zero requires power cycle to take effect!"""        
         motor = self.motors[motor_name]
-        success = motor.cmd_set_zero_to_current_pos()
-        if success:
-            print(f"[{self.tag}][{motor_name}] command set zero to current position completed, success: {success}, time: {time() - start:0.3f}")
-            self.motors[motor_name].reply_timeout_count = 0
-        else:
-            self.motors[motor_name].reply_timeout_count += 1
+        success = motor.cmd_set_zero_to_current_pos()     
         return success
 
     ###############################################################################
@@ -195,11 +189,10 @@ class Motors:
         start = time()
         self.acquire_can_locks()
         for motor_tag, motor in self.motors.items():
-            self.motors[motor_tag].reply_timeout_count = 0
-            with self.comm_lock:
-                if not motor.cmd_clear_motor_errors():
-                    print(f"[{self.tag}][ALL] error, clear all motor errors failed!")
-                    return False
+            self.motors[motor_tag].reply_timeout_count = 0            
+            if not motor.cmd_clear_motor_errors():
+                print(f"[{self.tag}][ALL] error, clear all motor errors failed!")
+                return False
         print(f"[{self.tag}][ALL] clear all errors completed, time: {time() - start:0.3f}")
         self.release_can_locks()
         return True
@@ -330,6 +323,7 @@ class Motors:
 
             can_info.loop_completion_time_ms = (time() - loop_time) * 1000
             # print("LOOP TIME:", can_info.loop_completion_time_ms)
+        print(f"[{self.tag}] worker thread for {can_info.can_channel} exited")
 
     ###############################################################################
     # CAN Helpers

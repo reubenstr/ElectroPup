@@ -52,7 +52,7 @@ class Motion:
         self.transition_time_rate: float = 0.025
 
         self.idle_time: float = 0
-        self.idle_time_trigger_seconds: float = 3000000
+        self.idle_time_trigger_seconds: float = 5
         self.idle_flag: bool = True
 
         self.forward_velocity: float = 0

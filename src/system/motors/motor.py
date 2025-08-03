@@ -89,8 +89,8 @@ class Motor:
         self.reply_timeout_count: int = 0
 
         # Driver config:
-        self.angle_pid_kp: int = 5  # Position loop, used
-        self.angle_pid_ki: int = 10  # Position loop, used
+        self.angle_pid_kp: int = 3  # Position loop, used
+        self.angle_pid_ki: int = 3  # Position loop, used
         self.speed_pid_kp: int = 10  # Speed loop, not used
         self.speed_pid_ki: int = 10  # Speed loop, not used
         self.iq_pid_kp: int = 40  # Torque loop, not used

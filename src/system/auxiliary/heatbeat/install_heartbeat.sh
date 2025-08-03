@@ -22,7 +22,7 @@ After=multi-user.target
 [Service]
 Type=simple
 WorkingDirectory=$(pwd)
-ExecStart=$HOME/ElectroPup/src/system/auxiliary/heatbeat/start_heartbeat.sh
+ExecStart=$HOME/ElectroPup/src/heartbeat.sh
 Restart=on-failure
 RestartSec=5s
 

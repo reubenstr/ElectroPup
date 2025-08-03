@@ -1,22 +1,12 @@
 #!/usr/bin/env python3
-import os
-import sys
-from time import sleep
-from collections import OrderedDict
-import curses
-
-from system.motors.motors import Motors
-
 """
-    Utility to zero motors and verify motor layout.
+    Utility to zero the MG4010E-i10v3 motors and verify motor layout.
     
     Not all motors are required to be attached.
     
     Motors require a power cycle for a new zero to take effect!
 """
 
-
-motor_model = "MG4010E-i10v3"
 import sys
 import time
 import math
@@ -30,9 +20,9 @@ from prompt_toolkit.layout.containers import HSplit, Window
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.styles import Style
 
-from system.hardware.hardware import Hardware
-from system.motors.motors import Motors
-from system.motors.interfaces import MotorZeroInfo
+from hardware.hardware import Hardware
+from motors.motors import Motors
+from motors.interfaces import MotorZeroInfo
 
 """
     This script creates an interface to zero the position of the motors.
@@ -41,13 +31,11 @@ from system.motors.interfaces import MotorZeroInfo
 
 motors = Motors(allow_enable=False)
 
-motors.start()
-
 num_motors = 12
 motor_infos: List[MotorZeroInfo] = []
 selected_index = [0]
 exit_event = threading.Event()
-
+zerored_motors = [False] * 12
 
 # Styles for displayed text.
 style = Style.from_dict(
@@ -92,6 +80,7 @@ def get_motor_line(i):
     motor_name = info.motor_name
     motor_id = info.motor_id
     can_id = info.can_id
+    zeroed = "success" if zerored_motors[i] else ""
 
     line_style = "selected" if i == selected_index[0] else "text"
 
@@ -99,7 +88,7 @@ def get_motor_line(i):
         ("class:" + state_style, f"{state_text:13} "),
         (
             "class:" + line_style,
-            f"| {position}° | {motor_id:2} | {motor_name:18} | {can_id}",
+            f"| {position:}° | {motor_id:2} | {motor_name:18} | {can_id} | {zeroed}",
         ),
     ]
 
@@ -123,7 +112,7 @@ layout = Layout(
                     [
                         (
                             "class:text",
-                            "   State      |   Angle  | ID |       Name         | CAN ",
+                            "   State      |   Angle  | ID |       Name         | CAN  | Zeroed",
                         )
                     ]
                 ),
@@ -135,7 +124,7 @@ layout = Layout(
                     [
                         (
                             "class:text",
-                            "--------------------------------------------------------",
+                            "--------------------------------------------------------------------",
                         )
                     ]
                 ),
@@ -172,7 +161,10 @@ def move_down(event):
 @kb.add("0")
 def select(event):
     motor_name = motor_infos[selected_index[0]].motor_name
-    motors.set_zero_to_current_position(motor_name)
+    success = motors.set_zero_to_current_position(motor_name)
+    if success:
+        zerored_motors[selected_index[0]] = True
+
 
 
 @kb.add("c-c")
