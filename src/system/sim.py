@@ -1,17 +1,22 @@
-#!/usr/bin/env python3
-
-import os
 import time
-import math
 import traceback
 import mujoco
 import mujoco.viewer
 import numpy as np
+from math import radians
 
-from system.quadruped.quad import Quad
-from system.gamepad.gamepad import Gamepad
-from system.parameters.frame_parameters import FrameParameters
-from system.parameters.motion_parameters import MotionParameters, KineticState
+from quadruped.quad import Quad, AngleUnits, LegName
+from quadruped.parameters import ik_parameters, motion_parameters
+from input.input import Input
+
+"""
+    Shows the quadruped in Mujoco simulation enviroment.
+
+    Only pose is implemented.
+
+    TODO:
+        Apply the motion controller for walking, etc.
+"""
 
 # np.set_printoptions(suppress=True)
 
@@ -42,22 +47,22 @@ class Simulation:
 
         # Map joint angles from inverse kinematics to joint names of simulation model.
         target_positions = {}
-        target_positions["front_left_abduction"] = joint_angles["front_left"]["abduction"]
-        target_positions["front_left_hip"] = joint_angles["front_left"]["hip"]
-        target_positions["front_left_knee"] = joint_angles["front_left"]["knee"]
-        target_positions["front_right_abduction"] = joint_angles["front_right"]["abduction"]
-        target_positions["front_right_hip"] = joint_angles["front_right"]["hip"]
-        target_positions["front_right_knee"] = joint_angles["front_right"]["knee"]
-        target_positions["back_left_abduction"] = joint_angles["back_left"]["abduction"]
-        target_positions["back_left_hip"] = joint_angles["back_left"]["hip"]
-        target_positions["back_left_knee"] = joint_angles["back_left"]["knee"]
-        target_positions["back_right_abduction"] = joint_angles["back_right"]["abduction"]
-        target_positions["back_right_hip"] = joint_angles["back_right"]["hip"]
-        target_positions["back_right_knee"] = joint_angles["back_right"]["knee"]
+        target_positions["front_left_abduction"] = joint_angles[LegName.FL]["abduction"]
+        target_positions["front_left_hip"] = joint_angles[LegName.FL]["hip"]
+        target_positions["front_left_knee"] = joint_angles[LegName.FL]["knee"]
+        target_positions["front_right_abduction"] = joint_angles[LegName.FR]["abduction"]
+        target_positions["front_right_hip"] = joint_angles[LegName.FR]["hip"]
+        target_positions["front_right_knee"] = joint_angles[LegName.FR]["knee"]
+        target_positions["back_left_abduction"] = joint_angles[LegName.BL]["abduction"]
+        target_positions["back_left_hip"] = joint_angles[LegName.BL]["hip"]
+        target_positions["back_left_knee"] = joint_angles[LegName.BL]["knee"]
+        target_positions["back_right_abduction"] = joint_angles[LegName.BR]["abduction"]
+        target_positions["back_right_hip"] = joint_angles[LegName.BR]["hip"]
+        target_positions["back_right_knee"] = joint_angles[LegName.BR]["knee"]
 
         # Set all joints angles to zero to verify model matches expected zero positions of the inverse kinematics.
-        # for key in target_positions.keys():
-        #    target_positions[key] = math.radians(0)
+        for key in target_positions.keys():
+            target_positions[key] = radians(45)
 
         # Apply target positions to simulation model.
         for _, (key, value) in enumerate(target_positions.items()):
@@ -76,13 +81,8 @@ if __name__ == "__main__":
 
     simulation = Simulation()
 
-    frame_parameters = FrameParameters("./system/parameters/frame_parameters.yaml")
-    motion_parameters = MotionParameters("./system/parameters/motion_parameters.yaml")
-
-    gamepad = Gamepad(motion_parameters)
-    gamepad.set_kinetic_state(KineticState.POSE)
-
-    body = Quad(frame_parameters=frame_parameters)
+    input = Input()
+    quad = Quad()
 
     joint_angles = None
     start = time.time()
@@ -91,27 +91,19 @@ if __name__ == "__main__":
         while simulation.is_running():
             step_start = time.time()
 
-            new_motion_parameters = gamepad.get_motion_parameters()
+            ik_parameters = input.get_ik_parameters()
 
-            error_state = body.set_body_pose_by_transform_inputs(
-                phi=new_motion_parameters.roll,
-                theta=new_motion_parameters.pitch,
-                psi=new_motion_parameters.yaw,
-                x=new_motion_parameters.side_translation,
-                y=new_motion_parameters.height_translation,
-                z=new_motion_parameters.forward_translation,
-            )
+            base_foot_points = quad.get_base_foot_points()
+            quad.set_body_pose_by_transform_inputs(ik_parameters, base_foot_points)
 
-            if error_state == Quad.QuadErrorState.NONE:
-                joint_angles = body.get_joint_angles(units="RADIANS")
-
+            if not quad.ik_error and not quad.joint_angle_error:
+                joint_angles = quad.get_joint_angles(AngleUnits.RADIANS)
                 # print(joint_angles)
+
             simulation.tick(joint_angles)
 
             # Delay between simulation steps.
-            time_until_next_step = simulation.get_timestep() - (
-                time.time() - step_start
-            )
+            time_until_next_step = simulation.get_timestep() - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
 
@@ -120,4 +112,4 @@ if __name__ == "__main__":
         print(traceback.format_exc())
 
     finally:
-        gamepad.disconnect()
+        input.shutdown()

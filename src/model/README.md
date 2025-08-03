@@ -17,6 +17,12 @@ Run Mujoco application without specifying a model:
 Run Mujoco with the ElectroPup model (model only, no user input):
 >python3 -m mujoco.viewer --mjcf=./scene.xml 
 
+Run Mujoco with the ElectroPup model and Gamepad input:
+>cd ~/ElectroPup/src/
+
+>sim.sh
+
+
 ## Docs
 
 https://mujoco.readthedocs.io/en/stable/APIreference/index.html
