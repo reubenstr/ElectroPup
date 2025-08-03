@@ -5,9 +5,9 @@ import mujoco.viewer
 import numpy as np
 from math import radians
 
-from quadruped.interfaces import AngleUnits, LegName, MotionState
+from quadruped.interfaces import AngleUnits, LegName, JointName, MotionState
 from quadruped.motion import Motion, Gait
-from input.interfaces import InputCommand
+from input.interfaces import TouchCommand
 from input.input import Input
 
 """
@@ -34,25 +34,25 @@ class Main:
 
         self.simulation = Simulation()
 
-    def controller_event_callback(self, event: InputCommand):
+    def controller_event_callback(self, event: TouchCommand):
 
-        if event is InputCommand.STAND:
+        if event is TouchCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
             self.motor_enable_flag = True
 
-        if event is InputCommand.SIT:
+        if event is TouchCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)
 
-        if event is InputCommand.POSE:
+        if event is TouchCommand.POSE:
             self.motion.set_target_motion_state(MotionState.POSE)
 
-        if event is InputCommand.WALK:
+        if event is TouchCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event is InputCommand.GAIT_WALK:
+        if event is TouchCommand.GAIT_WALK:
             self.motion.set_target_gait(Gait.WALK)
 
-        if event is InputCommand.GAIT_TROT:
+        if event is TouchCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
 
         print(f"[MAIN] Controller event received: {event.name}")
@@ -106,18 +106,18 @@ class Simulation:
 
         # Map joint angles from inverse kinematics to joint names of simulation model.
         target_positions = {}
-        target_positions["front_left_abduction"] = joint_angles[LegName.FL]["abduction"]
-        target_positions["front_left_hip"] = joint_angles[LegName.FL]["hip"]
-        target_positions["front_left_knee"] = joint_angles[LegName.FL]["knee"]
-        target_positions["front_right_abduction"] = joint_angles[LegName.FR]["abduction"]
-        target_positions["front_right_hip"] = joint_angles[LegName.FR]["hip"]
-        target_positions["front_right_knee"] = joint_angles[LegName.FR]["knee"]
-        target_positions["back_left_abduction"] = joint_angles[LegName.BL]["abduction"]
-        target_positions["back_left_hip"] = joint_angles[LegName.BL]["hip"]
-        target_positions["back_left_knee"] = joint_angles[LegName.BL]["knee"]
-        target_positions["back_right_abduction"] = joint_angles[LegName.BR]["abduction"]
-        target_positions["back_right_hip"] = joint_angles[LegName.BR]["hip"]
-        target_positions["back_right_knee"] = joint_angles[LegName.BR]["knee"]
+        target_positions["front_left_abduction"] = joint_angles[LegName.FL][JointName.ABDUCTION]
+        target_positions["front_left_hip"] = joint_angles[LegName.FL][JointName.HIP]
+        target_positions["front_left_knee"] = joint_angles[LegName.FL][JointName.KNEE]
+        target_positions["front_right_abduction"] = joint_angles[LegName.FR][JointName.ABDUCTION]
+        target_positions["front_right_hip"] = joint_angles[LegName.FR][JointName.HIP]
+        target_positions["front_right_knee"] = joint_angles[LegName.FR][JointName.KNEE]
+        target_positions["back_left_abduction"] = joint_angles[LegName.BL][JointName.ABDUCTION]
+        target_positions["back_left_hip"] = joint_angles[LegName.BL][JointName.HIP]
+        target_positions["back_left_knee"] = joint_angles[LegName.BL][JointName.KNEE]
+        target_positions["back_right_abduction"] = joint_angles[LegName.BR][JointName.ABDUCTION]
+        target_positions["back_right_hip"] = joint_angles[LegName.BR][JointName.HIP]
+        target_positions["back_right_knee"] = joint_angles[LegName.BR][JointName.KNEE]
 
         # Set all joints angles to zero to verify model matches expected zero positions of the inverse kinematics.
         #for key in target_positions.keys():

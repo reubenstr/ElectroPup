@@ -353,13 +353,18 @@ class Motion:
         with self.lock:
             self.motion_parameters = motion_parameters
 
-    def set_target_motion_state(self, state: MotionState):        
+    def set_target_motion_state(self, state: MotionState, force: bool = False):   
+        if force:
+            self.target_motion_state = state
+            return
+             
         if state is MotionState.STANDBY:
             with self.lock:
                 self.target_motion_state = state
             return
         
         allowed_transitions = {
+            # target state : {current states}
             MotionState.STAND: {MotionState.STANDBY, MotionState.SIT},
             MotionState.SIT: {MotionState.POSE, MotionState.WALK},
             MotionState.POSE: {MotionState.WALK, MotionState.TRANSITION},

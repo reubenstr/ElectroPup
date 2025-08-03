@@ -5,6 +5,7 @@ from typing import List, Dict
 from . import kinematics
 from . import transformations
 from quadruped.point import Point
+from quadruped.interfaces import JointName
 
 
 class Leg(object):
@@ -118,13 +119,13 @@ class Leg(object):
     def get_foot_point(self) -> Point:     
         return self.swap_point(self._foot_point)
 
-    def get_leg_angles_in_radians(self) -> Dict[str, float]:
+    def get_leg_angles_in_radians(self) -> Dict[JointName, float]:
         """Return leg angles as a dictionary as q1, q2, q3"""
-        return {"abduction": self._q1, "hip": self._q2, "knee": self._q3}
+        return {JointName.ABDUCTION: self._q1, JointName.HIP: self._q2, JointName.KNEE: self._q3}
 
     def get_leg_angles_in_degrees(self) -> Dict[str, float]:
         """Return leg angles in degrees as a dictionary as q1,q2,q3"""
-        return {"abduction": degrees(self._q1), "hip": degrees(self._q2), "knee": degrees(self._q3)}
+        return {JointName.ABDUCTION: degrees(self._q1), JointName.HIP: degrees(self._q2), JointName.KNEE: degrees(self._q3)}
 
     ###############################################################################
     # Helpers

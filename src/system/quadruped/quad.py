@@ -235,18 +235,13 @@ class Quad(object):
             joint_angles: dictionary containing four legs and their
             associated angles in the order q1,q2,q3
         """
-        if units is AngleUnits.RADIANS:
-            joint_angles = {}
-            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_radians()
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
-            joint_angles[LegName.BR] = self.legs[LegName.BL].get_leg_angles_in_radians()
-            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_radians()
-        elif units is AngleUnits.DEGREES:
-            joint_angles = {}
-            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_degrees()
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
-            joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_degrees()
-            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_degrees()
+       
+        joint_angles = {}
+        for leg in LegName:
+            if units is AngleUnits.RADIANS:
+                joint_angles[leg] = self.legs[leg].get_leg_angles_in_radians()
+            elif units is AngleUnits.DEGREES:            
+                joint_angles[leg] = self.legs[leg].get_leg_angles_in_degrees()          
 
         return joint_angles
 
@@ -294,9 +289,11 @@ class Quad(object):
             Angles in the order q1,q2,q3.
         '''
 
+        # Convert all angles in degrees to radians.
         for leg, angles in leg_angles.items():
             leg_angles[leg] = [radians(angle) for angle in angles]
 
+        # Apply the angles to the legs.
         for leg, joint_angles in leg_angles.items():
             self.legs[leg].set_angles(joint_angles[0],joint_angles[1],joint_angles[2])
           

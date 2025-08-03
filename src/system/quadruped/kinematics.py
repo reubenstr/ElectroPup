@@ -1,25 +1,25 @@
-"""
-Forward and inverse kinematic transformations for a quadruped robot.
-
-Source from:
-https://github.com/mike4192/spot_micro_kinematics_python
-
-Equations from:
-Sen, Muhammed Arif & Bakircioglu, Veli & Kalyoncu, Mete. (2017).
-Inverse Kinematic Analysis Of A Quadruped Robot.
-International Journal of Scientific & Technology Research. 6.
-"""
-
 from . import transformations
 from math import pi, cos, sin, atan2, sqrt
 import numpy as np
 from .exceptions import DomainBreach
 
+"""
+    Forward and inverse kinematic transformations for a quadruped robot.
+
+    Source from:
+    https://github.com/mike4192/spot_micro_kinematics_python
+
+    Equations from:
+        Sen, Muhammed Arif & Bakircioglu, Veli & Kalyoncu, Mete. (2017).
+        Inverse Kinematic Analysis Of A Quadruped Robot.
+        International Journal of Scientific & Technology Research. 6.
+"""
+
 
 def t_back_right(t_m, l, w):
     """
     Creates a 4x4 numpy homogeneous transformation matrix representing coordinate system and
-    position of the rightback leg of a quadriped. Assumes legs postioned in corners of a rectangular
+    position of the rightback leg of a quadruped. Assumes legs postioned in corners of a rectangular
     plane defined by a width and length
 
     Args:
@@ -38,7 +38,7 @@ def t_back_right(t_m, l, w):
 
 def t_front_right(t_m, l, w):
     """Creates a 4x4 numpy homogeneous transformation matrix representing coordinate system and
-    position of the rightfront leg of a quadriped. Assumes legs postioned in corners of a rectangular
+    position of the rightfront leg of a quadruped. Assumes legs postioned in corners of a rectangular
     plane defined by a width and length
 
     Args:
@@ -57,7 +57,7 @@ def t_front_right(t_m, l, w):
 
 def t_front_left(t_m, l, w):
     """Creates a 4x4 numpy homogeneous transformation matrix representing coordinate system and
-    position of the left front leg of a quadriped. Assumes legs postioned in corners of a rectangular
+    position of the left front leg of a quadruped. Assumes legs postioned in corners of a rectangular
     plane defined by a width and length
 
     Args:
@@ -76,7 +76,7 @@ def t_front_left(t_m, l, w):
 
 def t_back_left(t_m, l, w):
     """Creates a 4x4 numpy homogeneous transformation matrix representing coordinate system and
-    position of the left back leg of a quadriped. Assumes legs postioned in corners of a rectangular
+    position of the left back leg of a quadruped. Assumes legs postioned in corners of a rectangular
     plane defined by a width and length
 
     Args:
@@ -94,7 +94,7 @@ def t_back_left(t_m, l, w):
 
 
 def t_0_to_1(theta1, l1):
-    """Create the homogeneous transformation matrix for joint 0 to 1 for a quadriped leg.
+    """Create the homogeneous transformation matrix for joint 0 to 1 for a quadruped leg.
 
     Args:
         theta1: Rotation angle in radians of the hip joint
@@ -124,7 +124,7 @@ def t_0_to_1(theta1, l1):
 
 
 def t_1_to_2():
-    """Create the homogeneous transformation matrix for joint 1 to 2 for a quadriped leg.
+    """Create the homogeneous transformation matrix for joint 1 to 2 for a quadruped leg.
 
     Args:
         None
@@ -152,7 +152,7 @@ def t_1_to_2():
 
 
 def t_2_to_3(theta2, l2):
-    """Create the homogeneous transformation matrix for joint 1 to 2 for a quadriped leg.
+    """Create the homogeneous transformation matrix for joint 1 to 2 for a quadruped leg.
 
     Args:
         theta2: Rotation angle in radians of the leg joint
@@ -167,7 +167,7 @@ def t_2_to_3(theta2, l2):
 
 
 def t_3_to_4(theta3, l3):
-    """Create the homogeneous transformation matrix for joint 3 to 4 for a quadriped leg.
+    """Create the homogeneous transformation matrix for joint 3 to 4 for a quadruped leg.
 
     Args:
         theta3: Rotation angle in radians of the knee joint
@@ -182,7 +182,7 @@ def t_3_to_4(theta3, l3):
 
 
 def t_0_to_4(theta1, theta2, theta3, l1, l2, l3):
-    """Create the homogeneous transformation matrix from joint 0 to 4 of a quadriped leg
+    """Create the homogeneous transformation matrix from joint 0 to 4 of a quadruped leg
 
     Args:
         theta1: Rotation angle in radians of joint 1

@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 from input.gamepad import Gamepad
 from input.touch import Touch
-from input.interfaces import InputMode, InputCommand
+from input.interfaces import InputMode, TouchCommand
 from interfaces import Status
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.parameters.ik_parameters import IKParameters
@@ -11,7 +11,7 @@ from quadruped.parameters.ik_parameters import IKParameters
 """
 
 class Input:
-    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
+    def __init__(self, callback: Optional[Callable[[TouchCommand], None]] = None):
         self.callback = callback
 
         self.input_mode = InputMode.GAMEPAD
@@ -26,22 +26,22 @@ class Input:
     # Events
     ###############################################################################
 
-    def _check_event_for_input_change(self, event: InputCommand):
-        if event == InputCommand.TOUCH_INPUT:
+    def _check_event_for_input_change(self, event: TouchCommand):
+        if event == TouchCommand.TOUCH_INPUT:
             self.input_mode = InputMode.TOUCH
-        elif event == InputCommand.GAMEPAD_INPUT:
+        elif event == TouchCommand.GAMEPAD_INPUT:
             self.input_mode = InputMode.GAMEPAD
 
-    def _send_controller_event(self, event: InputCommand):
+    def _send_controller_event(self, event: TouchCommand):
         if self.callback:
             self.callback(event)
 
-    def touch_event_callback(self, event: InputCommand):
+    def touch_event_callback(self, event: TouchCommand):
         self._check_event_for_input_change(event)
         if self.input_mode == InputMode.TOUCH:
             self._send_controller_event(event)
 
-    def gamepad_event_callback(self, event: InputCommand):
+    def gamepad_event_callback(self, event: TouchCommand):
         self._check_event_for_input_change(event)
         if self.input_mode == InputMode.GAMEPAD:
             self._send_controller_event(event)

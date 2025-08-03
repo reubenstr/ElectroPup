@@ -3,6 +3,8 @@ from . utilities import process_value, check_value, scale_value
 
 """
    Class container parameters for pose.
+
+   If dynamic control is added to forward or side transation, ensure to add the forward_compensation.
 """
 
 
@@ -23,6 +25,10 @@ class IKParameters:
     ###############################################################################
     forward_translation_min: float = -0.050
     forward_translation_max: float = 0.050
+
+    # Add a permanent forward translation to move the center of mass in a more stable position.
+    forward_compensation: float = 0.035
+
     side_translation_min: float = -0.050
     side_translation_max: float = 0.050
 
@@ -36,15 +42,14 @@ class IKParameters:
     height_translation_min: float = 0.04
 
     ###############################################################################
-    # Default running values, do not change, will be overwritten
+    # Default running values, do not change, values will be overwritten
     ###############################################################################
     roll: float = 0
     pitch: float = 0
     yaw: float = 0
-    forward_translation: float = 0
+    forward_translation: float = forward_compensation
     side_translation: float = 0
     height_translation: float = height_translation_neutral
-    height_translation_raw: float = 0
 
     ###############################################################################
     # Misc parameters
@@ -56,7 +61,7 @@ class IKParameters:
     ###############################################################################
 
     def set_roll(self, value: float):   
-        self.roll = scale_value(process_value(value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
+        self.roll = scale_value(process_value(-value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
 
     def set_pitch(self, value: float):   
         self.pitch = scale_value(process_value(-value, self.deadzone), -1, 1, self.pitch_min, self.pitch_max)

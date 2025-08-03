@@ -8,6 +8,8 @@ from quadruped.parameters.frame_parameters import FrameParameters
 
     Use allow_motion and allow_comms during development to limit active motors and comms errors.
 
+    Use inverse_rotation to match the output position (rotation in degrees) to the kinematics system.
+
 """
 
 

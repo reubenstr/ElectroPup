@@ -6,11 +6,16 @@ from quadruped.point import Point
 Trajectory: TypeAlias = List[Point]
 Trajectories: TypeAlias = List[Trajectory]
 
-class LegName(Enum):
+class LegName(StrEnum):
     FR = "FR"
     FL = "FL"
     BR = "BR"
     BL = "BL"
+
+class JointName(StrEnum):
+    ABDUCTION = "abduction"
+    HIP = "hip"
+    KNEE = "knee"
 
 class QuadErrorState(Enum):
     NONE = 1

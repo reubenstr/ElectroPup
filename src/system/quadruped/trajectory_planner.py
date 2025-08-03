@@ -22,7 +22,7 @@ class TrajectoryPlanner:
                 gait=Gait.WALK,
                 period=1.0,
                 duty_factor=0.75,
-                stride_length=0.075,
+                stride_length=0.150,
                 step_height=0.05,
                 phase_offsets={
                     LegName.FR: 0.0,
@@ -36,7 +36,7 @@ class TrajectoryPlanner:
                 gait=Gait.TROT,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.075,
+                stride_length=0.150,
                 step_height=0.05,
                 phase_offsets={
                     LegName.FR: 0.0,

@@ -9,11 +9,13 @@ import json
 
 from input.gamepad_interface import PS4
 from interfaces import Status
-from input.interfaces import InputCommand
+from input.interfaces import TouchCommand, TouchMessage
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
-from utilities.utilities import scale_value
 
+""""
+    Get forwarded touch message from the server.py script as provided by the UI
+"""
 
 @dataclass
 class ControlMessage:
@@ -21,10 +23,10 @@ class ControlMessage:
     leftY: float
     rightX: float
     rightY: float
-    command: InputCommand
+    command: TouchCommand
 
 class Touch:
-    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
+    def __init__(self, callback: Optional[Callable[[TouchCommand], None]] = None):
         self.callback = callback
 
         context = zmq.Context()
@@ -46,7 +48,7 @@ class Touch:
     # Events
     ###############################################################################
 
-    def _send_input_command_as_event(self, event: InputCommand):
+    def _send_input_command_as_event(self, event: TouchCommand):
         if self.callback:
             self.callback(event)
 
@@ -56,45 +58,23 @@ class Touch:
 
     def process_message(self, message_str: str):
 
-        message = json.loads(message_str)
+        message: TouchMessage = json.loads(message_str)
 
         # print('[TOUCH] message received from UI: ', message)
 
-        self.ik_parameters.roll = scale_value(
-            message['leftX'],
-            -1.0,
-            1.0,
-            self.ik_parameters.pitch_min,
-            self.ik_parameters.pitch_max,
-        )
+        self.ik_parameters.set_roll(message.leftX)
 
-        self.ik_parameters.pitch = scale_value(
-            message['leftY'],
-            -1.0,
-            1.0,
-            self.ik_parameters.pitch_min,
-            self.ik_parameters.pitch_max,
-        )
+        self.ik_parameters.set_pitch(message.leftY)
+        self.motion_parameters.set_forward_raw(message.leftY)
 
-        self.ik_parameters.height_translation = scale_value(
-            message['rightX'],
-            -1.0,
-            1.0,
-            self.ik_parameters.height_translation_min,
-            self.ik_parameters.height_translation_max,
-        )
+        self.ik_parameters.set_yaw(message.rightX)
+        self.motion_parameters.set_heading_x(message.rightX)    
 
-        self.ik_parameters.height_translation = scale_value(
-            message['rightY'],
-            -1.0,
-            1.0,
-            self.ik_parameters.pitch_min,
-            self.ik_parameters.pitch_max,
-        )
-
-        command = InputCommand(message["command"])
-        if command != InputCommand.NO_UPDATE:   
-            self._send_input_command_as_event(command)
+        self.ik_parameters.set_height_translation(message.rightY)
+        self.motion_parameters.set_heading_y(message.rightY)
+           
+        if message.command != TouchCommand.NO_UPDATE:   
+            self._send_input_command_as_event(message.command)
         
 
     ###############################################################################
