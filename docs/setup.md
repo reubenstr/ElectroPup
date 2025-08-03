@@ -1,14 +1,5 @@
 # Main PC (Ubuntu)
 
-pip install mujoco
-python -m mujoco.viewer
-
-python3 -m mujoco.viewer --mjcf=./electropup.xml 
-python3 -m mujoco.viewer --mjcf=./scene.xml 
-
-https://mujoco.readthedocs.io/en/stable/APIreference/index.html
-
-
 Setup VSCode
 Install these extensions:
 Remote Explorer
@@ -21,6 +12,7 @@ Press Ctrl+Shift+P → "Python: Select Interpreter"
 Look for Python 3.13.5 (3.13.5) ~/.pyenv/versions/3.13.5/bin/python
 
 Press Ctrl+Shift+P → "Reload Window"
+
 
 # Raspberry Pi
 
@@ -96,15 +88,12 @@ pip install --upgrade pip
 
 ### Dependancies
 
-
-
 sudo apt update
 sudo apt install python3-gpiozero
 sudo apt install upower
 
 cd ./ElectroPup/src
 pip install -r requirements.txt
-
 
 # CAN
 
@@ -174,8 +163,6 @@ npm install
 Start app in development mode:
 npm expo start --web
 
-
-
 # Gamepad
 
 Assumes the gamepad is a Playstation 4 controller.
@@ -204,8 +191,6 @@ Optional, check functionality, will show a stream of axis and button values:
 sudo apt-get install joystick
 jstest /dev/input/js0
 
-
-
 # Serial 
 
 Serial is for the Auxillary board which is optional hardware.
@@ -215,17 +200,31 @@ enable_uart=1
 dtoverlay=uart0
 
 
-
 ## IMU
 
-Enable I2C on the Raspberry Pi:
-sudo raspi-config
-
+Work in progress
 
 
 # Manual Testing (or Development)
 
 cd ./ElectroPup/src
+
+
+# Simulation / Mujuco
+
+On Desktop development PC
+
+Install mujoco:
+pip install mujoco
+
+Run the viewer without a model:
+python -m mujoco.viewer
+
+Run the viewer with the scene that places ElectroPup in the zeroed position:
+python3 -m mujoco.viewer --mjcf=<path-to-scene>
+python3 -m mujoco.viewer --mjcf=~/Desktop/projects/ElectroPup/src/model/scene.xml 
+
+https://mujoco.readthedocs.io/en/stable/APIreference/index.html
 
 
 # Tools
@@ -243,31 +242,3 @@ pipreqs .
 
 
 
-
-# TEMP: TO BE REMOVED OR ADDED
-sudo apt-get update
-sudo apt-get install python3-pil
-sudo apt-get install python3-numpy
-sudo apt-get install python3-RPi.GPIO
-sudo apt-get install python3-spidev 
-sudo apt-get install python3-python-can
-sudo apt-get install can-utils
-
-Kernal CAN docs: https://www.kernel.org/doc/Documentation/networking/can.txt
-
-
-
-###############################################################################
-# aux-board
-###############################################################################
-
-sudo nano /etc/udev/rules.d/99-dfu.rules
-SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666"
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-ls -l /dev/bus/usb/002/038  # Adjust the path based on your system's output
-
-https://github.com/VermontCoder/read_sbus
-https://www.digikey.com/en/products/detail/texas-instruments/SN74LVC1G14DBVT/1592006
-
-https://github.com/riuson/lcd-image-converter

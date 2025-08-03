@@ -1,5 +1,126 @@
-# Tools
+###############################################################################
+# Notes
+###############################################################################
 
+Notes taken during design, testing, and assembly.
+
+###############################################################################
+# Power
+###############################################################################
+
+Fully loaded:
+    Abduction at zero degrees, legs at 45 degrees
+    Suspended (motors disabled): 1.08A @ 20vDC = 21.6 watts
+    Standing (motors enabled): 1.79A @ 20vDC = 33.8 watts
+
+###############################################################################
+# Body
+###############################################################################
+
+Carbon fiber tube: 12mm OD, 10mm ID, 254mm length
+In retrospect the frame probably could of been shorted by 4mm to require 250mm 
+tubes as this is a more common length. However, only a few listings (aliexpress only)
+have been found at the required dimensions at 250mm length.
+
+To use a 250mm length either the Power Carrier PCB will need to be shortend (by 2 to 4mm),
+or a slot can be added to the hip plate to allow the PCB to slip in the needed ~1mm per end.
+
+The carbon fiber rods have PLA inserts on both ends which in turn holds a M5 brass insert.
+The PLA inserts attach to the ends of the rod using superglue. 
+About five minutes after the superglue is applied the threaded inserts can be applied to the PLA insert. 
+(Do not wait for the glue to cure.)
+Superglue will ooze out from the PLA insert which will allow the PLA insert to better form to the rod.
+
+When attaching the carbon fiber rods to the hip plate, add the PCB clips to the lower rods first, then attach the rods loosely.
+Place the body on a flat surface and while holding the hip plates down cycle through each rod tightening the rod a little bit each cycle.
+
+###############################################################################
+# Motor and Leg Hardware
+###############################################################################
+
+Hip:
+    motor front: 6x M2.5x12mm
+    motor wheel: 2x M3x14mm
+    motor wheel: 1x M3x25mm
+
+Upper Leg:    
+    motor back: 6x M3x18mm
+    motor wheel: 1x M3x12mm
+    motor wheel: 2x M3x20mm  
+    motor wheel pin: 3x M3 x 8mm
+    wireclip upper side: M3x8mm (M3x10mm OK)
+    wireclip lower side: M3x8mm (M3x10mm OK)
+
+Lower Leg:    
+    motor front: 6  
+    motor wheel: 3x M3x20mm
+    motor wheel pin: 3x M3 x 8mm
+
+###############################################################################
+# Motors
+###############################################################################
+
+After the all the motors are physically attached each motor will need to be configured 
+prior to connecting the final wiring.
+(See docs for motor ID and parameter setup)
+
+###############################################################################
+# Motor Cables 
+###############################################################################
+
+Motor cables use 6 position JST-ZH headers on each end and have the following lengths (housing to housing):
+4x each: 60mm, 235mm, 465mm
+
+Motor cables are contained in 7mm OD splitloom tubing and have the following lengths:
+4x each: 155mm, 465mm
+
+The short length cables are made from the cable that was provided with the motor.
+The longer length cable is made from 26AWG silicon wire.
+
+The crimps on the second housing for the two longer cables should be placed into the housing until after the cable is routed through the wire clip and leg.
+
+
+###############################################################################
+# CAN Bus Communication
+###############################################################################
+
+Timing sample of processing 6 motors on a single CAN bus:
+    Performs: 
+        self._worker_set_all_targets()                                
+        self._worker_get_all_angles()                                        
+        self._worker_get_all_status()                
+        self._worker_check_all_angle_limits() 
+    Capture (milliseconds):
+        [Motors] processing time: 12.37
+        [Motors] processing time: 16.80
+        [Motors] processing time: 12.23
+        [Motors] processing time: 17.36
+        [Motors] processing time: 12.58
+        [Motors] processing time: 12.00
+        [Motors] processing time: 16.46
+        [Motors] processing time: 11.73
+        [Motors] processing time: 15.99
+        [Motors] processing time: 12.25
+        [Motors] processing time: 16.09
+        [Motors] processing time: 12.59
+        [Motors] processing time: 15.77
+        [Motors] processing time: 12.09
+        [Motors] processing time: 16.13
+        [Motors] processing time: 12.58
+        [Motors] processing time: 15.24
+        [Motors] processing time: 12.61
+        [Motors] processing time: 16.75
+
+
+###############################################################################
+# Tools
+###############################################################################
+
+Make gifs:
 https://ezgif.com/
 
+Make LCD splashscreen:
+https://github.com/riuson/lcd-image-converter
+
+Better top:
 sudo apt install htop
