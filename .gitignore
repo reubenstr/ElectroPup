@@ -3,3 +3,8 @@ __pycache__/
 *$py.class
 
 *.ods#
+*.drawio.bkp
+
+pcbs/auxiliary-board/auxiliary-board-backups/
+pcbs/power_carrier/power_carrier-backups/
+
