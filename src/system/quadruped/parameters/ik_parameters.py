@@ -27,10 +27,10 @@ class IKParameters:
     forward_translation_max: float = 0.050
 
     # Add a permanent forward translation to move the center of mass in a more stable position.
-    forward_compensation: float = 0.035
+    forward_compensation: float = 0.0
 
-    side_translation_min: float = -0.050
-    side_translation_max: float = 0.050
+    side_translation_min: float = -0.075
+    side_translation_max: float = 0.075
 
     # Highest allowable position of body center, must no be higher than the physical leg lengths.
     height_translation_max: float = 0.275

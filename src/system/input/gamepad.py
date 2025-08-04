@@ -9,6 +9,7 @@ from interfaces import Status
 from input.interfaces import TouchCommand
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
+from utilities.utilities import scale_value
 
 
 """
@@ -163,11 +164,13 @@ class Gamepad:
 
 
     """ L2 and R2 Triggers """
-    def axis_l2_changed_callback(self, value):
-        pass
+    def axis_l2_changed_callback(self, value):        
+        new = scale_value(value, -1, 1, 0, 1)
+        self.ik_parameters.set_forward_translation(new)
        
     def axis_r2_changed_callback(self, value):
-        pass
+        new = scale_value(value, -1, 1, 0, -1)
+        self.ik_parameters.set_forward_translation(new)
 
     """ AXIS JOY-STICKS """
 

@@ -27,8 +27,8 @@ class TrajectoryPlanner:
                 gait=Gait.WALK,
                 period=1.0,
                 duty_factor=0.75,
-                stride_length=0.150,
-                step_height=0.075,
+                stride_length=0.1,
+                step_height=0.05,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.25,
@@ -41,8 +41,8 @@ class TrajectoryPlanner:
                 gait=Gait.TROT,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.150,
-                step_height=0.075,
+                stride_length=0.1,
+                step_height=0.05,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -103,10 +103,10 @@ class TrajectoryPlanner:
     ) -> Dict[LegName, Point]:      
         foot_points: Dict[LegName, Point] = {}
         cor = self._calculate_cor(forward_velocity, angular_velocity)
-        for leg_name in LegName:
-            base_foot_point = base_foot_points[leg_name]
-            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
-            foot_points[leg_name] = foot_point
+        for leg in LegName:
+            base_foot_point = base_foot_points[leg]
+            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg, base_foot_point, gait_time, cor)
+            foot_points[leg] = foot_point
         return foot_points
 
     def is_leg_in_swing(self, leg: LegName, phase_time: float):        

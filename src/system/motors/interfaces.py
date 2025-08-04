@@ -8,7 +8,7 @@ from interfaces import Status
 
 class MotorSpeeds(IntEnum):
     SLOW = 500
-    MOTION = 2000
+    MOTION = 4000
 
 
 class MotorName(StrEnum):

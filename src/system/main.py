@@ -136,21 +136,20 @@ class Main:
             speed = MotorSpeeds.SLOW
         else:
             speed = MotorSpeeds.MOTION
-
-        # TODO: comment, map inverse angles
+  
         joint_angles = self.motion.get_quad().get_joint_angles(AngleUnits.DEGREES)
-        self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FR][JointName.ABDUCTION])
-        self.motors.set_motor_targets(MotorName.FLH, speed, -joint_angles[LegName.FR][JointName.HIP])
-        self.motors.set_motor_targets(MotorName.FLK, speed, -joint_angles[LegName.FR][JointName.KNEE])
-        self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FL][JointName.ABDUCTION])
-        self.motors.set_motor_targets(MotorName.FRH, speed, -joint_angles[LegName.FL][JointName.HIP])
-        self.motors.set_motor_targets(MotorName.FRK, speed, -joint_angles[LegName.FL][JointName.KNEE])
-        self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BR][JointName.ABDUCTION])
-        self.motors.set_motor_targets(MotorName.BLH, speed, -joint_angles[LegName.BR][JointName.HIP])
-        self.motors.set_motor_targets(MotorName.BLK, speed, -joint_angles[LegName.BR][JointName.KNEE])
-        self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BL][JointName.ABDUCTION])
-        self.motors.set_motor_targets(MotorName.BRH, speed, -joint_angles[LegName.BL][JointName.HIP])
-        self.motors.set_motor_targets(MotorName.BRK, speed, -joint_angles[LegName.BL][JointName.KNEE])      
+        self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FL][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.FLK, speed, joint_angles[LegName.FL][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FR][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.FRH, speed, joint_angles[LegName.FR][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.FRK, speed, joint_angles[LegName.FR][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BL][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BL][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BL][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BR][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BR][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR][JointName.KNEE])      
 
     def process_aux(self):
         """

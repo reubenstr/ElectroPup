@@ -43,7 +43,7 @@ class Motion:
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
-        self.phase_time_rate_fast: float = 0.010
+        self.phase_time_rate_fast: float = 0.020
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.010
@@ -53,7 +53,7 @@ class Motion:
         self.transition_time_rate: float = 0.010
 
         self.idle_time: float = 0
-        self.idle_time_trigger_seconds: float = 5
+        self.idle_time_trigger_seconds: float = 500
         self.idle_flag: bool = True
 
         self.forward_velocity: float = 0
@@ -287,12 +287,18 @@ class Motion:
             for leg in LegName:
                 combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
-            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
+            # TEMP TEST
+            ik_parameters = IKParameters()
+            ik_parameters.forward_translation = self.ik_parameters.forward_translation
+            self.quad.set_body_pose_by_transform_inputs(ik_parameters, combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
             self.transition_forward_velocity = self.forward_velocity
 
-            self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
+            # TEMP TEST
+            ik_parameters = IKParameters()
+            ik_parameters.forward_translation = self.ik_parameters.forward_translation
+            self.quad.set_body_pose_by_transform_inputs(ik_parameters, new_foot_points)
 
         self.transition_allow_flag = True
 
