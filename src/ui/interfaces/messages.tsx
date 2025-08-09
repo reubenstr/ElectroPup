@@ -7,7 +7,7 @@ export enum Command {
     SIT = 'sit',
     STAND = 'stand',
     POSE = 'pose',
-    WALK = 'walk', 
+    WALK = 'walk',
     GAMEPAD_INPUT = 'gamepad_input',
     TOUCH_INPUT = 'touch_input'
 }
@@ -36,13 +36,13 @@ interface CoordinateSeries {
     z: number[];
 }
 
-export interface PlotDataQuad {   
+export interface PlotDataQuad {
     body: CoordinateSeries;
     legs: CoordinateSeries[];
-    mesh: CoordinateSeries;   
+    support: CoordinateSeries;
 }
 
-export interface PlotDataExtras {     
+export interface PlotDataExtras {
     trajectories: CoordinateSeries[];
     transitions: CoordinateSeries[];
     rings: CoordinateSeries[];
@@ -50,33 +50,33 @@ export interface PlotDataExtras {
 }
 
 export interface MotorValues {
-  temperature: number;
-  voltage: number;
-  watts: number;
-  motorSpeed: number;
-  encoderPosition: number;
-  positionDegrees: number;
+    temperature: number;
+    voltage: number;
+    watts: number;
+    motorSpeed: number;
+    encoderPosition: number;
+    positionDegrees: number;
 }
 
 export interface MotorFaults {
-  underVoltageProtection: boolean;
-  overVoltageProtection: boolean;
-  overTemperatureProtection: boolean;
-  lostInputProtection: boolean;
+    underVoltageProtection: boolean;
+    overVoltageProtection: boolean;
+    overTemperatureProtection: boolean;
+    lostInputProtection: boolean;
 }
 
 export interface MotorState {
-  id: number;
-  minAngle: number;
-  maxAngle: number;
-  inverseRotation: boolean;
-  allowComms: boolean;
-  allowMotion: boolean;
-  canChannel: string;
-  enabled: boolean;
-  commsError: boolean;
-  values: MotorValues;
-  faults: MotorFaults;
+    id: number;
+    minAngle: number;
+    maxAngle: number;
+    inverseRotation: boolean;
+    allowComms: boolean;
+    allowMotion: boolean;
+    canChannel: string;
+    enabled: boolean;
+    commsError: boolean;
+    values: MotorValues;
+    faults: MotorFaults;
 }
 
 
@@ -115,7 +115,7 @@ interface SystemStatus {
         main: number;
         motion: number;
         can0: number;
-        can1: number;        
+        can1: number;
     };
     motor: {
         status: Status
@@ -133,7 +133,7 @@ interface SystemStatus {
         roll: string;
         pitch: string;
         status: Status;
-    };   
+    };
     can0: {
         status: Status;
     };
@@ -143,7 +143,7 @@ interface SystemStatus {
     gamepad: {
         battery: string;
         status: Status;
-    };  
+    };
     voltage: {
         voltage: string;
         status: Status;
@@ -185,6 +185,12 @@ interface IkParameters {
     yawMax: number;
 }
 
+interface MotionParameters {
+    forwardVelocity: number;
+    lateralVelocity: number;
+    angularVelocity: number;
+}
+
 export interface QuadData {
     timestamp: number;
     plotSim: PlotDataQuad;
@@ -196,4 +202,5 @@ export interface QuadData {
         [key: string]: MotorState;
     };
     ikParameters: IkParameters;
+    motionParameters: MotionParameters;
 }

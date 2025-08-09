@@ -187,12 +187,12 @@ export default function Plot3D({ quadData }: Plot3DProps) {
       });
     }
 
-    if (plotData.mesh) {
+    if (plotData.support) {
       newPlotData.push(
         {
-          x: plotData.mesh.x,
-          y: plotData.mesh.y,
-          z: plotData.mesh.z,
+          x: plotData.support.x,
+          y: plotData.support.y,
+          z: plotData.support.z,
           type: 'mesh3d',
           name: 'mesh',
           showlegend: false,

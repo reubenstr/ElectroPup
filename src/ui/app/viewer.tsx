@@ -56,7 +56,7 @@ export default function Viewer() {
                     <View style={styles.centerColumnIndicatorRow}>
                         <StatusIndicator
                             name='Quadruped'
-                            value={connected ? "Connected" : "Disconnected"}
+                            value={connected ? "connected" : "disconnected"}
                             status={connected ? Status.Active : Status.Error}
                             style={{ width: 100 }}
                         />
@@ -181,6 +181,19 @@ export default function Viewer() {
                                         <Text>Roll: {quadData?.ikParameters?.roll?.toFixed(2)}</Text>
                                         <Text>Pitch: {quadData?.ikParameters?.pitch?.toFixed(2)}</Text>
                                         <Text>Yaw: {quadData?.ikParameters?.yaw?.toFixed(2)}</Text>
+                                    </View>
+                                </View>
+                                <Text style={OverlayStyles.mHeader}>Motion Inputs</Text>
+                                <View style={OverlayStyles.ikLine} />
+                                <View style={OverlayStyles.ikColumns}>
+                                    <View style={OverlayStyles.ikColumn}>
+                                        <Text style={OverlayStyles.ikText}>Velocities</Text>
+                                        <Text>Forward: {quadData?.motionParameters?.forwardVelocity?.toFixed(3)}</Text>
+                                        <Text>Lateral: {quadData?.motionParameters?.lateralVelocity?.toFixed(3)}</Text>
+                                        <Text>Angular: {quadData?.motionParameters?.angularVelocity?.toFixed(3)}</Text>
+                                    </View>
+                                    <View style={OverlayStyles.ikColumn}>
+                                       
                                     </View>
                                 </View>
                             </View>
@@ -430,8 +443,8 @@ const OverlayStyles = StyleSheet.create({
     imuContainer: {
         position: 'absolute',
         zIndex: 9999,
-        left: 5,
-        top: 5,
+        left: '50%',
+        bottom: 5,
         padding: 5,
         borderRadius: 4,
         backgroundColor: '#aaa',
@@ -440,8 +453,8 @@ const OverlayStyles = StyleSheet.create({
     loopContainer: {
         position: 'absolute',
         zIndex: 9999,
-        right: 5,
-        top: 5,
+        left: '25%',
+        bottom: 5,
         padding: 5,
         borderRadius: 4,
         backgroundColor: '#aaa',
@@ -477,10 +490,17 @@ const OverlayStyles = StyleSheet.create({
     ikColumn: {
         marginRight: 15,
     },
+    mHeader: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        marginTop: 14,
+        marginBottom: 4,
+
+    },
     showMotorInfoButton: {
         position: 'absolute',
-        right: 10,
-        bottom: 10
+        right: 5,
+        bottom: 5
     }
 });
 
