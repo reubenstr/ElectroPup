@@ -26,9 +26,9 @@ class Forwarder:
         self.socket = context.socket(zmq.PUSH)
         self.socket.bind("tcp://127.0.0.1:5559")
 
-        self.sim_quad = None
-        self.live_quad = None
-        self.ik_parameters = None
+        self.sim_quad: Quad = None
+        self.live_quad: Quad = None
+        self.ik_parameters: IKParameters = None
         self.trajectories = None
         self.transitions = None
         self.hold_trajectories = None
@@ -37,9 +37,7 @@ class Forwarder:
         self.contacts: Contacts = None
         self.motor_states = None
 
-        self.message_id: int = 0
-
-        self.message_send_rate_seconds = 0.050
+        self.message_send_rate_seconds = 0.025
         self.exit_event = Event()
         self.data_lock = threading.Lock()
         self.thread_handle = threading.Thread(target=self._worker)
@@ -103,7 +101,6 @@ class Forwarder:
         print(f"[{self.tag}] worker thread started")
         while not self.exit_event.is_set():
             data = {}
-            self.message_id += 1
             data["timestamp"] = int(time.time() * 1000)
             with self.data_lock:
                 data["plotSim"] = self._create_quad_plot_data(self.sim_quad)
@@ -156,15 +153,15 @@ class Forwarder:
                 leg_data["z"] = [self.scale(point.z) for point in points]
                 plot["legs"].append(leg_data)
 
-            """
-            plot["mesh"] = {}
-            dz = -1
-            ground_contacts = quad.ground_contacts()
-            plot["mesh"]["name"] = "mesh"
-            plot["mesh"]["x"] = [scale(point.x) for point in ground_contacts]
-            plot["mesh"]["y"] = [scale(point.y) for point in ground_contacts]
-            plot["mesh"]["z"] = [(scale(point.z) + dz) for point in ground_contacts]
-            """
+            plot["support"] = {}
+            plot["support"]["name"] = "support"
+            plot["support"]["x"] = []
+            plot["support"]["y"] = []
+            plot["support"]["z"] = []
+            for leg_name, point in quad.get_support_polygon().items():
+                plot["support"]["x"].append(self.scale(point.x))
+                plot["support"]["y"].append(self.scale(point.y))
+                plot["support"]["z"].append(self.scale(point.z))
 
         return plot
 

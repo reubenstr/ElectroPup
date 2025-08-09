@@ -5,10 +5,11 @@ from copy import deepcopy
 from math import copysign
 
 from input.gamepad_interface import PS4
-from interfaces import Status
-from input.interfaces import InputCommand
+from quadruped.interfaces import Status
+from input.interfaces import TouchCommand
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
+from utilities.utilities import scale_value
 
 
 """
@@ -26,7 +27,7 @@ DPAD_DIRECTION_DOWN = 1
 DPAD_DIRECTION_RIGHT = 1
 
 class Gamepad:
-    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
+    def __init__(self, callback: Optional[Callable[[TouchCommand], None]] = None):
         self.callback = callback
 
         self.ik_parameters = IKParameters()
@@ -50,6 +51,8 @@ class Gamepad:
         self.gamepad_inferface.addButtonChangedHandler("SHARE", self.btn_share_changed_callback)
         self.gamepad_inferface.addButtonChangedHandler("OPTIONS", self.btn_options_changed_callback)
         self.gamepad_inferface.addButtonChangedHandler("PS", self.btn_ps_changed_callback)
+        self.gamepad_inferface.addAxisMovedHandler("L2", self.axis_l2_changed_callback)
+        self.gamepad_inferface.addAxisMovedHandler("R2", self.axis_r2_changed_callback)
         self.gamepad_inferface.addAxisMovedHandler("LEFT-X", self.axis_left_x_changed_callback)
         self.gamepad_inferface.addAxisMovedHandler("LEFT-Y", self.axis_left_y_changed_callback)
         self.gamepad_inferface.addAxisMovedHandler("RIGHT-X", self.axis_right_x_changed_callback)
@@ -77,7 +80,7 @@ class Gamepad:
     # Events
     ###############################################################################
 
-    def _send_input_command_as_event(self, event: InputCommand):
+    def _send_input_command_as_event(self, event: TouchCommand):
         if self.callback:
             self.callback(event)
 
@@ -89,7 +92,7 @@ class Gamepad:
 
     def btn_triangle_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_WALK)
+            self._send_input_command_as_event(TouchCommand.GAIT_WALK)
 
     def btn_circle_changed_callback(self, state):
         if state == True:
@@ -97,7 +100,7 @@ class Gamepad:
 
     def btn_cross_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_TROT)
+            self._send_input_command_as_event(TouchCommand.GAIT_TROT)
 
     def btn_square_changed_callback(self, state):
         if state == True:
@@ -115,7 +118,7 @@ class Gamepad:
         if state == True:
             pass
 
-    def btn_r2_changed_callback(self, state):
+    def btn_r2_changed_callback(self, state):       
         if state == True:
             pass
 
@@ -131,11 +134,11 @@ class Gamepad:
 
     def btn_share_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.DISABLE_ENABLE_MOTORS)
+            self._send_input_command_as_event(TouchCommand.DISABLE_ENABLE_MOTORS)
 
     def btn_options_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.CLEAR_ERRORS)
+            self._send_input_command_as_event(TouchCommand.CLEAR_ERRORS)
 
     def btn_ps_changed_callback(self, state):
         if state == True:
@@ -145,27 +148,36 @@ class Gamepad:
 
     def axis_dpad_x_changed_callback(self, state):
         if state == DPAD_DIRECTION_LEFT:
-            self._send_input_command_as_event(InputCommand.POSE)
+            self._send_input_command_as_event(TouchCommand.POSE)
         elif state == DPAD_DIRECTION_CENTER:
             pass
         elif state == DPAD_DIRECTION_RIGHT:
-            self._send_input_command_as_event(InputCommand.WALK)
+            self._send_input_command_as_event(TouchCommand.WALK)
 
     def axis_dpad_y_changed_callback(self, state):
         if state == DPAD_DIRECTION_UP:  
-            self._send_input_command_as_event(InputCommand.STAND)
+            self._send_input_command_as_event(TouchCommand.STAND)
         elif state == DPAD_DIRECTION_CENTER:
             pass
         elif state == DPAD_DIRECTION_DOWN:          
-            self._send_input_command_as_event(InputCommand.SIT)
+            self._send_input_command_as_event(TouchCommand.SIT)
+
+
+    """ L2 and R2 Triggers """
+    def axis_l2_changed_callback(self, value):        
+        new = scale_value(value, -1, 1, 0, 1)
+        self.ik_parameters.set_forward_translation(new)
+       
+    def axis_r2_changed_callback(self, value):
+        new = scale_value(value, -1, 1, 0, -1)
+        self.ik_parameters.set_forward_translation(new)
 
     """ AXIS JOY-STICKS """
 
     def axis_left_x_changed_callback(self, value):
         self.ik_parameters.set_roll(value)
 
-    def axis_left_y_changed_callback(self, value):
-        value *= -1
+    def axis_left_y_changed_callback(self, value): 
         self.ik_parameters.set_pitch(value)
         self.motion_parameters.set_forward_raw(value)
 

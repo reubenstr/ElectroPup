@@ -25,6 +25,8 @@ class TransitionPlanner:
         self.arc_period = arc_period
         self.height = height
 
+        self.trajectory_num_points: int = 50
+
     def get_phase_index_and_phase_time(self, time: float, period: float, num_phases: int):
         section_length = period / num_phases
         time_wrapped = time % period
@@ -93,7 +95,7 @@ class TransitionPlanner:
         if start_foot_points == {} or end_foot_points == {}:
             return None
 
-        timestep = self.get_period() / 100
+        timestep = self.get_period() / self.trajectory_num_points
         phase_times = np.arange(0, self.get_period(), timestep)
 
         trajectories: Trajectories = []

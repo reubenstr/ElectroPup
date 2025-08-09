@@ -3,7 +3,7 @@ from time import time, sleep
 from math import atan2, degrees, sqrt
 from threading import Thread, Event, Lock
 
-from interfaces import Status
+from quadruped.interfaces import Status
 from hardware.ina228_driver import INA228
 from hardware.bno055_driver import BNO055
 from hardware.interfaces import ImuData

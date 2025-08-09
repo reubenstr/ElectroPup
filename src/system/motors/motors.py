@@ -12,7 +12,7 @@ from typing import Dict, List
 from motors.motor import Motor
 from motors.motor_list import motor_list
 from motors.interfaces import CanInfo, MotorZeroInfo
-from interfaces import Status
+from quadruped.interfaces import Status
 
 """
     Controls a collection of MG4010E-i10v3 actuators on a multiple CAN bus networks.
@@ -32,10 +32,9 @@ class Motors:
 
         self.motors_enabled: bool = False
         self.motor_enable_sequence_delay_seconds: float = 0.250
-        self.motor_disable_sequence_delay_seconds: float = 0.250
-        self.allow_position_updates: bool = True
+        self.motor_disable_sequence_delay_seconds: float = 0.250     
 
-        self.min_loop_rate_seconds: float = 0.025
+        self.min_loop_rate_seconds: float = 0.010
 
         can_channels = list({motor.can_channel for motor in motor_list() if motor.allow_motion or motor.allow_comms})
         self.can_infos: Dict[str, CanInfo] = {}
@@ -155,22 +154,19 @@ class Motors:
                         attempt += 1
                         print(f"[{self.tag}][ALL] error, failed to enable {motor.name}, attempt number {attempt}!")
                         if attempt > max_attempts:
-                            self.motors_enabled = False
-                            self.allow_position_updates = False
+                            self.motors_enabled = False                         
                             self.release_can_locks()
                             return False
                         sleep(self.motor_enable_sequence_delay_seconds)
 
                 sleep(self.motor_enable_sequence_delay_seconds)
         print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
-        self.motors_enabled = True
-        self.allow_position_updates = True
+        self.motors_enabled = True     
         self.release_can_locks()
         return True
 
     def disable_all_motors(self):
-        start = time()
-        self.allow_position_updates = False
+        start = time()       
         self.acquire_can_locks()
         if self.motors_enabled:
             for motor in self.motors.values():
@@ -293,26 +289,31 @@ class Motors:
 
     def _worker(self, can_info: CanInfo):
         can_info.exit_event.clear()
+        rotation: int = 0
 
         print(f"[{self.tag}] worker thread for {can_info.can_channel} started")
         while not can_info.exit_event.is_set():
             loop_time = time()
+            rotation += 1
             for key, motor in self.motors.items():
                 if motor.can_channel == can_info.can_channel:
                     target_angle = self.target_positions[key]
-                    target_speed = self.target_speeds[key]
+                    target_speed = self.target_speeds[key]                    
 
                     with can_info.lock:
                         if motor.allow_motion and motor.is_enabled():
-                            if self.allow_position_updates:
-                                motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)
+                            motor.cmd_set_angle_and_speed(angle=target_angle, speed=target_speed)                           
                             motor.req_position()
-                            motor.req_state_1()
-                            motor.req_state_2()
-                        elif motor.allow_comms:
+                            if rotation % 2 == 0:
+                                motor.req_state_1()
+                            if rotation % 2 == 1:
+                                motor.req_state_2()
+                        elif motor.allow_comms:                           
                             motor.req_position()
-                            motor.req_state_1()
-                            motor.req_state_2()
+                            if rotation % 2 == 0:
+                                motor.req_state_1()
+                            if rotation % 2 == 1:
+                                motor.req_state_2()
 
                         motor.angle_limit_breached = True if motor.position_degrees < motor.min_angle or motor.position_degrees > motor.max_angle else False
 

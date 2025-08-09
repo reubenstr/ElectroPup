@@ -23,8 +23,12 @@ class IKParameters:
     ###############################################################################
     forward_translation_min: float = -0.050
     forward_translation_max: float = 0.050
-    side_translation_min: float = -0.050
-    side_translation_max: float = 0.050
+
+    # Add a permanent forward translation to move the center of mass in a more stable position.
+    forward_compensation: float = 0.025
+
+    lateral_translation_min: float = -0.075
+    lateral_translation_max: float = 0.075
 
     # Highest allowable position of body center, must no be higher than the physical leg lengths.
     height_translation_max: float = 0.275
@@ -36,15 +40,14 @@ class IKParameters:
     height_translation_min: float = 0.04
 
     ###############################################################################
-    # Default running values, do not change, will be overwritten
+    # Default running values, do not change, values will be overwritten
     ###############################################################################
     roll: float = 0
     pitch: float = 0
     yaw: float = 0
-    forward_translation: float = 0
-    side_translation: float = 0
+    forward_translation: float = forward_compensation
+    lateral_translation: float = 0
     height_translation: float = height_translation_neutral
-    height_translation_raw: float = 0
 
     ###############################################################################
     # Misc parameters
@@ -56,7 +59,7 @@ class IKParameters:
     ###############################################################################
 
     def set_roll(self, value: float):   
-        self.roll = scale_value(process_value(value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
+        self.roll = scale_value(process_value(-value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
 
     def set_pitch(self, value: float):   
         self.pitch = scale_value(process_value(-value, self.deadzone), -1, 1, self.pitch_min, self.pitch_max)
@@ -67,8 +70,8 @@ class IKParameters:
     def set_forward_translation(self, value: float):
         self.forward_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.forward_translation_min, self.forward_translation_max)
 
-    def set_side_translation(self, value: float):
-        self.side_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.side_translation_min, self.side_translation_max)
+    def set_lateral_translation(self, value: float):
+        self. lateral_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.lateral_translation_min, self. lateral_translation_max)
 
     def set_height_translation(self, value: float):
         value = process_value(-value, self.deadzone)   

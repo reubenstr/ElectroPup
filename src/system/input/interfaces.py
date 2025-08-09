@@ -1,5 +1,6 @@
 
 from enum import StrEnum
+from dataclasses import dataclass
 
 class InputMode(StrEnum):
     NA = "N/A"
@@ -8,7 +9,7 @@ class InputMode(StrEnum):
 
 
 # Commands from the touch and gamepad inputs
-class InputCommand(StrEnum):
+class TouchCommand(StrEnum):
     NO_UPDATE = "no_update"   
     DISABLE_ENABLE_MOTORS = "disable_enable_motors"
     E_STOP = "e_stop"
@@ -24,3 +25,11 @@ class InputCommand(StrEnum):
 
     GAMEPAD_INPUT = "gamepad_input"
     TOUCH_INPUT = "touch_input"
+
+@dataclass
+class TouchMessage:
+    leftX: float
+    leftY: float
+    rightX: float
+    rightY: float
+    command: TouchCommand

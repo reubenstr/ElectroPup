@@ -89,12 +89,12 @@ class Motor:
         self.reply_timeout_count: int = 0
 
         # Driver config:
-        self.angle_pid_kp: int = 3  # Position loop, used
-        self.angle_pid_ki: int = 3  # Position loop, used
-        self.speed_pid_kp: int = 10  # Speed loop, not used
-        self.speed_pid_ki: int = 10  # Speed loop, not used
-        self.iq_pid_kp: int = 40  # Torque loop, not used
-        self.iq_pid_ki: int = 40  # Torque loop, not used
+        self.angle_pid_kp: int = 5  # Position loop
+        self.angle_pid_ki: int = 5  # Position loop
+        self.speed_pid_kp: int = 60  # Speed loop
+        self.speed_pid_ki: int = 40  # Speed loop
+        self.iq_pid_kp: int = 50  # Torque loop
+        self.iq_pid_ki: int = 50  # Torque loop
 
         # Other config:
         self.apply_position_offset: bool = False
@@ -211,7 +211,7 @@ class Motor:
                     self.iq_ki = reply.data[7]
                     if self.prints_enabled:
                         print(
-                            f"[{self.tag }][M{reply_motor_id}] angle_kp: {self.angle_kp}, angle_ki: {self.angle_ki}, speed_kp: {self.speed_kp}, speed_ki: {self.speed_ki}, iq_kp: {self.iq_kp}, iq_ki: {self.iq_ki}"
+                            f"{self.tag }[M{reply_motor_id}] angle_kp: {self.angle_kp}, angle_ki: {self.angle_ki}, speed_kp: {self.speed_kp}, speed_ki: {self.speed_ki}, iq_kp: {self.iq_kp}, iq_ki: {self.iq_ki}"
                         )
 
     def req_state_1(self):
@@ -228,7 +228,7 @@ class Motor:
                     self.lost_input_protection = bool(reply.data[7] & 0b10000000)
                     if self.prints_enabled:
                         print(
-                            f"[{self.tag }][M{reply_motor_id}] req_state_1 reply, temp.: {self.temperature}C, voltage: {self.voltage}V, UVP: {self.under_voltage_protection}, OVP: {self.over_voltage_protection}, OTP: {self.over_temperature_protection}, LIP:{self.lost_input_protection}"
+                            f"{self.tag }[M{reply_motor_id}] req_state_1 reply, temp.: {self.temperature}C, voltage: {self.voltage}V, UVP: {self.under_voltage_protection}, OVP: {self.over_voltage_protection}, OTP: {self.over_temperature_protection}, LIP:{self.lost_input_protection}"
                         )
 
     def req_state_2(self):
@@ -244,7 +244,7 @@ class Motor:
                     self.encoder_position = reply.data[6] | reply.data[7] << 8
                     if self.prints_enabled:
                         print(
-                            f"[{self.tag }][M{reply_motor_id}] req_state_2 reply, temp.: {self.temperature}C, watts: {self.watts}, motor speed: {self.motor_speed}, encoder position: {self.encoder_position}"
+                            f"{self.tag }[M{reply_motor_id}] req_state_2 reply, temp.: {self.temperature}C, watts: {self.watts}, motor speed: {self.motor_speed}, encoder position: {self.encoder_position}"
                         )
 
     def req_position(self):
@@ -275,7 +275,7 @@ class Motor:
                 self.position_degrees = offset_position_degrees * -1.0 if self.inverse_rotation else offset_position_degrees
 
                 if self.prints_enabled:
-                    print(f"[{self.tag }][M{reply_motor_id}] req_motor_multi_angle reply, position: {self.position_degrees} degrees")
+                    print(f"{self.tag }[M{reply_motor_id}] req_motor_multi_angle reply, position: {self.position_degrees} degrees")
 
     ###############################################################################
     # Methods

@@ -8,13 +8,12 @@ from typing import Dict, List
 from .leg import Leg
 from . import kinematics
 from . import transformations
-from . exceptions import DomainBreach
-from . interfaces import LegName, AngleUnits, QuadErrorState
+from .exceptions import DomainBreach
+from .interfaces import LegName, AngleUnits, QuadErrorState
 from quadruped.parameters.frame_parameters import FrameParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.point import Point
-
 
 
 class Quad(object):
@@ -46,7 +45,6 @@ class Quad(object):
         front_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
         back_left_leg_angles: length 3 list of joint angles. Order: hip, leg, knee
     """
- 
 
     def __init__(self, supress_prints: bool = False):
         self.frame_parameters = FrameParameters()
@@ -58,7 +56,7 @@ class Quad(object):
         self.foot_length = self.frame_parameters.foot_length
         self.foot_width = self.frame_parameters.foot_width
 
-        self.tag = 'Quad'
+        self.tag = "Quad"
 
         self.joint_angle_error: bool = False
         self.ik_error: bool = False
@@ -66,7 +64,7 @@ class Quad(object):
         self.legs: Dict[LegName, Leg] = {}
 
         # Initialize legs at the neutral position
-        ik_parameters = IKParameters()        
+        ik_parameters = IKParameters()
         base_foot_positions = self.get_base_foot_points()
         self.set_body_pose_by_transform_inputs(ik_parameters, base_foot_positions)
 
@@ -84,12 +82,18 @@ class Quad(object):
         """
         Creates default foot positions in Z up coord system
         """
-        l = self.body_length
-        w = self.body_width
+
+        l = self.body_length + 0
+        w = self.body_width + 0
         l1 = self.hip_length
         offset = 0
 
         global_foot_positions = {}
+        # global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
+        # global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
+        # global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
+        # global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
+
         global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
         global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
         global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
@@ -97,7 +101,7 @@ class Quad(object):
 
         return global_foot_positions
 
-    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_positions: Dict[LegName, Point]) -> QuadErrorState:
+    def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_points: Dict[LegName, Point]) -> QuadErrorState:
         """
         Set the body translation and orientation angles
         Perform full inverse kinematics
@@ -118,7 +122,7 @@ class Quad(object):
         psi = radians(ik_parameters.yaw)
         x = ik_parameters.forward_translation
         y = ik_parameters.height_translation
-        z = ik_parameters.side_translation
+        z = ik_parameters. lateral_translation
 
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
@@ -131,7 +135,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_front_left(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.FR],
+                foot_points[LegName.FR],
                 leg12=False,
             )
             self.legs[LegName.FL] = Leg(
@@ -142,7 +146,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_front_right(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.FL],
+                foot_points[LegName.FL],
                 leg12=True,
             )
             self.legs[LegName.BR] = Leg(
@@ -153,7 +157,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_back_left(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.BR],
+                foot_points[LegName.BR],
                 leg12=False,
             )
             self.legs[LegName.BL] = Leg(
@@ -164,7 +168,7 @@ class Quad(object):
                 self.upper_leg_length,
                 self.lower_leg_length,
                 kinematics.t_back_right(ht_body, self.body_length, self.body_width),
-                foot_positions[LegName.BL],
+                foot_points[LegName.BL],
                 leg12=True,
             )
 
@@ -173,12 +177,12 @@ class Quad(object):
                 print(error_string)
                 self.joint_angle_error = True
                 return
-            
+
             error_string = self.check_ground_penetration()
             if error_string != None:
                 print(error_string)
                 self.joint_angle_error = True
-                return             
+                return
 
         except DomainBreach as error:
             print(error)
@@ -187,7 +191,6 @@ class Quad(object):
 
         self.joint_angle_error = False
         self.ik_error = False
-        
 
     def get_body_coordinates(self) -> dict[LegName, Point]:
         """
@@ -212,7 +215,6 @@ class Quad(object):
             LegName.FR: self.legs[LegName.FR].get_leg_points(),
             LegName.BR: self.legs[LegName.BR].get_leg_points(),
         }
-    
 
     def get_foot_points(self) -> dict[LegName, Point]:
         """
@@ -226,7 +228,6 @@ class Quad(object):
             LegName.BR: self.legs[LegName.BR].get_foot_point(),
         }
 
-
     def get_joint_angles(self, units: AngleUnits):
         """Get the joint angles for all four legs
         Args:
@@ -235,18 +236,13 @@ class Quad(object):
             joint_angles: dictionary containing four legs and their
             associated angles in the order q1,q2,q3
         """
-        if units is AngleUnits.RADIANS:
-            joint_angles = {}
-            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_radians()
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_radians()
-            joint_angles[LegName.BR] = self.legs[LegName.BL].get_leg_angles_in_radians()
-            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_radians()
-        elif units is AngleUnits.DEGREES:
-            joint_angles = {}
-            joint_angles[LegName.FR] = self.legs[LegName.FR].get_leg_angles_in_degrees()
-            joint_angles[LegName.FL] = self.legs[LegName.FL].get_leg_angles_in_degrees()
-            joint_angles[LegName.BR] = self.legs[LegName.BR].get_leg_angles_in_degrees()
-            joint_angles[LegName.BL] = self.legs[LegName.BL].get_leg_angles_in_degrees()
+
+        joint_angles = {}
+        for leg in LegName:
+            if units is AngleUnits.RADIANS:
+                joint_angles[leg] = self.legs[leg].get_leg_angles_in_radians()
+            elif units is AngleUnits.DEGREES:
+                joint_angles[leg] = self.legs[leg].get_leg_angles_in_degrees()
 
         return joint_angles
 
@@ -271,9 +267,8 @@ class Quad(object):
             if knee < self.frame_parameters.knee_joint_lower_bounds or knee > self.frame_parameters.knee_joint_upper_bounds:
                 return f"Leg {key} {'knee'} joint is out of bounds where angle {math.degrees(knee):0.2f} is outside of [{math.degrees(self.frame_parameters.knee_joint_lower_bounds):0.2f}, {math.degrees(self.frame_parameters.knee_joint_upper_bounds):0.2f}]!"
 
-
     def check_ground_penetration(self):
-        """Checks for joint points penetrating the ground       
+        """Checks for joint points penetrating the ground
         Returns:
             None: no error
             string: error (string describes the error)
@@ -283,33 +278,43 @@ class Quad(object):
             for point in points:
                 if point.z < -0.001:
                     return f"[{self.tag}] Leg {leg_name} has a joint angle penetrating the ground at [{round(point.x, 3)}, {round(point.y, 3)}, {round(point.z, 3)}]!"
-        return None            
-    
-    
+        return None
+
     def set_joint_angles_degrees(self, leg_angles: Dict[LegName, List[float]]):
-        ''' Set the joint angles for all four legs for simulation.
+        """Set the joint angles for all four legs for simulation.
 
         Args:
             Dict of legs containing list of angles as floats in degrees.
             Angles in the order q1,q2,q3.
-        '''
+        """
 
+        # Convert all angles in degrees to radians.
         for leg, angles in leg_angles.items():
             leg_angles[leg] = [radians(angle) for angle in angles]
 
+        # Apply the angles to the legs.
         for leg, joint_angles in leg_angles.items():
-            self.legs[leg].set_angles(joint_angles[0],joint_angles[1],joint_angles[2])
-          
-    
+            self.legs[leg].set_angles(joint_angles[0], joint_angles[1], joint_angles[2])
+
+    def get_support_polygon(self):
+
+         return {
+            LegName.BL: self.legs[LegName.BL].get_foot_point(),
+            LegName.FL: self.legs[LegName.FL].get_foot_point(),
+            LegName.FR: self.legs[LegName.FR].get_foot_point(),
+            LegName.BR: self.legs[LegName.BR].get_foot_point(),
+        }
+
+
     ###############################################################################
     # Getters / Setters
     ###############################################################################
 
     def get_num_legs(self) -> int:
         return len(self.legs)
-    
+
     def get_joint_angle_error(self) -> bool:
         return self.joint_angle_error
-    
+
     def get_ik_error(self) -> bool:
         return self.ik_error

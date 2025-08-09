@@ -3,12 +3,12 @@ from threading import Thread, Lock, Event
 from enum import IntEnum, Enum, StrEnum
 from dataclasses import dataclass
 
-from interfaces import Status
+from quadruped.interfaces import Status
 
 
 class MotorSpeeds(IntEnum):
     SLOW = 500
-    MOTION = 2000
+    MOTION = 15000
 
 
 class MotorName(StrEnum):
