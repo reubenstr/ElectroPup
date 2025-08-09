@@ -5,14 +5,14 @@ from typing import Dict, Tuple
 from quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
 from quadruped.gait_planner import GaitPlanner
 from quadruped.quad import LegName
-from quadruped.gait_planner import Gait, Phase
+from quadruped.gait_planner import Gait, Phase, SwingPattern
 from quadruped.interfaces import Trajectories, Trajectory
 from utilities.utilities import log_scale_value
 
 class TrajectoryPlanner:
 
     def __init__(self):
-        self.gait_planner: GaitPlanner = self.set_gait(Gait.WALK)
+        self.gait_planner: GaitPlanner = self.set_gait(Gait.CRAWL)
 
         self.trajectory_num_points: int = 40
         self.ring_num_points: int = 40
@@ -22,13 +22,14 @@ class TrajectoryPlanner:
     ###############################################################################
 
     def gait_factory(self, gait: Gait) -> GaitPlanner:
-        if gait == Gait.WALK:
+        if gait == Gait.CRAWL:
             return GaitPlanner(
-                gait=Gait.WALK,
+                gait=Gait.CRAWL,
+                swing_pattern=SwingPattern.BEZIER,
                 period=1.0,
                 duty_factor=0.75,
-                stride_length=0.075,
-                step_height=0.01,
+                stride_length=0.1,
+                step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.25,
@@ -39,10 +40,11 @@ class TrajectoryPlanner:
         elif gait == Gait.TROT:
             return GaitPlanner(
                 gait=Gait.TROT,
+                swing_pattern=SwingPattern.SIN,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.075,
-                step_height=0.01,
+                stride_length=0.1,
+                step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,

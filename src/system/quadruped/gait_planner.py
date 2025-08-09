@@ -7,9 +7,13 @@ from quadruped.point import Point
 
 class Gait(StrEnum):
     NONE = "none"
-    WALK = "walk"
+    CRAWL = "crawl"
     TROT = "trot"
 
+class SwingPattern(StrEnum):
+    BEZIER = "beizer"
+    SIN = "sin"
+   
 
 class Phase(Enum):
     STANCE = 0
@@ -17,8 +21,10 @@ class Phase(Enum):
 
 
 class GaitPlanner:
-    def __init__(self, gait: Gait, period: float, duty_factor: float, stride_length: float, step_height: float, phase_offsets: Dict[LegName, float]):
+    def __init__(self, gait: Gait, swing_pattern: SwingPattern, period: float, duty_factor: float, stride_length: float, step_height: float, phase_offsets: Dict[LegName, float]):
         self.gait = gait
+
+        self.swing_pattern = swing_pattern
 
         # Duration of one complete gait cycle (seconds).
         self.period = period
@@ -95,8 +101,12 @@ class GaitPlanner:
 
     def get_foot_position(self, leg: LegName, gait_time: float) -> Dict[LegName, Point]:
         phase, phase_time = self.get_leg_phase_time(leg, gait_time)
-        d, h = self.foot_trajectory_sin(phase, phase_time)
+        if self.swing_pattern is SwingPattern.BEZIER:
+            d, h = self.foot_trajectory_bezier(phase, phase_time)
+        elif self.swing_pattern is SwingPattern.SIN:
+            d, h = self.foot_trajectory_sin(phase, phase_time)
         return Point(d, 0, h)
+    
 
     def get_gait(self) -> Gait:
         return self.gait

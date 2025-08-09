@@ -50,7 +50,7 @@ class Main:
             self.motion.set_target_motion_state(MotionState.WALK)
 
         if event is TouchCommand.GAIT_WALK:
-            self.motion.set_target_gait(Gait.WALK)
+            self.motion.set_target_gait(Gait.CRAWL)
 
         if event is TouchCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)

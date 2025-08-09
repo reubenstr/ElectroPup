@@ -296,6 +296,16 @@ class Quad(object):
         for leg, joint_angles in leg_angles.items():
             self.legs[leg].set_angles(joint_angles[0], joint_angles[1], joint_angles[2])
 
+    def get_support_polygon(self):
+
+         return {
+            LegName.BL: self.legs[LegName.BL].get_foot_point(),
+            LegName.FL: self.legs[LegName.FL].get_foot_point(),
+            LegName.FR: self.legs[LegName.FR].get_foot_point(),
+            LegName.BR: self.legs[LegName.BR].get_foot_point(),
+        }
+
+
     ###############################################################################
     # Getters / Setters
     ###############################################################################

@@ -3,8 +3,6 @@ from . utilities import process_value, check_value, scale_value
 
 """
    Class container parameters for pose.
-
-   If dynamic control is added to forward or side transation, ensure to add the forward_compensation.
 """
 
 
@@ -27,7 +25,7 @@ class IKParameters:
     forward_translation_max: float = 0.050
 
     # Add a permanent forward translation to move the center of mass in a more stable position.
-    forward_compensation: float = 0.050
+    forward_compensation: float = 0.025
 
     lateral_translation_min: float = -0.075
     lateral_translation_max: float = 0.075

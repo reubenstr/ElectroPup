@@ -38,8 +38,8 @@ class Motion:
         self.motion_state: MotionState = MotionState.STANDBY
         self.target_motion_state: MotionState = MotionState.STANDBY
         self.previous_target_motion_state: MotionState = MotionState.STANDBY
-        self.target_gait: Gait = Gait.WALK
-        self.trajector_planner.set_gait(Gait.WALK)
+        self.target_gait: Gait = Gait.TROT
+        self.trajector_planner.set_gait(Gait.TROT)
 
         self.quad = Quad()
         self.motion_parameters: MotionParameters = MotionParameters()
@@ -48,10 +48,10 @@ class Motion:
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
-        self.phase_time_rate_fast: float = 0.020
+        self.phase_time_rate_fast: float = 0.010
 
         self.pose_time: float = 0
-        self.pose_time_rate: float = 0.010
+        self.pose_time_rate: float = 0.005
         self.pose_period: float = 1
 
         self.transition_time: float = 0
@@ -67,6 +67,7 @@ class Motion:
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
 
+        self.transition_enable: bool = False
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.transition_start_foot_points: Dict[LegName, Point] = {}
         self.transition_end_foot_points: Dict[LegName, Point] = {}
@@ -74,11 +75,15 @@ class Motion:
         self.transition_forward_velocity: float = 0
         self.transition_angle_threadhold: float = 20
 
+        self.soft_transition_enable: bool = False
         self.soft_transition_flag: bool = False
         self.soft_transition_legs_started_swing: Dict[LegName, bool] = []
         self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points()
 
-        self.transition_allow_flag: bool = False
+        self.transition_hold_flag: bool = False
+
+        self.lock = Lock()
+        self.exit_event = Event()
 
         if self.op_mode is OpMode.DEV:
             self.set_target_motion_state(MotionState.WALK, force=True)
@@ -89,7 +94,7 @@ class Motion:
         self.motors: Motors = Motors(allow_enable)
 
         self.loop_min_rate_seconds: float = 0.010
-        self.loop_completion_time_ms: float = 0.0
+        self.loop_completion_time_ms: float = 0.0       
         self._start()
 
     ###############################################################################
@@ -97,9 +102,7 @@ class Motion:
     ###############################################################################
 
     def _start(self):
-        print(f"[{self.tag}] starting worker thread")
-        self.lock = Lock()
-        self.exit_event = Event()
+        print(f"[{self.tag}] starting worker thread")        
         self.thread_handle = Thread(target=self._worker)
         self.thread_handle.start()
 
@@ -254,24 +257,25 @@ class Motion:
             self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
         )
 
-        if self.transition_allow_flag:
-            # Large heading changes trigger a transition.
-            old_twist_angle = self.trajector_planner.get_twist_angle(
-                self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
-            )
-            new_twist_angle = self.trajector_planner.get_twist_angle(
-                self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.forward_velocity
-            )
-            delta = abs(angle_difference_deg(old_twist_angle, new_twist_angle))
-            if delta > self.transition_angle_threadhold:
-                print(
-                    f"[{self.tag}] abrupt heading change detected, from {round(old_twist_angle, 2)} to {round(new_twist_angle, 2)} with delta {round(delta, 2)}"
+        if self.transition_hold_flag:
+            if self.transition_enable:
+                # Large heading changes trigger a transition.
+                old_twist_angle = self.trajector_planner.get_twist_angle(
+                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
                 )
-                self._create_transition()
-                return
+                new_twist_angle = self.trajector_planner.get_twist_angle(
+                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.forward_velocity
+                )
+                delta = abs(angle_difference_deg(old_twist_angle, new_twist_angle))
+                if delta > self.transition_angle_threadhold:
+                    print(
+                        f"[{self.tag}] abrupt heading change detected, from {round(old_twist_angle, 2)} to {round(new_twist_angle, 2)} with delta {round(delta, 2)}"
+                    )
+                    self._create_transition()
+                    return
 
-            if not self.soft_transition_flag:
-                # Check distance of current and new foot positions
+            if self.soft_transition_enable and not self.soft_transition_flag:
+                # Large distances between current point and target point trigger a soft transition.
                 current_foot_points = self.quad.get_foot_points()
                 for leg in LegName:
                     distance = get_distance_xy(current_foot_points[leg], new_foot_points[leg])
@@ -314,7 +318,7 @@ class Motion:
             #ik_parameters.forward_translation = self.ik_parameters.forward_translation           
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
 
-        self.transition_allow_flag = True
+        self.transition_hold_flag = True
 
     def _process_motion_state_transition(self):
         if self.transition_time < self.transition_planner.get_period():
@@ -326,7 +330,7 @@ class Motion:
             self.phase_time = 0
             self.pose_time = 0
             self.motion_state = self.target_motion_state
-            self.transition_allow_flag = False
+            self.transition_hold_flag = False
             self.soft_transition_flag = False
 
     ###############################################################################
@@ -455,8 +459,6 @@ class Motion:
         rings = None
         transitions = None
         hold_trajectories = None
-
-        return trajectories, rings, transitions, hold_trajectories
 
         if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
             (
