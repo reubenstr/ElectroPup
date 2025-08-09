@@ -12,7 +12,7 @@ from typing import Dict, List
 from motors.motor import Motor
 from motors.motor_list import motor_list
 from motors.interfaces import CanInfo, MotorZeroInfo
-from interfaces import Status
+from quadruped.interfaces import Status
 
 """
     Controls a collection of MG4010E-i10v3 actuators on a multiple CAN bus networks.
@@ -34,7 +34,7 @@ class Motors:
         self.motor_enable_sequence_delay_seconds: float = 0.250
         self.motor_disable_sequence_delay_seconds: float = 0.250     
 
-        self.min_loop_rate_seconds: float = 0.025
+        self.min_loop_rate_seconds: float = 0.010
 
         can_channels = list({motor.can_channel for motor in motor_list() if motor.allow_motion or motor.allow_comms})
         self.can_infos: Dict[str, CanInfo] = {}

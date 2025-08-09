@@ -8,7 +8,7 @@ from copy import deepcopy
 import json
 
 from input.gamepad_interface import PS4
-from interfaces import Status
+from quadruped.interfaces import Status
 from input.interfaces import TouchCommand, TouchMessage
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters

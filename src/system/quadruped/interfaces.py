@@ -36,3 +36,16 @@ class MotionState(StrEnum):
     WALK = "walk"   
     TRANSITION = "transition"
     
+
+class OpMode(StrEnum):
+    NA = "N/A"
+    LIVE = "live"
+    DEV = "dev"
+
+class Status(StrEnum):
+    NONE = "none"
+    STANDBY = "standby"
+    ACTIVE = "active"
+    WARNING = "warning"
+    CRITICAL = "critical"
+    ERROR = "error"   

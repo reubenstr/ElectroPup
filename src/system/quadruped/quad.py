@@ -122,7 +122,7 @@ class Quad(object):
         psi = radians(ik_parameters.yaw)
         x = ik_parameters.forward_translation
         y = ik_parameters.height_translation
-        z = ik_parameters.side_translation
+        z = ik_parameters. lateral_translation
 
         try:
             ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))

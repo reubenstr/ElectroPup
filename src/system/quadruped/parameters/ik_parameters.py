@@ -27,10 +27,10 @@ class IKParameters:
     forward_translation_max: float = 0.050
 
     # Add a permanent forward translation to move the center of mass in a more stable position.
-    forward_compensation: float = 0.0
+    forward_compensation: float = 0.050
 
-    side_translation_min: float = -0.075
-    side_translation_max: float = 0.075
+    lateral_translation_min: float = -0.075
+    lateral_translation_max: float = 0.075
 
     # Highest allowable position of body center, must no be higher than the physical leg lengths.
     height_translation_max: float = 0.275
@@ -48,7 +48,7 @@ class IKParameters:
     pitch: float = 0
     yaw: float = 0
     forward_translation: float = forward_compensation
-    side_translation: float = 0
+    lateral_translation: float = 0
     height_translation: float = height_translation_neutral
 
     ###############################################################################
@@ -72,8 +72,8 @@ class IKParameters:
     def set_forward_translation(self, value: float):
         self.forward_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.forward_translation_min, self.forward_translation_max)
 
-    def set_side_translation(self, value: float):
-        self.side_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.side_translation_min, self.side_translation_max)
+    def set_lateral_translation(self, value: float):
+        self. lateral_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.lateral_translation_min, self. lateral_translation_max)
 
     def set_height_translation(self, value: float):
         value = process_value(-value, self.deadzone)   

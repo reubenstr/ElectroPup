@@ -2,7 +2,7 @@ from typing import Callable, Optional
 from input.gamepad import Gamepad
 from input.touch import Touch
 from input.interfaces import InputMode, TouchCommand
-from interfaces import Status
+from quadruped.interfaces import Status
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.parameters.ik_parameters import IKParameters
 

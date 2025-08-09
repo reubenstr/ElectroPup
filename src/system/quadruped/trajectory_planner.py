@@ -14,8 +14,8 @@ class TrajectoryPlanner:
     def __init__(self):
         self.gait_planner: GaitPlanner = self.set_gait(Gait.WALK)
 
-        self.trajectory_num_points: int = 50
-        self.ring_num_points: int = 50
+        self.trajectory_num_points: int = 40
+        self.ring_num_points: int = 40
 
     ###############################################################################
     # Gaits (can be modified)
@@ -27,8 +27,8 @@ class TrajectoryPlanner:
                 gait=Gait.WALK,
                 period=1.0,
                 duty_factor=0.75,
-                stride_length=0.1,
-                step_height=0.05,
+                stride_length=0.075,
+                step_height=0.01,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.25,
@@ -41,8 +41,8 @@ class TrajectoryPlanner:
                 gait=Gait.TROT,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.1,
-                step_height=0.05,
+                stride_length=0.075,
+                step_height=0.01,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -148,7 +148,8 @@ class TrajectoryPlanner:
                 trajectory.append(foot_point)
             trajectories.append(trajectory)
 
-        rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
+            if leg_name is LegName.FL or leg_name is LegName.FR:
+                rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
 
         return trajectories, rings
 

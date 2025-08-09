@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from quadruped.interfaces import MotionState
 from input.interfaces import InputMode
-from interfaces import OpModes, Status
+from quadruped.interfaces import OpMode, Status
 from quadruped.gait_planner import Gait
 
 
@@ -47,7 +47,7 @@ class Motion:
 
 @dataclass
 class OperationMode:
-    state: OpModes = OpModes.NA
+    state: OpMode = OpMode.NA
 
 
 @dataclass

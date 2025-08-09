@@ -89,13 +89,13 @@ class GaitPlanner:
             h = 0
         else:
             # Swing: foot moves forward with parabolic height
-            f = phase_time * self.stride_length - self.stride_length / 2
+            d = phase_time * self.stride_length - self.stride_length / 2
             h = self.step_height * np.sin(np.pi * phase_time)
         return d, h
 
-    def get_foot_position(self, leg_name: LegName, gait_time: float) -> Dict[LegName, Point]:
-        phase, phase_time = self.get_leg_phase_time(leg_name, gait_time)
-        d, h = self.foot_trajectory_bezier(phase, phase_time)
+    def get_foot_position(self, leg: LegName, gait_time: float) -> Dict[LegName, Point]:
+        phase, phase_time = self.get_leg_phase_time(leg, gait_time)
+        d, h = self.foot_trajectory_sin(phase, phase_time)
         return Point(d, 0, h)
 
     def get_gait(self) -> Gait:

@@ -12,8 +12,9 @@ from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.gait_planner import Gait
 from quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
-from interfaces import Status
-from quadruped.interfaces import MotionState
+from quadruped.interfaces import Status, OpMode, MotionState, LegName, JointName, AngleUnits
+from motors.motors import Motors
+from motors.interfaces import MotorName, MotorSpeeds
 from utilities.utilities import scale_value, angle_difference_deg
 
 """
@@ -26,9 +27,12 @@ from utilities.utilities import scale_value, angle_difference_deg
 
 
 class Motion:
-    def __init__(self):
+    def __init__(self, op_mode: OpMode):
+        self.op_mode = op_mode
         self.tag = "Motion"
 
+        print(self.op_mode)
+       
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
 
         self.motion_state: MotionState = MotionState.STANDBY
@@ -40,6 +44,7 @@ class Motion:
         self.quad = Quad()
         self.motion_parameters: MotionParameters = MotionParameters()
         self.ik_parameters: IKParameters = IKParameters()
+    
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
@@ -75,7 +80,15 @@ class Motion:
 
         self.transition_allow_flag: bool = False
 
-        self.loop_min_rate_seconds: float = 0.025
+        if self.op_mode is OpMode.DEV:
+            self.set_target_motion_state(MotionState.WALK, force=True)
+        elif self.op_mode is OpMode.LIVE:
+            self.set_target_motion_state(MotionState.STANDBY)
+        
+        allow_enable = True if self.op_mode is OpMode.LIVE else False
+        self.motors: Motors = Motors(allow_enable)
+
+        self.loop_min_rate_seconds: float = 0.010
         self.loop_completion_time_ms: float = 0.0
         self._start()
 
@@ -109,6 +122,7 @@ class Motion:
                 self._process_motion_state_changes()
                 self._process_gait_changes()
                 self._process_motion_state()
+                self._apply_joints_angles()
 
             delta = time() - loop_time
 
@@ -120,11 +134,11 @@ class Motion:
 
     def _check_idle(self):
         if self.motion_state is MotionState.WALK:
-            if abs(self.motion_parameters.get_forward_raw()) > self.motion_parameters.deadzone:
+            if abs(self.motion_parameters.get_forward_raw()) > 0:
                 self.idle_flag = False
                 self.idle_time = time()
 
-            if abs(self.motion_parameters.get_heading_raw()) > self.motion_parameters.deadzone:
+            if abs(self.motion_parameters.get_heading_raw()) > 0:
                 self.idle_flag = False
                 self.idle_time = time()
 
@@ -288,17 +302,17 @@ class Motion:
                 combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
             # TEMP TEST
-            ik_parameters = IKParameters()
-            ik_parameters.forward_translation = self.ik_parameters.forward_translation
-            self.quad.set_body_pose_by_transform_inputs(ik_parameters, combined_foot_points)
+            #ik_parameters = IKParameters()
+            #ik_parameters.forward_translation = self.ik_parameters.forward_translation           
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
             self.transition_forward_velocity = self.forward_velocity
 
             # TEMP TEST
-            ik_parameters = IKParameters()
-            ik_parameters.forward_translation = self.ik_parameters.forward_translation
-            self.quad.set_body_pose_by_transform_inputs(ik_parameters, new_foot_points)
+            #ik_parameters = IKParameters()
+            #ik_parameters.forward_translation = self.ik_parameters.forward_translation           
+            self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
 
         self.transition_allow_flag = True
 
@@ -339,10 +353,42 @@ class Motion:
         self.transition_forward_velocity = self.forward_velocity
 
     ###############################################################################
+    # Motors
+    ###############################################################################    
+    
+    def _apply_joints_angles(self):
+        if self.motors.is_error() or \
+            self.quad.get_ik_error() or \
+            self.quad.get_joint_angle_error():
+            return
+
+        if self.motion_state is MotionState.STANDBY or \
+            self.motion_state is MotionState.SIT or \
+            self.motion_state is MotionState.STAND:
+            speed = MotorSpeeds.SLOW
+        else:
+            speed = MotorSpeeds.MOTION
+  
+        joint_angles = self.quad.get_joint_angles(AngleUnits.DEGREES)
+        self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FL][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.FLK, speed, joint_angles[LegName.FL][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.FRA, speed, joint_angles[LegName.FR][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.FRH, speed, joint_angles[LegName.FR][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.FRK, speed, joint_angles[LegName.FR][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.BLA, speed, joint_angles[LegName.BL][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.BLH, speed, joint_angles[LegName.BL][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BL][JointName.KNEE])
+        self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BR][JointName.ABDUCTION])
+        self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BR][JointName.HIP])
+        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR][JointName.KNEE])      
+    
+    ###############################################################################
     # Methods
     ###############################################################################
 
     def shutdown(self):
+        self.motors.shutdown()
         self._stop()
 
     ###############################################################################
@@ -409,6 +455,8 @@ class Motion:
         rings = None
         transitions = None
         hold_trajectories = None
+
+        return trajectories, rings, transitions, hold_trajectories
 
         if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
             (
