@@ -1,4 +1,4 @@
-from math import radians, copysign
+from math import radians, copysign, atan2, degrees
 import numpy as np
 from typing import Dict, Tuple
 from time import sleep
@@ -45,7 +45,7 @@ class TrajectoryPlanner:
                 swing_pattern=SwingPattern.BEZIER_ARC,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.1,
+                stride_length=0.04,
                 step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
@@ -63,23 +63,21 @@ class TrajectoryPlanner:
         """ Calculate CoR (center-of-rotation) """
         max_cor = 10
         ratio = 0
-        cor = None  # will be assigned below
-
+        cor: Point = None
+        
+        # Calculate cor position.
         if angular_velocity == 0:
             cor = Point(0, max_cor, 0)
+        else:  
+            cor = Point(0, log_scale_value(angular_velocity, 0, 1, max_cor, 0), 0)
+        
+        # Calculate rotation.
+        if forward_velocity == 0 and lateral_velocity == 0:
+            rotation_angle_deg = 0        
         else:
-            # Determine base ratio
-            ratio = max(forward_velocity, lateral_velocity) / angular_velocity
+            rotation_angle_deg = (degrees(atan2(forward_velocity,lateral_velocity )) - 90) % 360 
 
-            # Clamp to [-max_cor, max_cor]
-            ratio = max(-max_cor, min(max_cor, ratio))
-
-            # Adjust cor point based on sign of ratio
-            y_value = ratio + 1 if ratio < 0 else ratio - 1
-            cor = Point(0, y_value, 0)
-
-        # Calculate rotation
-        rotation_angle_deg = scale_value(lateral_velocity, -1, 1, -90, 90)
+        # print (f"{forward_velocity:8.3f}, {lateral_velocity:8.3f}, {rotation_angle_deg:8.3f}, {cor.y:8.3f},")
 
         return rotate_z(cor, rotation_angle_deg)
 
