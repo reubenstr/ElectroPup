@@ -108,7 +108,7 @@ def forward_data_to_ui():
                 socketio.start_background_task(socketio.emit, "message", message)
                 last_emit_time = now
         except zmq.Again:
-            time.sleep(0.01)  # Avoid busy waiting
+            time.sleep(0.005)  # Avoid busy waiting
         except zmq.ZMQError as e:
             if not stop_event.is_set():
                 print(f"[red]ZMQ Error: {e}[/red]")

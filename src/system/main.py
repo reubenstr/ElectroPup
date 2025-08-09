@@ -189,6 +189,7 @@ class Main:
         self.forwarder.set_hold_trajectories(hold_trajectories)
 
         self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
+        self.forwarder.set_motion_parameters(self.input.get_motion_parameters())
 
         # Get joint angles from physical quadruped.
         leg_angles: Dict[LegName, List[float]] = {}

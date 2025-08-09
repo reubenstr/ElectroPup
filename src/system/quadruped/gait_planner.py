@@ -12,6 +12,7 @@ class Gait(StrEnum):
 
 class SwingPattern(StrEnum):
     BEZIER = "beizer"
+    BEZIER_ARC = "bezier_arc"
     SIN = "sin"
    
 
@@ -56,17 +57,9 @@ class GaitPlanner:
         normalized_time = phase_time / self.duty_factor if phase == Phase.STANCE else (phase_time - self.duty_factor) / (1 - self.duty_factor)
 
         return phase, normalized_time
-
+        
     def foot_trajectory_bezier(self, phase: Phase, phase_time: float):
-        """Return foot (d: distance, h: height) using Bezier swing and linear stance."""
-
-        def bezier_curve(t, points):
-            """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
-            p = np.array(points)
-            while len(p) > 1:
-                p = (1 - t) * p[:-1] + t * p[1:]
-            return p[0]
-
+        """Return foot (d: distance, h: height) using Bezier swing and linear stance."""    
         if phase == Phase.STANCE:
             # Linear backward motion (stroke)
             d = (1 - phase_time) * self.stride_length - self.stride_length / 2
@@ -84,7 +77,29 @@ class GaitPlanner:
                     [self.stride_length / 2, 0],
                 ]
             )
-            d, h = bezier_curve(phase_time, control_points)
+            d, h = self._bezier_curve(phase_time, control_points)
+        return d, h
+    
+    def foot_trajectory_bezier_arc(self, phase: Phase, phase_time: float):
+        """Return foot (d: distance, h: height) using Bezier swing and linear stance creating an arc."""    
+        if phase == Phase.STANCE:
+            # Linear backward motion (stroke)
+            d = (1 - phase_time) * self.stride_length - self.stride_length / 2
+            h = 0
+        elif phase == Phase.SWING:
+            # Bezier swing (retract/touchdown)
+            control_points = np.array(
+                [
+                    [-self.stride_length / 2, 0],
+                    [-self.stride_length/ 2, 0],
+                    [-self.stride_length/ 2, self.step_height],
+                    [0, self.step_height],
+                    [self.stride_length/ 2, self.step_height],
+                    [self.stride_length/ 2, 0],
+                    [self.stride_length/ 2, 0],
+                ]
+            )
+            d, h = self._bezier_curve(phase_time, control_points)
         return d, h
 
     def foot_trajectory_sin(self, phase: Phase, phase_time: float):
@@ -103,10 +118,22 @@ class GaitPlanner:
         phase, phase_time = self.get_leg_phase_time(leg, gait_time)
         if self.swing_pattern is SwingPattern.BEZIER:
             d, h = self.foot_trajectory_bezier(phase, phase_time)
+        elif self.swing_pattern is SwingPattern.BEZIER_ARC:
+            d, h = self.foot_trajectory_bezier_arc(phase, phase_time)    
         elif self.swing_pattern is SwingPattern.SIN:
             d, h = self.foot_trajectory_sin(phase, phase_time)
         return Point(d, 0, h)
     
+
+    @staticmethod
+    def _bezier_curve(t, points):
+            """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
+            p = np.array(points)
+            while len(p) > 1:
+                p = (1 - t) * p[:-1] + t * p[1:]
+            return p[0]
+
+
 
     def get_gait(self) -> Gait:
         return self.gait

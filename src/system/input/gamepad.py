@@ -176,18 +176,19 @@ class Gamepad:
 
     def axis_left_x_changed_callback(self, value):
         self.ik_parameters.set_roll(value)
+        self.motion_parameters.lateral_velocity = value
 
     def axis_left_y_changed_callback(self, value): 
         self.ik_parameters.set_pitch(value)
-        self.motion_parameters.set_forward_raw(value)
+        self.motion_parameters.forward_velocity = value
 
     def axis_right_x_changed_callback(self, value):
         self.ik_parameters.set_yaw(value)
-        self.motion_parameters.set_heading_x(value)       
+        self.motion_parameters.angular_velocity = value
 
     def axis_right_y_changed_callback(self, value):  
         self.ik_parameters.set_height_translation(value)
-        self.motion_parameters.set_heading_y(value)
+      
 
     ###############################################################################
     # Worker (threaded)

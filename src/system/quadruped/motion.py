@@ -62,6 +62,7 @@ class Motion:
         self.idle_flag: bool = True
 
         self.forward_velocity: float = 0
+        self.lateral_velocity: float = 0
         self.angular_velocity: float = 0  # [-1, 1]
         self.angular_velocity_target: float = 0  # [-1, 1]
         self.angular_velocity_slew_rate_seconds: float = 2
@@ -72,6 +73,7 @@ class Motion:
         self.transition_start_foot_points: Dict[LegName, Point] = {}
         self.transition_end_foot_points: Dict[LegName, Point] = {}
         self.transition_angular_velocity: float = 0
+        self.transition_lateral_velocity: float = 0
         self.transition_forward_velocity: float = 0
         self.transition_angle_threadhold: float = 20
 
@@ -137,11 +139,11 @@ class Motion:
 
     def _check_idle(self):
         if self.motion_state is MotionState.WALK:
-            if abs(self.motion_parameters.get_forward_raw()) > 0:
+            if abs(self.motion_parameters.forward_velocity) > 0:
                 self.idle_flag = False
                 self.idle_time = time()
 
-            if abs(self.motion_parameters.get_heading_raw()) > 0:
+            if abs(self.motion_parameters.forward_velocity) > 0:
                 self.idle_flag = False
                 self.idle_time = time()
 
@@ -161,21 +163,24 @@ class Motion:
         self.angular_velocity, self.angular_velocity_time = self.motion_parameters.slew_heading(
             self.angular_velocity, self.angular_velocity_time, self.angular_velocity_slew_rate_seconds
         )
-        self.forward_velocity = self.motion_parameters.get_forward_raw()
+        # TEMP SKIP SLEW
+        self.forward_velocity = self.motion_parameters.forward_velocity
+        self.lateral_velocity = self.motion_parameters.lateral_velocity
+        self.angular_velocity = self.motion_parameters.angular_velocity
 
     def _process_dt(self):
         self.pose_time += self.pose_time_rate
 
         scaled_forward_velocity = 0
         scaled_angular_velocity = 0
-        if self.motion_parameters.get_forward_raw() > 0:
-            scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
-        elif self.motion_parameters.get_forward_raw() < 0:
-            scaled_forward_velocity = scale_value(self.motion_parameters.get_forward_raw(), -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
-        if self.motion_parameters.get_heading_raw() > 0:
-            scaled_angular_velocity = scale_value(self.motion_parameters.get_heading_raw(), 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
-        elif self.motion_parameters.get_heading_raw() < 0:
-            scaled_angular_velocity = scale_value(self.motion_parameters.get_heading_raw(), -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
+        if self.motion_parameters.forward_velocity > 0:
+            scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
+        elif self.motion_parameters.forward_velocity < 0:
+            scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
+        if self.motion_parameters.angular_velocity > 0:
+            scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
+        elif self.motion_parameters.angular_velocity < 0:
+            scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
         self.phase_time += max(scaled_forward_velocity, scaled_angular_velocity, key=abs)
 
         self.transition_time += self.transition_time_rate
@@ -254,17 +259,17 @@ class Motion:
     def _process_motion_state_walk(self):
         # Get foot points in latest trajectory.
         new_foot_points = self.trajector_planner.get_foot_points(
-            self.quad.get_base_foot_points(), self.phase_time, self.angular_velocity, self.forward_velocity
+            self.quad.get_base_foot_points(), self.phase_time, self.forward_velocity, self.lateral_velocity, self.angular_velocity,
         )
 
         if self.transition_hold_flag:
             if self.transition_enable:
                 # Large heading changes trigger a transition.
                 old_twist_angle = self.trajector_planner.get_twist_angle(
-                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
+                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_lateral_velocity, self.transition_forward_velocity
                 )
                 new_twist_angle = self.trajector_planner.get_twist_angle(
-                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.forward_velocity
+                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.lateral_velocity, self.forward_velocity
                 )
                 delta = abs(angle_difference_deg(old_twist_angle, new_twist_angle))
                 if delta > self.transition_angle_threadhold:
@@ -297,7 +302,7 @@ class Motion:
         if self.soft_transition_flag:
             # Get foot positions from hold.
             old_foot_points = self.trajector_planner.get_foot_points(
-                self.quad.get_base_foot_points(), self.phase_time, self.transition_angular_velocity, self.transition_forward_velocity
+                self.quad.get_base_foot_points(), self.phase_time, self.transition_forward_velocity, self.transition_lateral_velocity, self.transition_angular_velocity
             )
 
             # Select which trajectory to apply to foot
@@ -311,6 +316,7 @@ class Motion:
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
+            self.transition_lateral_velocity = self.lateral_velocity
             self.transition_forward_velocity = self.forward_velocity
 
             # TEMP TEST
@@ -344,7 +350,7 @@ class Motion:
         if self.target_motion_state is MotionState.WALK:
             phase_time = 0
             target_foot_points = self.trajector_planner.get_foot_points(
-                self.quad.get_base_foot_points(), phase_time, self.angular_velocity, self.forward_velocity
+                self.quad.get_base_foot_points(), phase_time, self.forward_velocity, self.lateral_velocity, self.angular_velocity,
             )
         else:
             target_foot_points = self.quad.get_base_foot_points()
@@ -464,14 +470,14 @@ class Motion:
             (
                 trajectories,
                 rings,
-            ) = self.trajector_planner.get_trajectories(self.quad.get_base_foot_points(), self.angular_velocity, self.forward_velocity)
+            ) = self.trajector_planner.get_trajectories(self.quad.get_base_foot_points(), self.forward_velocity, self.lateral_velocity, self.angular_velocity)
 
             if self.soft_transition_flag or self.motion_state is MotionState.TRANSITION:
                 (
                     hold_trajectories,
                     old_rings,
                 ) = self.trajector_planner.get_trajectories(
-                    self.quad.get_base_foot_points(), self.transition_angular_velocity, self.transition_forward_velocity
+                    self.quad.get_base_foot_points(), self.transition_forward_velocity, self.transition_lateral_velocity, self.transition_angular_velocity
                 )
 
         if self.motion_state is MotionState.TRANSITION:

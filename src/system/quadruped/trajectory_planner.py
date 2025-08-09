@@ -9,6 +9,7 @@ from quadruped.gait_planner import Gait, Phase, SwingPattern
 from quadruped.interfaces import Trajectories, Trajectory
 from utilities.utilities import log_scale_value
 
+
 class TrajectoryPlanner:
 
     def __init__(self):
@@ -40,7 +41,7 @@ class TrajectoryPlanner:
         elif gait == Gait.TROT:
             return GaitPlanner(
                 gait=Gait.TROT,
-                swing_pattern=SwingPattern.SIN,
+                swing_pattern=SwingPattern.BEZIER_ARC,
                 period=0.6,
                 duty_factor=0.5,
                 stride_length=0.1,
@@ -57,26 +58,28 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def _calculate_cor(self, forward_velocity, angular_velocity) -> Point:
+    def _calculate_cor(self, forward_velocity: float, lateral_velocity: float, angular_velocity: float ) -> Point:
         deadzone = 0.05
         max_cor = 100
 
+        print(f"{forward_velocity:8.3f} {lateral_velocity:8.3f} {angular_velocity:8.3f}")
+
+
         # Calculate CoR (center-of-rotation)
-        if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:           
+        if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:
             return Point(0, max_cor, 0)
-        elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:          
+        elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:
             return Point(0, max_cor, 0)
-        elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:           
+        elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:
             return Point(0, 0, 0)
-        else:          
+        else:
             return Point(0, (forward_velocity / angular_velocity) / 5, 0)
 
-    
     def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-      
+
         # Get the radius from CoR to the leg's nominal foot position
         bend_radius = get_distance_xy(cor, base_foot_point)
         if cor.y > 0:
@@ -86,7 +89,7 @@ class TrajectoryPlanner:
         twist_angle = angle_between_xy(cor, base_foot_point)
         twist_angle += 90 if cor.y > 0 else -90
 
-        # Foot swing trajectory (unrotated, origin-relative)        
+        # Foot swing trajectory (unrotated, origin-relative)
         foot_point: Point = gait_planner.get_foot_position(leg_name, gait_time)
 
         # Project it to the circular arc radius
@@ -101,23 +104,25 @@ class TrajectoryPlanner:
         return foot_point, twist_angle, bend_radius, cor
 
     def get_foot_points(
-        self, base_foot_points: Dict[LegName, Point], gait_time: float, angular_velocity: float, forward_velocity: float
-    ) -> Dict[LegName, Point]:      
+        self, base_foot_points: Dict[LegName, Point], gait_time: float, forward_velocity: float, lateral_velocity: float, angular_velocity: float
+    ) -> Dict[LegName, Point]:
         foot_points: Dict[LegName, Point] = {}
-        cor = self._calculate_cor(forward_velocity, angular_velocity)
+        cor = self._calculate_cor(forward_velocity, lateral_velocity, angular_velocity)
         for leg in LegName:
             base_foot_point = base_foot_points[leg]
             foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg, base_foot_point, gait_time, cor)
             foot_points[leg] = foot_point
         return foot_points
 
-    def is_leg_in_swing(self, leg: LegName, phase_time: float):        
+    def is_leg_in_swing(self, leg: LegName, phase_time: float):
         phase, normalized_time = self.gait_planner.get_leg_phase_time(leg, phase_time)
         return phase is Phase.SWING
-    
-    def get_twist_angle(self, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, angular_velocity: float, forward_velocity: float) -> float:
+
+    def get_twist_angle(
+        self, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, forward_velocity: float, lateral_velocity: float, angular_velocity: float
+    ) -> float:
         base_foot_point = base_foot_points[leg_name]
-        cor = self._calculate_cor(forward_velocity, angular_velocity)
+        cor = self._calculate_cor(forward_velocity, lateral_velocity, angular_velocity)
         _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
         return twist_angle
 
@@ -126,18 +131,18 @@ class TrajectoryPlanner:
     ###############################################################################
 
     def get_trajectories(
-        self, base_foot_points: Dict[LegName, Point], angular_velocity: float, forward_velocity
+        self, base_foot_points: Dict[LegName, Point], forward_velocity: float, lateral_velocity: float, angular_velocity: float
     ) -> Tuple[Trajectories, Trajectories, Trajectories]:
         """
         Generates trajectories points for visual representation.
         """
 
         bend_radius: float = None
-        cor: Point = None        
+        cor: Point = None
 
         timestep = self.gait_planner.period / self.trajectory_num_points
         gait_times = np.arange(0, self.gait_planner.period, timestep)
-        cor = self._calculate_cor(forward_velocity, angular_velocity)
+        cor = self._calculate_cor(forward_velocity, lateral_velocity, angular_velocity)
 
         trajectories: Trajectories = []
         rings: Trajectories = []
@@ -145,7 +150,7 @@ class TrajectoryPlanner:
             base_foot_point = base_foot_points[leg_name]
 
             trajectory: Trajectory = []
-            for gait_time in gait_times:                
+            for gait_time in gait_times:
                 foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
                 trajectory.append(foot_point)
             trajectories.append(trajectory)
@@ -169,7 +174,6 @@ class TrajectoryPlanner:
         # Construct trajectory
         trajectory = [Point(float(x[i]), float(y[i]), float(z[i])) for i in range(num_points)]
         return trajectory
-    
 
     ###############################################################################
     # Getters / Setters
@@ -180,4 +184,3 @@ class TrajectoryPlanner:
 
     def get_gait(self) -> Gait:
         return self.gait_planner.get_gait()
-    
