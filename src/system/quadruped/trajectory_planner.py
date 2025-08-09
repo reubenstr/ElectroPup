@@ -1,13 +1,14 @@
 from math import radians, copysign
 import numpy as np
 from typing import Dict, Tuple
+from time import sleep
 
-from quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius
+from quadruped.point import Point, get_distance_xy, angle_between_xy, rotz, move_point_y_to_radius, rotate_z
 from quadruped.gait_planner import GaitPlanner
 from quadruped.quad import LegName
 from quadruped.gait_planner import Gait, Phase, SwingPattern
 from quadruped.interfaces import Trajectories, Trajectory
-from utilities.utilities import log_scale_value
+from utilities.utilities import log_scale_value, scale_value
 
 
 class TrajectoryPlanner:
@@ -58,22 +59,29 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def _calculate_cor(self, forward_velocity: float, lateral_velocity: float, angular_velocity: float ) -> Point:
-        deadzone = 0.05
-        max_cor = 100
+    def _calculate_cor(self, forward_velocity: float, lateral_velocity: float, angular_velocity: float ) -> Point:    
+        """ Calculate CoR (center-of-rotation) """
+        max_cor = 10
+        ratio = 0
+        cor = None  # will be assigned below
 
-        print(f"{forward_velocity:8.3f} {lateral_velocity:8.3f} {angular_velocity:8.3f}")
-
-
-        # Calculate CoR (center-of-rotation)
-        if abs(forward_velocity) < deadzone and abs(angular_velocity) < deadzone:
-            return Point(0, max_cor, 0)
-        elif abs(forward_velocity) >= deadzone and abs(angular_velocity) < deadzone:
-            return Point(0, max_cor, 0)
-        elif abs(forward_velocity) < deadzone and abs(angular_velocity) >= deadzone:
-            return Point(0, 0, 0)
+        if angular_velocity == 0:
+            cor = Point(0, max_cor, 0)
         else:
-            return Point(0, (forward_velocity / angular_velocity) / 5, 0)
+            # Determine base ratio
+            ratio = max(forward_velocity, lateral_velocity) / angular_velocity
+
+            # Clamp to [-max_cor, max_cor]
+            ratio = max(-max_cor, min(max_cor, ratio))
+
+            # Adjust cor point based on sign of ratio
+            y_value = ratio + 1 if ratio < 0 else ratio - 1
+            cor = Point(0, y_value, 0)
+
+        # Calculate rotation
+        rotation_angle_deg = scale_value(lateral_velocity, -1, 1, -90, 90)
+
+        return rotate_z(cor, rotation_angle_deg)
 
     def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point):
         """
@@ -153,10 +161,11 @@ class TrajectoryPlanner:
             for gait_time in gait_times:
                 foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
                 trajectory.append(foot_point)
+                sleep(0) # Yeild CPU frequently to prevent other thread slow downs.
             trajectories.append(trajectory)
 
-            if leg_name is LegName.FL or leg_name is LegName.FR:
-                rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
+            #if leg_name is LegName.FL or leg_name is LegName.FR:
+            rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
 
         return trajectories, rings
 

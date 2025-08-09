@@ -136,7 +136,7 @@ if __name__ == "__main__":
     forward_thread.start()
 
     try:
-        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev)
+        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev, allow_unsafe_werkzeug=True )
     except KeyboardInterrupt:
         print("[yellow]Shutting down due to keyboard interrupt...[/yellow]")
         cleanup()

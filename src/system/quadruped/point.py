@@ -181,6 +181,13 @@ def frame_rotxyz(a, b, c):
     rxyz = np.matmul(rxy, rz)
     return rxyz
 
+def rotate_z(point: Point, angle_deg: float):
+    angle_rad = radians(angle_deg)
+    x = point.x * cos(angle_rad) - point.y * sin(angle_rad)
+    y = point.x * sin(angle_rad) + point.y * cos(angle_rad)
+    z = point.z
+    return Point(x, y, z)
+
 
 def get_x_vector_from_frame(frame):
     raw = frame[:, 0]

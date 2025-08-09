@@ -172,16 +172,28 @@ class Motion:
         self.pose_time += self.pose_time_rate
 
         scaled_forward_velocity = 0
+        scaled_lateral_velocity = 0
         scaled_angular_velocity = 0
+        
+        
         if self.motion_parameters.forward_velocity > 0:
             scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
         elif self.motion_parameters.forward_velocity < 0:
             scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
+
+        if self.motion_parameters.lateral_velocity > 0:
+            scaled_lateral_velocity = scale_value(self.motion_parameters.lateral_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
+        elif self.motion_parameters.lateral_velocity < 0:
+            scaled_lateral_velocity = scale_value(self.motion_parameters.lateral_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)    
+        
+        
         if self.motion_parameters.angular_velocity > 0:
             scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
         elif self.motion_parameters.angular_velocity < 0:
             scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
-        self.phase_time += max(scaled_forward_velocity, scaled_angular_velocity, key=abs)
+        
+        #self.phase_time += max(scaled_forward_velocity, scaled_angular_velocity, key=abs)
+        self.phase_time += max(scaled_forward_velocity, scaled_lateral_velocity, key=abs)
 
         self.transition_time += self.transition_time_rate
 

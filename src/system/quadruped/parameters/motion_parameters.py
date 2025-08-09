@@ -45,7 +45,7 @@ class MotionParameters:
     
     @lateral_velocity.setter
     def lateral_velocity(self, value):
-        self._lateral_velocity = process_value(value, self.deadzone)
+        self._lateral_velocity = process_value(-value, self.deadzone)
 
     @property
     def angular_velocity(self):
