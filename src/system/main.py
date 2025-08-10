@@ -11,7 +11,7 @@ from typing import Dict, List
 from quadruped.quad import Quad
 from quadruped.gait_planner import Gait
 from quadruped.interfaces import LegName, JointName, AngleUnits, MotionState
-from input.interfaces import TouchCommand
+from input.interfaces import InputCommand
 from input.input import Input
 from quadruped.motion import Motion
 from hardware.hardware import Hardware
@@ -51,9 +51,9 @@ class Main:
     # Callback from Input(s)
     ###############################################################################
 
-    def controller_event_callback(self, event: TouchCommand):
+    def controller_event_callback(self, event: InputCommand):
 
-        if event is TouchCommand.DISABLE_ENABLE_MOTORS:
+        if event is InputCommand.DISABLE_ENABLE_MOTORS:
             if self.op_mode is OpMode.LIVE:
                 if self.motion.motors.is_motors_enabled():
                     self.motion.motors.disable_all_motors()
@@ -63,7 +63,7 @@ class Main:
             else:
                 print(f"[MAIN] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
 
-        if event is TouchCommand.CLEAR_ERRORS:
+        if event is InputCommand.CLEAR_ERRORS:
             print(f"[{self.tag }] clearing errors...")
             self.motion.motors.clear_errors_all_motors()
             return
@@ -74,23 +74,26 @@ class Main:
                     print(f"[MAIN] Controller event {event.name} blocked, motors not enabled.")
                     return
 
-        if event is TouchCommand.STAND:
+        if event is InputCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
             self.motor_enable_flag = True
 
-        if event is TouchCommand.SIT:
+        if event is InputCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)
 
-        if event is TouchCommand.POSE:
+        if event is InputCommand.POSE:
             self.motion.set_target_motion_state(MotionState.POSE)
 
-        if event is TouchCommand.WALK:
+        if event is InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event is TouchCommand.GAIT_WALK:
+        if event is InputCommand.GAIT_WALK:
             self.motion.set_target_gait(Gait.CRAWL)
 
-        if event is TouchCommand.GAIT_TROT:
+        if event is InputCommand.GAIT_RUN:
+            self.motion.set_target_gait(Gait.RUN)
+
+        if event is InputCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
 
         print(f"[MAIN] Controller event received: {event.name}")
@@ -156,7 +159,7 @@ class Main:
 
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
-        system_status.gait.state = self.motion.get_gait()     
+        system_status.gait.state = self.motion.gait     
         system_status.ik.status = Status.ERROR if self.motion.get_quad().get_ik_error() else Status.NONE
         system_status.joint_angle.status = Status.ERROR if self.motion.get_quad().get_joint_angle_error() else Status.NONE
         system_status.input.state = self.input.get_input_mode()

@@ -14,7 +14,7 @@ from utilities.utilities import log_scale_value, scale_value
 class TrajectoryPlanner:
 
     def __init__(self):
-        self.gait_planner: GaitPlanner = self.set_gait(Gait.CRAWL)
+        self.gait_planner: GaitPlanner = self.gait_factory(Gait.CRAWL)
 
         self.trajectory_num_points: int = 40
         self.ring_num_points: int = 40
@@ -27,7 +27,7 @@ class TrajectoryPlanner:
         if gait == Gait.CRAWL:
             return GaitPlanner(
                 gait=Gait.CRAWL,
-                swing_pattern=SwingPattern.BEZIER,
+                swing_pattern=SwingPattern.BEZIER_ARC,
                 period=1.0,
                 duty_factor=0.75,
                 stride_length=0.1,
@@ -39,14 +39,29 @@ class TrajectoryPlanner:
                     LegName.BR: 0.75,
                 },
             )
-        elif gait == Gait.TROT:
+        elif gait == Gait.RUN:
             return GaitPlanner(
-                gait=Gait.TROT,
+                gait=Gait.RUN,
                 swing_pattern=SwingPattern.BEZIER_ARC,
                 period=0.6,
                 duty_factor=0.5,
                 stride_length=0.10,
                 step_height=0.02,
+                phase_offsets={
+                    LegName.FR: 0.0,
+                    LegName.BL: 0.0,
+                    LegName.FL: 0.5,
+                    LegName.BR: 0.5,
+                },
+            )
+        elif gait == Gait.TROT:
+            return GaitPlanner(
+                gait=Gait.TROT,
+                swing_pattern=SwingPattern.BEZIER_ARC,
+                period=0.5,
+                duty_factor=0.5,
+                stride_length=0.10,
+                step_height=0.04,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -69,10 +84,11 @@ class TrajectoryPlanner:
              
         max_cor = 10
         heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
+        stride_length_scale = max(forward_velocity, lateral_velocity, angular_velocity, key=abs) if gait_planner.gait is Gait.RUN else 1
     
 
         if angular_velocity == 0:   
-            foot_point = gait_planner.get_foot_position(leg_name, gait_time)       
+            foot_point = gait_planner.get_foot_position(leg_name, gait_time, stride_length_scale)       
             foot_point.update_point_wrt_frame(rotz(heading))          
             foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
             return foot_point, heading, max_cor, Point(0,0,0)
@@ -109,8 +125,8 @@ class TrajectoryPlanner:
         elif angular_velocity == 0:
             twist_angle += 90
      
-        # Foot swing trajectory along the x (unrotated, origin-relative)
-        foot_point = gait_planner.get_foot_position(leg_name, gait_time)
+        # Foot swing trajectory along the x (unrotated, origin-relative)        
+        foot_point = gait_planner.get_foot_position(leg_name, gait_time, stride_length_scale)
               
         # Project the foot point to the bend radius.
         move_point_y_to_radius(foot_point, bend_radius)
@@ -203,8 +219,11 @@ class TrajectoryPlanner:
     # Getters / Setters
     ###############################################################################
 
-    def set_gait(self, gait: Gait):
-        self.gait_planner: GaitPlanner = self.gait_factory(gait)
 
-    def get_gait(self) -> Gait:
-        return self.gait_planner.get_gait()
+    @property
+    def gait(self) -> Gait:
+        return self.gait_planner.gait
+
+    @gait.setter
+    def gait(self, gait: Gait):
+        self.gait_planner = self.gait_factory(gait)

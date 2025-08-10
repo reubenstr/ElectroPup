@@ -7,7 +7,7 @@ from math import radians
 
 from quadruped.interfaces import AngleUnits, LegName, JointName, MotionState
 from quadruped.motion import Motion, Gait
-from input.interfaces import TouchCommand
+from input.interfaces import InputCommand
 from input.input import Input
 
 """
@@ -34,25 +34,25 @@ class Main:
 
         self.simulation = Simulation()
 
-    def controller_event_callback(self, event: TouchCommand):
+    def controller_event_callback(self, event: InputCommand):
 
-        if event is TouchCommand.STAND:
+        if event is InputCommand.STAND:
             self.motion.set_target_motion_state(MotionState.STAND)
             self.motor_enable_flag = True
 
-        if event is TouchCommand.SIT:
+        if event is InputCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)
 
-        if event is TouchCommand.POSE:
+        if event is InputCommand.POSE:
             self.motion.set_target_motion_state(MotionState.POSE)
 
-        if event is TouchCommand.WALK:
+        if event is InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event is TouchCommand.GAIT_WALK:
+        if event is InputCommand.GAIT_WALK:
             self.motion.set_target_gait(Gait.CRAWL)
 
-        if event is TouchCommand.GAIT_TROT:
+        if event is InputCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
 
         print(f"[MAIN] Controller event received: {event.name}")

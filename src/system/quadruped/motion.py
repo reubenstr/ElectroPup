@@ -40,14 +40,13 @@ class Motion:
         self.target_motion_state: MotionState = MotionState.STANDBY
         self.previous_target_motion_state: MotionState = MotionState.STANDBY
         self.target_gait: Gait = Gait.TROT
-        self.trajector_planner.set_gait(Gait.TROT)
+        self.trajector_planner.gait = Gait.TROT
 
         self.quad = Quad()
         self.motion_parameters: MotionParameters = MotionParameters()
         self.ik_parameters: IKParameters = IKParameters()
 
-        self.phase_time: float = 0
-        self.phase_time_rate_slow: float = 0.001
+        self.phase_time: float = 0     
         self.phase_time_rate_fast: float = 0.010
 
         self.pose_time: float = 0
@@ -55,7 +54,7 @@ class Motion:
         self.pose_period: float = 1
 
         self.transition_time: float = 0
-        self.transition_time_rate: float = 0.010
+        self.transition_time_rate: float = 0.005
 
         self.idle_time: float = 0
         self.idle_time_trigger_seconds: float = 500
@@ -63,8 +62,8 @@ class Motion:
 
         self.forward_velocity: float = 0
         self.lateral_velocity: float = 0
-        self.angular_velocity: float = 0  # [-1, 1]
-        self.angular_velocity_target: float = 0  # [-1, 1]
+        self.angular_velocity: float = 0  
+        self.angular_velocity_target: float = 0
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
 
@@ -192,8 +191,8 @@ class Motion:
 
     def _process_gait_changes(self):
         if self.motion_state is MotionState.WALK or self.motion_state is MotionState.TRANSITION:
-            if self.trajector_planner.get_gait() is not self.target_gait:
-                self.trajector_planner.set_gait(self.target_gait)
+            if self.trajector_planner.gait is not self.target_gait:
+                self.trajector_planner.gait = self.target_gait
                 print(f"[{self.tag}] target gait changed to: {self.target_gait}")
                 self._create_transition()
 
@@ -313,20 +312,13 @@ class Motion:
             # Select which trajectory to apply to foot
             combined_foot_points: Dict[LegName, Point] = {}
             for leg in LegName:
-                combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
+                combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]    
 
-            # TEMP TEST
-            # ik_parameters = IKParameters()
-            # ik_parameters.forward_translation = self.ik_parameters.forward_translation
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
             self.transition_lateral_velocity = self.lateral_velocity
             self.transition_forward_velocity = self.forward_velocity
-
-            # TEMP TEST
-            # ik_parameters = IKParameters()
-            # ik_parameters.forward_translation = self.ik_parameters.forward_translation
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
 
         self.transition_hold_flag = True
@@ -460,9 +452,10 @@ class Motion:
         with self.lock:
             self.target_gait = target_gait
 
-    def get_gait(self) -> Gait:
+    @property
+    def gait(self) -> Gait:
         with self.lock:
-            return self.trajector_planner.get_gait()
+            return self.trajector_planner.gait
 
     def get_target_gait(self) -> Gait:
         with self.lock:
