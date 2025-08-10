@@ -11,15 +11,16 @@ from typing import Dict, List
 from quadruped.quad import Quad
 from quadruped.gait_planner import Gait
 from quadruped.interfaces import LegName, JointName, AngleUnits, MotionState
-from input.interfaces import InputCommand
-from input.input import Input
 from quadruped.motion import Motion
+from quadruped.interfaces import OpMode, Status
+from quadruped.parameters.ik_parameters import IKParameters
 from hardware.hardware import Hardware
 from motors.motors import Motor, Motors
 from motors.interfaces import MotorName, MotorSpeeds
 from auxiliary.aux import Aux, AuxMessage
 from utilities.utilities import *
-from quadruped.interfaces import OpMode, Status
+from input.interfaces import InputCommand
+from input.input import Input
 from status import SystemStatus
 from forwarder import Forwarder
 
@@ -218,8 +219,14 @@ class Main:
         ]
         for leg, angles in leg_angles.items():
             leg_angles[leg] = [angle if angle is not None else 0.0 for angle in angles]
-        live_quad = Quad()
-        live_quad.set_joint_angles_degrees(leg_angles)
+        live_quad = Quad()        
+        #live_quad.set_joint_angles_degrees(leg_angles)      
+        #live_quad.update_ht_body(self.input.get_ik_parameters())  
+        ik_parameters = IKParameters()
+        ik_parameters.roll = self.hardware.get_imu_data().roll
+        ik_parameters.pitch = self.hardware.get_imu_data().pitch    
+        live_quad.set_body_pose_by_transform_inputs(ik_parameters, live_quad.get_base_foot_points())
+        live_quad.set_joint_angles_degrees(leg_angles) 
         self.forwarder.set_live_quad(live_quad)
 
     def sleep_loop(self):

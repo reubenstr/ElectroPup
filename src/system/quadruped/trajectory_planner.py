@@ -73,27 +73,32 @@ class TrajectoryPlanner:
     ###############################################################################
     # Methods
     ###############################################################################
-   
 
     def _calculate_foot_point(
-        self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, forward_velocity: float, lateral_velocity: float, angular_velocity: float
+        self,
+        gait_planner: GaitPlanner,
+        leg_name: LegName,
+        base_foot_point: Point,
+        gait_time: float,
+        forward_velocity: float,
+        lateral_velocity: float,
+        angular_velocity: float,
     ):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-             
+
         max_cor = 10
         heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
         stride_length_scale = abs(max(forward_velocity, lateral_velocity, angular_velocity, key=abs)) if gait_planner.gait is Gait.RUN else 1
-    
 
-        if angular_velocity == 0:   
-            foot_point = gait_planner.get_foot_position(leg_name, gait_time, stride_length_scale)       
-            foot_point.update_point_wrt_frame(rotz(heading))          
+        if angular_velocity == 0:
+            foot_point = gait_planner.get_foot_position(leg_name, gait_time, stride_length_scale)
+            foot_point.update_point_wrt_frame(rotz(heading))
             foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
-            return foot_point, heading, max_cor, Point(0,0,0)
-                  
-        cor = Point(0, -forward_velocity/angular_velocity, 0)  
+            return foot_point, heading, max_cor, Point(0, 0, 0)
+
+        cor = Point(0, -forward_velocity / angular_velocity, 0)
         cor = rotate_z(cor, heading)
 
         # Get the radius from CoR to the leg's nominal foot position
@@ -124,10 +129,10 @@ class TrajectoryPlanner:
             twist_angle += 90
         elif angular_velocity == 0:
             twist_angle += 90
-     
-        # Foot swing trajectory along the x (unrotated, origin-relative)        
+
+        # Foot swing trajectory along the x (unrotated, origin-relative)
         foot_point = gait_planner.get_foot_position(leg_name, gait_time, stride_length_scale)
-              
+
         # Project the foot point to the bend radius.
         move_point_y_to_radius(foot_point, bend_radius)
 
@@ -145,7 +150,9 @@ class TrajectoryPlanner:
         foot_points: Dict[LegName, Point] = {}
         for leg in LegName:
             base_foot_point = base_foot_points[leg]
-            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg, base_foot_point, gait_time, forward_velocity, lateral_velocity, angular_velocity)
+            foot_point, _, _, _ = self._calculate_foot_point(
+                self.gait_planner, leg, base_foot_point, gait_time, forward_velocity, lateral_velocity, angular_velocity
+            )
             foot_points[leg] = foot_point
         return foot_points
 
@@ -163,7 +170,9 @@ class TrajectoryPlanner:
         angular_velocity: float,
     ) -> float:
         base_foot_point = base_foot_points[leg_name]
-        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, forward_velocity, lateral_velocity,angular_velocity)
+        _, twist_angle, _, _ = self._calculate_foot_point(
+            self.gait_planner, leg_name, base_foot_point, gait_time, forward_velocity, lateral_velocity, angular_velocity
+        )
         return twist_angle
 
     ###############################################################################
@@ -190,7 +199,9 @@ class TrajectoryPlanner:
 
             trajectory: Trajectory = []
             for gait_time in gait_times:
-                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, forward_velocity, lateral_velocity, angular_velocity)
+                foot_point, _, bend_radius, cor = self._calculate_foot_point(
+                    self.gait_planner, leg_name, base_foot_point, gait_time, forward_velocity, lateral_velocity, angular_velocity
+                )
                 trajectory.append(foot_point)
                 sleep(0)  # Yeild CPU frequently to prevent other thread slow downs.
             trajectories.append(trajectory)
@@ -218,7 +229,6 @@ class TrajectoryPlanner:
     ###############################################################################
     # Getters / Setters
     ###############################################################################
-
 
     @property
     def gait(self) -> Gait:

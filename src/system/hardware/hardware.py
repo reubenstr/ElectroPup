@@ -184,10 +184,12 @@ class Hardware:
                     heading, roll, pitch = self.imu.get_euler_angles()
 
                     # Correct for physical IMU placement.
+
+                    roll *= -1.0
+
                     pitch += 180
                     if pitch > 180:
                         pitch -= 360
-
 
                     self.imu_data = ImuData(
                         roll=roll,

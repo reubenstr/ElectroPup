@@ -20,10 +20,7 @@ from utilities.utilities import scale_value, angle_difference_deg
 
 """
     Applies gaits and transitions to the quadruped.
-    Processes user inputs such as speed and direction.
-
-    Notes: 
-
+    Processes user inputs as speed and directions.
 """
 
 
@@ -46,8 +43,8 @@ class Motion:
         self.motion_parameters: MotionParameters = MotionParameters()
         self.ik_parameters: IKParameters = IKParameters()
 
-        self.phase_time: float = 0     
-        self.phase_time_rate_fast: float = 0.010
+        self.phase_time: float = 0
+        self.phase_time_rate_fast: float = 0.020
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.005
@@ -62,7 +59,7 @@ class Motion:
 
         self.forward_velocity: float = 0
         self.lateral_velocity: float = 0
-        self.angular_velocity: float = 0  
+        self.angular_velocity: float = 0
         self.angular_velocity_target: float = 0
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
@@ -76,7 +73,7 @@ class Motion:
         self.transition_forward_velocity: float = 0
         self.transition_angle_threadhold: float = 20
 
-        self.soft_transition_enable: bool = False
+        self.soft_transition_enable: bool = True
         self.soft_transition_flag: bool = False
         self.soft_transition_legs_started_swing: Dict[LegName, bool] = []
         self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points()
@@ -315,7 +312,7 @@ class Motion:
             # Select which trajectory to apply to foot
             combined_foot_points: Dict[LegName, Point] = {}
             for leg in LegName:
-                combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]    
+                combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
@@ -406,8 +403,8 @@ class Motion:
 
     def get_imu_data(self):
         if self._get_imu_data is None:
-            raise RuntimeError("IMU data callback not set")     
-        return self._get_imu_data()     
+            raise RuntimeError("IMU data callback not set")
+        return self._get_imu_data()
 
     ###############################################################################
     # Getters / Setters
@@ -456,7 +453,7 @@ class Motion:
             self.target_gait = target_gait
 
     @property
-    def gait(self) -> Gait:       
+    def gait(self) -> Gait:
         return self.trajector_planner.gait
 
     def get_target_gait(self) -> Gait:
