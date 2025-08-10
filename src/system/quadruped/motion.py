@@ -48,7 +48,7 @@ class Motion:
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
-        self.phase_time_rate_fast: float = 0.010
+        self.phase_time_rate_fast: float = 0.005
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.005
@@ -169,31 +169,9 @@ class Motion:
         self.angular_velocity = self.motion_parameters.angular_velocity
 
     def _process_dt(self):
-        self.pose_time += self.pose_time_rate
+        self.pose_time += self.pose_time_rate    
 
-        scaled_forward_velocity = 0
-        scaled_lateral_velocity = 0
-        scaled_angular_velocity = 0
-        
-        
-        if self.motion_parameters.forward_velocity > 0:
-            scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
-        elif self.motion_parameters.forward_velocity < 0:
-            scaled_forward_velocity = scale_value(self.motion_parameters.forward_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
-
-        if self.motion_parameters.lateral_velocity > 0:
-            scaled_lateral_velocity = scale_value(self.motion_parameters.lateral_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
-        elif self.motion_parameters.lateral_velocity < 0:
-            scaled_lateral_velocity = scale_value(self.motion_parameters.lateral_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)    
-        
-        
-        if self.motion_parameters.angular_velocity > 0:
-            scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, 0, 1, self.phase_time_rate_slow, self.phase_time_rate_fast)
-        elif self.motion_parameters.angular_velocity < 0:
-            scaled_angular_velocity = scale_value(self.motion_parameters.angular_velocity, -1, 0, -self.phase_time_rate_fast, -self.phase_time_rate_slow)
-        
-        #self.phase_time += max(scaled_forward_velocity, scaled_angular_velocity, key=abs)
-        self.phase_time += max(scaled_forward_velocity, scaled_lateral_velocity, key=abs)
+        self.phase_time += scale_value( self.motion_parameters.get_left_magnitude(), 0, 1, 0, self.phase_time_rate_fast)      
 
         self.transition_time += self.transition_time_rate
 

@@ -114,7 +114,7 @@ class GaitPlanner:
             h = self.step_height * np.sin(np.pi * phase_time)
         return d, h
 
-    def get_foot_position(self, leg: LegName, gait_time: float) -> Dict[LegName, Point]:
+    def get_foot_position(self, leg: LegName, gait_time: float) -> Point:
         phase, phase_time = self.get_leg_phase_time(leg, gait_time)
         if self.swing_pattern is SwingPattern.BEZIER:
             d, h = self.foot_trajectory_bezier(phase, phase_time)

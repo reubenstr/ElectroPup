@@ -1,4 +1,4 @@
-from math import radians, copysign, atan2, degrees
+from math import radians, copysign, atan2, degrees, copysign
 import numpy as np
 from typing import Dict, Tuple
 from time import sleep
@@ -45,7 +45,7 @@ class TrajectoryPlanner:
                 swing_pattern=SwingPattern.BEZIER_ARC,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.04,
+                stride_length=0.104,
                 step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
@@ -59,52 +59,99 @@ class TrajectoryPlanner:
     # Methods
     ###############################################################################
 
-    def _calculate_cor(self, forward_velocity: float, lateral_velocity: float, angular_velocity: float ) -> Point:    
-        """ Calculate CoR (center-of-rotation) """
-        max_cor = 10
+
+    def _calculate_cor(self, forward_velocity: float, lateral_velocity: float, angular_velocity: float) -> Point:
+        """Calculate CoR (center-of-rotation)"""
+        max_cor = 100
         ratio = 0
         cor: Point = None
-        
+
         # Calculate cor position.
         if angular_velocity == 0:
             cor = Point(0, max_cor, 0)
-        else:  
+        else:
             cor = Point(0, log_scale_value(angular_velocity, 0, 1, max_cor, 0), 0)
-        
+
         # Calculate rotation.
         if forward_velocity == 0 and lateral_velocity == 0:
-            rotation_angle_deg = 0        
+            rotation_angle_deg = 0
         else:
-            rotation_angle_deg = (degrees(atan2(forward_velocity,lateral_velocity )) - 90) % 360 
+            rotation_angle_deg = (degrees(atan2(forward_velocity, lateral_velocity)) - 90) % 360
 
-        # print (f"{forward_velocity:8.3f}, {lateral_velocity:8.3f}, {rotation_angle_deg:8.3f}, {cor.y:8.3f},")
+        rotated_cor = rotate_z(cor, rotation_angle_deg)
 
-        return rotate_z(cor, rotation_angle_deg)
+        
+        
+        if angular_velocity == 0:
+         
+            #rotated_cor = Point(-lateral_velocity * max_cor, forward_velocity * max_cor, 0)    
+            if lateral_velocity < 0 or lateral_velocity > 0:
+                rotated_cor = Point(max_cor, 0, 0)      
+            else:
+                rotated_cor = Point(0, max_cor, 0)            
+        else:
+            rotated_cor = Point(-lateral_velocity/angular_velocity, forward_velocity/angular_velocity, 0)
 
-    def _calculate_foot_point(self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point):
+        # print (f"{forward_velocity:8.3f}, {lateral_velocity:8.3f}, {rotation_angle_deg:8.3f}, ({rotated_cor.x:6.3f}, {rotated_cor.y:6.3f})")
+
+        return rotated_cor
+
+    def _calculate_foot_point(
+        self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point, forward_velocity: float, lateral_velocity: float, angular_velocity: float
+    ):
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
+        max_cor = 5
+
+        heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
+        print(heading)
+
+        if angular_velocity == 0:   
+            foot_point = gait_planner.get_foot_position(leg_name, gait_time)       
+            foot_point.update_point_wrt_frame(rotz(heading))          
+            foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
+            return foot_point, heading, max_cor, cor
+        else:
+            cor = Point(-lateral_velocity/angular_velocity, forward_velocity/angular_velocity, 0)
 
         # Get the radius from CoR to the leg's nominal foot position
         bend_radius = get_distance_xy(cor, base_foot_point)
-        if cor.y > 0:
-            bend_radius *= -1
+        
+        #if cor.y > 0:      
+        #    bend_radius *= -1
 
-        # Angle from CoR to the foot, then apply tangent direction
+        q = 0
+
+        # Angle from CoR to the foot, rotate to tangent position, convert to 0 to 360.
+   
         twist_angle = angle_between_xy(cor, base_foot_point)
-        twist_angle += 90 if cor.y > 0 else -90
+        if cor.y < 0:
+            twist_angle -= 90
+        elif cor.y > 0:            
+            twist_angle += 90
+            bend_radius *= -1
+        elif cor.y == 0:
+            if angular_velocity < 0:
+                twist_angle -= 90   
+            elif angular_velocity > 0:
+                twist_angle += 90
+                bend_radius *= -1
+    
+        #if leg_name is LegName.FL:
+        #    print(f"{bend_radius:8.2f} - [{cor.x:8.3f}, {cor.y:8.3f}] ---  {twist_angle:8.3f}  {twist_angle:8.3f}")
 
         # Foot swing trajectory (unrotated, origin-relative)
-        foot_point: Point = gait_planner.get_foot_position(leg_name, gait_time)
+        foot_point = gait_planner.get_foot_position(leg_name, gait_time)
+      
 
-        # Project it to the circular arc radius
+        # Project the foot point to the bend radius
         move_point_y_to_radius(foot_point, bend_radius)
 
-        # Rotate to match circular motion tangent
+        # Rotate foot point to match the twist
         foot_point.update_point_wrt_frame(rotz(twist_angle))
 
-        # Translate into the foot's actual reference frame
+        # Translate into the foot's reference frame
         foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
 
         return foot_point, twist_angle, bend_radius, cor
@@ -116,7 +163,7 @@ class TrajectoryPlanner:
         cor = self._calculate_cor(forward_velocity, lateral_velocity, angular_velocity)
         for leg in LegName:
             base_foot_point = base_foot_points[leg]
-            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg, base_foot_point, gait_time, cor)
+            foot_point, _, _, _ = self._calculate_foot_point(self.gait_planner, leg, base_foot_point, gait_time, cor, forward_velocity, lateral_velocity, angular_velocity)
             foot_points[leg] = foot_point
         return foot_points
 
@@ -125,11 +172,17 @@ class TrajectoryPlanner:
         return phase is Phase.SWING
 
     def get_twist_angle(
-        self, base_foot_points: Dict[LegName, Point], leg_name: LegName, gait_time: float, forward_velocity: float, lateral_velocity: float, angular_velocity: float
+        self,
+        base_foot_points: Dict[LegName, Point],
+        leg_name: LegName,
+        gait_time: float,
+        forward_velocity: float,
+        lateral_velocity: float,
+        angular_velocity: float,
     ) -> float:
         base_foot_point = base_foot_points[leg_name]
         cor = self._calculate_cor(forward_velocity, lateral_velocity, angular_velocity)
-        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
+        _, twist_angle, _, _ = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor, forward_velocity, lateral_velocity,angular_velocity)
         return twist_angle
 
     ###############################################################################
@@ -157,12 +210,12 @@ class TrajectoryPlanner:
 
             trajectory: Trajectory = []
             for gait_time in gait_times:
-                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor)
+                foot_point, _, bend_radius, cor = self._calculate_foot_point(self.gait_planner, leg_name, base_foot_point, gait_time, cor,forward_velocity, lateral_velocity, angular_velocity)
                 trajectory.append(foot_point)
-                sleep(0) # Yeild CPU frequently to prevent other thread slow downs.
+                sleep(0)  # Yeild CPU frequently to prevent other thread slow downs.
             trajectories.append(trajectory)
 
-            #if leg_name is LegName.FL or leg_name is LegName.FR:
+            # if leg_name is LegName.FL or leg_name is LegName.FR:
             rings.append(self.create_circle_trajectory(bend_radius, cor, self.ring_num_points))
 
         return trajectories, rings

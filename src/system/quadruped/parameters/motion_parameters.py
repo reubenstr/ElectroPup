@@ -71,9 +71,10 @@ class MotionParameters:
 
     def get_heading_degrees(self):
         return degrees(atan2(self._heading_x, self._heading_y))
+        '''
 
-    def get_heading_magnitude(self):
-        return sqrt((self._heading_x) ** 2 + (self._heading_y) ** 2)'''
+    def get_left_magnitude(self):
+        return sqrt((self._lateral_velocity) ** 2 + (self._forward_velocity) ** 2)
 
 
     def slew_heading(
