@@ -139,7 +139,7 @@ export default function Viewer() {
                         />
                         <StatusIndicator
                             name='Voltage'
-                            value={quadData?.status?.voltage?.voltage}
+                            value={Number(quadData?.status?.voltage?.voltage ?? 0).toFixed(2)}
                             status={quadData?.status?.voltage?.status}
                         />                       
                     </View>

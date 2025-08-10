@@ -9,47 +9,56 @@ export function useDataTransfer(): {
   connected: boolean;
   sendMessage: (msg: string) => void;
 } {
-  const [hexData, setHexData] = useState<QuadData>();
+  const [quadData, setQuadData] = useState<QuadData>();
   const [connected, setConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const endpointByType = useEndpointByType(ServerType.QUADRUPED)
 
-  const noDataTimeoutMs = 3000;
+  const lastDataTimestamp = useRef(0);
+  const updateTimestamp = useRef(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-     
-      if (hexData && hexData?.timestamp) {
-        if (Date.now() - hexData?.timestamp > noDataTimeoutMs) {
-          setConnected(false)
-          setHexData(undefined)
-        }
+  const noDataTimeoutMs = 1000;
+
+useEffect(() => {
+  const interval = setInterval(() => {
+   
+
+    if (quadData?.timestamp) {
+      if (lastDataTimestamp.current !== quadData.timestamp) {
+        lastDataTimestamp.current = quadData.timestamp;
+        updateTimestamp.current = Date.now();
+        console.log(updateTimestamp.current);
       }
-    }, 100);   
-    return () => clearInterval(interval);
-  }, [hexData]); 
+    }
+
+    if (Date.now() - updateTimestamp.current > noDataTimeoutMs) {
+      setConnected(false);
+      setQuadData(undefined);
+    } else {
+       setConnected(true);
+    }
+    
+  }, 25);
+
+  return () => clearInterval(interval);
+}, [quadData, noDataTimeoutMs]);
 
 
   useEffect(() => {
     if (endpointByType) {
-      console.log(`[DATA TRANSFER] using socket ${endpointByType?.description} @ ${endpointByType?.address}`);
+      console.log(`[Data Transfer] using socket ${endpointByType?.description} @ ${endpointByType?.address}`);
       socketRef.current = io(endpointByType?.address);
 
       socketRef.current.on('connect', () => {
-        console.log('[DATA TRANSFER] connected to Socket.IO server');
-        setConnected(true);
+        console.log('[Data Transfer] connected to Socket.IO server');       
       });
 
-      socketRef.current.on('message', (message: string) => {
-        // console.log('[DATA TRANSFER] message received:', message);
-        // TODO: Check if message type is hexData        
-        setHexData(JSON.parse(message));
+      socketRef.current.on('message', (message: string) => {        
+        setQuadData(JSON.parse(message));
       });
 
       socketRef.current.on('disconnect', () => {
-        console.log('[DATA TRANSFER] disconnected from Socket.IO server');
-        setConnected(false);
-        setHexData(undefined)
+        console.log('[Data Transfer] disconnected from Socket.IO server');       
       });
     }
     return () => {
@@ -59,12 +68,11 @@ export function useDataTransfer(): {
 
   const sendMessage = useCallback((msg: string) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit('message', msg);
-      // console.log('[DATA TRANSFER] Sent:', msg);
+      socketRef.current.emit('message', msg);   
     } else {
-      console.warn('[DATA TRANSFER] cannot send, socket not connected');
+      console.warn('[Data Transfer] cannot send, socket not connected');
     }
   }, []);
 
-  return { quadData: hexData, connected, sendMessage };
+  return { quadData: quadData, connected, sendMessage };
 }
