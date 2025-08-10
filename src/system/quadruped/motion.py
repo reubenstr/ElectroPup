@@ -170,9 +170,12 @@ class Motion:
     def _process_dt(self):
         self.pose_time += self.pose_time_rate
 
-        heading_reate = scale_value(self.motion_parameters.get_left_magnitude(), 0, 1, 0, self.phase_time_rate_fast)
-        angular_rate = scale_value(abs(self.motion_parameters.angular_velocity), 0, 1, 0, self.phase_time_rate_fast)
-        self.phase_time += max(heading_reate, angular_rate)
+        if self.gait is Gait.RUN:
+            self.phase_time += self.phase_time_rate_fast
+        else:
+            heading_reate = scale_value(self.motion_parameters.get_left_magnitude(), 0, 1, 0, self.phase_time_rate_fast)
+            angular_rate = scale_value(abs(self.motion_parameters.angular_velocity), 0, 1, 0, self.phase_time_rate_fast)
+            self.phase_time += max(heading_reate, angular_rate)
 
         self.transition_time += self.transition_time_rate
 
@@ -453,9 +456,8 @@ class Motion:
             self.target_gait = target_gait
 
     @property
-    def gait(self) -> Gait:
-        with self.lock:
-            return self.trajector_planner.gait
+    def gait(self) -> Gait:       
+        return self.trajector_planner.gait
 
     def get_target_gait(self) -> Gait:
         with self.lock:

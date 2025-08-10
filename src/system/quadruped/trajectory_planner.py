@@ -43,10 +43,10 @@ class TrajectoryPlanner:
             return GaitPlanner(
                 gait=Gait.RUN,
                 swing_pattern=SwingPattern.BEZIER_ARC,
-                period=0.6,
+                period=1.0,
                 duty_factor=0.5,
                 stride_length=0.10,
-                step_height=0.02,
+                step_height=0.06,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -58,10 +58,10 @@ class TrajectoryPlanner:
             return GaitPlanner(
                 gait=Gait.TROT,
                 swing_pattern=SwingPattern.BEZIER_ARC,
-                period=0.5,
+                period=1.0,
                 duty_factor=0.5,
                 stride_length=0.10,
-                step_height=0.04,
+                step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -84,7 +84,7 @@ class TrajectoryPlanner:
              
         max_cor = 10
         heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
-        stride_length_scale = max(forward_velocity, lateral_velocity, angular_velocity, key=abs) if gait_planner.gait is Gait.RUN else 1
+        stride_length_scale = abs(max(forward_velocity, lateral_velocity, angular_velocity, key=abs)) if gait_planner.gait is Gait.RUN else 1
     
 
         if angular_velocity == 0:   
