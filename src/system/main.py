@@ -181,6 +181,14 @@ class Main:
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
+        voltage_accumulator: float = 0.0
+        motors: Dict[str, Motor] = self.motion.motors.get_all_motors()
+        for index, (motor_tag, motor) in enumerate(motors.items()):           
+            voltage_accumulator += motor.voltage
+        voltage = voltage_accumulator / len(motors)
+        system_status.voltage.voltage = voltage
+        system_status.voltage.status = Status.ACTIVE if voltage > 0 else Status.ERROR
+
         self.forwarder.set_sim_quad(self.motion.get_quad())
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
