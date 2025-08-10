@@ -202,8 +202,17 @@ dtoverlay=uart0
 
 ## IMU
 
-Work in progress
+Use raspi-config to enable I2C
 
+Check hardware:
+sudo apt install i2c-tools
+ls /dev/i2c-*
+i2cdetect -y 1
+
+Or, scan for devices and list addresses:
+./src/system/hardware/i2c_scanner.py 
+
+BNO055 address is 0x28 
 
 # Manual Testing (or Development)
 
