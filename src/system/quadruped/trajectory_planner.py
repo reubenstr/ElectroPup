@@ -1,4 +1,4 @@
-from math import radians, copysign, atan2, degrees, copysign, log1p
+from math import radians, copysign, atan2, degrees, copysign, log1p, cos, sin
 import numpy as np
 from typing import Dict, Tuple
 from time import sleep
@@ -45,7 +45,7 @@ class TrajectoryPlanner:
                 swing_pattern=SwingPattern.BEZIER_ARC,
                 period=0.6,
                 duty_factor=0.5,
-                stride_length=0.104,
+                stride_length=0.10,
                 step_height=0.02,
                 phase_offsets={
                     LegName.FR: 0.0,
@@ -95,6 +95,8 @@ class TrajectoryPlanner:
         # print (f"{forward_velocity:8.3f}, {lateral_velocity:8.3f}, {rotation_angle_deg:8.3f}, ({rotated_cor.x:6.3f}, {rotated_cor.y:6.3f})")
 
         return rotated_cor
+    
+
 
     def _calculate_foot_point(
         self, gait_planner: GaitPlanner, leg_name: LegName, base_foot_point: Point, gait_time: float, cor: Point, forward_velocity: float, lateral_velocity: float, angular_velocity: float
@@ -102,68 +104,59 @@ class TrajectoryPlanner:
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-     
-        
+             
         max_cor = 10
-
         heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
-        #print(heading)
+    
 
         if angular_velocity == 0:   
             foot_point = gait_planner.get_foot_position(leg_name, gait_time)       
             foot_point.update_point_wrt_frame(rotz(heading))          
             foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
             return foot_point, heading, max_cor, cor
-        else:              
-            cor = Point(0, -forward_velocity/angular_velocity, 0)  
-            cor = rotate_z(cor, heading)
+                  
+        cor = Point(0, -forward_velocity/angular_velocity, 0)  
+        cor = rotate_z(cor, heading)
 
         # Get the radius from CoR to the leg's nominal foot position
         bend_radius = get_distance_xy(cor, base_foot_point)
-        
-        #if cor.y > 0:      
-        #    bend_radius *= -1
 
         twist_angle = angle_between_xy(cor, base_foot_point)
+
+        # Compenstate for quadrant shifts.
+        if forward_velocity < 0:
+            twist_angle -= 180
+            bend_radius *= -1
+        elif forward_velocity > 0:
+            pass
+        elif forward_velocity == 0:
+            pass
 
         if lateral_velocity < 0:
             twist_angle -= 180
         elif lateral_velocity > 0:
-             twist_angle += 180
+            twist_angle += 180
+        elif lateral_velocity == 0:
+            twist_angle += 180
 
         if angular_velocity < 0:
             twist_angle -= 90
-        elif angular_velocity > 0:
-             twist_angle += 90
-             bend_radius *= -1
-        
-        
-        '''if cor.y < 0:
-            twist_angle -= 90
-        elif cor.y > 0:            
-            twist_angle += 90
             bend_radius *= -1
-        elif cor.y == 0:
-            if angular_velocity < 0:
-                twist_angle -= 90   
-            elif angular_velocity > 0:
-                twist_angle += 90
-                bend_radius *= -1'''
-    
-        if leg_name is LegName.FL:
-            print(f"{bend_radius:8.2f} - [{cor.x:8.3f}, {cor.y:8.3f}] ---  {twist_angle:8.3f}  {twist_angle:8.3f}")
-
-        # Foot swing trajectory (unrotated, origin-relative)
+        elif angular_velocity > 0:
+            twist_angle += 90
+        elif angular_velocity == 0:
+            twist_angle += 90
+     
+        # Foot swing trajectory along the x (unrotated, origin-relative)
         foot_point = gait_planner.get_foot_position(leg_name, gait_time)
-      
-
-        # Project the foot point to the bend radius
+              
+        # Project the foot point to the bend radius.
         move_point_y_to_radius(foot_point, bend_radius)
 
-        # Rotate foot point to match the twist
+        # Rotate foot point to match the twist.
         foot_point.update_point_wrt_frame(rotz(twist_angle))
 
-        # Translate into the foot's reference frame
+        # Translate foot point into the base foot reference frame.
         foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
 
         return foot_point, twist_angle, bend_radius, cor

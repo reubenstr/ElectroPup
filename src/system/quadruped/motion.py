@@ -47,7 +47,7 @@ class Motion:
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
-        self.phase_time_rate_fast: float = 0.005
+        self.phase_time_rate_fast: float = 0.010
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.005
