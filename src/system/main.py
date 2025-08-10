@@ -108,7 +108,7 @@ class Main:
 
             self.forward_states()
 
-            self.sleep_loop()
+            self.sleep_loop()          
 
     ###############################################################################
     # Loop Methods

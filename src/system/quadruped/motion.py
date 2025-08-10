@@ -1,7 +1,7 @@
 from time import time, sleep
 from typing import List
 from threading import Thread, Lock, Event
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Callable
 from itertools import product
 from rich import print  # Overrides print and injects colors
 
@@ -13,6 +13,7 @@ from quadruped.parameters.motion_parameters import MotionParameters
 from quadruped.gait_planner import Gait
 from quadruped.trajectory_planner import TrajectoryPlanner, Trajectory, Trajectories
 from quadruped.interfaces import Status, OpMode, MotionState, LegName, JointName, AngleUnits
+from hardware.interfaces import ImuData
 from motors.motors import Motors
 from motors.interfaces import MotorName, MotorSpeeds
 from utilities.utilities import scale_value, angle_difference_deg
@@ -31,7 +32,7 @@ class Motion:
         self.op_mode = op_mode
         self.tag = "Motion"
 
-        print(self.op_mode)
+        self._get_imu_data: Callable[[], ImuData] = None
 
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
 
@@ -404,6 +405,14 @@ class Motion:
     def shutdown(self):
         self.motors.shutdown()
         self._stop()
+
+    def set_get_imu_data_callback(self, func: Callable[[], ImuData]) -> None:
+        self._get_imu_data = func
+
+    def get_imu_data(self):
+        if self._get_imu_data is None:
+            raise RuntimeError("IMU data callback not set")     
+        return self._get_imu_data()     
 
     ###############################################################################
     # Getters / Setters

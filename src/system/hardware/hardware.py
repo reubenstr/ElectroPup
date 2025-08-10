@@ -5,16 +5,16 @@ from threading import Thread, Event, Lock
 
 from quadruped.interfaces import Status
 from hardware.ina228_driver import INA228
-from hardware.bno055_driver import BNO055
+from hardware.bno055_driver import BNO055, NDOF, CONFIGMODE
 from hardware.interfaces import ImuData
 
 
-'''
+"""
     Interfaces for hardware attached to RPI.
 
     Note:
         INA228 current sensor not physically installed in this early revision of the quadruped.
-'''
+"""
 
 ###############################################################################
 # Hardware Configuration
@@ -43,14 +43,12 @@ class Hardware:
 
         self.loop_rate_seconds = 0.050
 
-        
-        self._init_smbus()     
-        self._init_imu
+        self._init_smbus()
+        self._init_imu()
         # self._init_power_sensor()
 
         self._start()
 
-    
     ###############################################################################
     # SMBus
     ###############################################################################
@@ -68,7 +66,6 @@ class Hardware:
 
     def get_smbus_status(self) -> Status:
         return self.smbus_status
-
 
     ###############################################################################
     # Voltage / Current Sensor
@@ -91,18 +88,16 @@ class Hardware:
             self.ina228.configure()
 
             id = self.ina228.get_manufacturer_id()
-            if id == POWER_SENSOR_MANUFACTURER_ID:          
+            if id == POWER_SENSOR_MANUFACTURER_ID:
                 self.power_sensor_status = Status.ACTIVE
             else:
-                print(
-                    f"[{self.tag}] error, INA228 power sensor failed to initialize! Manufacturer received id: {id}, expected: {POWER_SENSOR_MANUFACTURER_ID}"
-                )
+                print(f"[{self.tag}] error, INA228 power sensor failed to initialize! Manufacturer received id: {id}, expected: {POWER_SENSOR_MANUFACTURER_ID}")
                 self.power_sensor_status = Status.ERROR
         except Exception:
             print(f"[{self.tag}] error, INA228 power sensor failed to initialize!")
             self.power_sensor_status = Status.ERROR
 
-    def _process_power_sensor(self):       
+    def _process_power_sensor(self):
         if self.power_sensor_status is Status.ACTIVE:
             with self.smbus_lock:
                 voltage = self.ina228.get_vbus_voltage()
@@ -116,7 +111,7 @@ class Hardware:
                 self.current = current
                 self.power = power
 
-            if (voltage > 0):
+            if voltage > 0:
                 self.first_reading_complete = True
 
     def get_voltage_status(self) -> Status:
@@ -160,38 +155,24 @@ class Hardware:
 
     def get_power_sensor_status(self) -> Status:
         return self.power_sensor_status
-    
 
     ###############################################################################
     # IMU
     ###############################################################################
 
     def _init_imu(self):
-        self.imu_data = {'x': 0,'y': 0,'z': 0}
+        self.imu_data = {"x": 0, "y": 0, "z": 0}
 
-        print(f"[{self.tag}][IMU] initializing ADXL345 IMU")
+        print(f"[{self.tag}][IMU] initializing")
         try:
             with self.smbus_lock:
                 self.imu = BNO055(self.bus)
-               
-                # Set to CONFIG
-                CONFIGMODE = 0b00000000
-                self.imu.set_mode(CONFIGMODE) 
-                # Make changes to registers once in config mode 
-                
-                # Set mode.
-                ACCONLY = 0b00000001           
-                self.imu.set_mode(ACCONLY)
-                
-                while True:
-                    calibration_status = self.imu.get_calibration_status()
-                    print(f"[{self.tag}][IMU] Calibration status: {calibration_status}")
-                    if calibration_status > 0: 
-                        print("[{self.tag}][IMU] BNO055 is calibrated and ready.")
-                        self.imu_status = Status.ACTIVE
-                        break
-                    sleep(0.1)
-            
+                self.imu.set_mode(CONFIGMODE)
+                sleep(0.05)
+                self.imu.set_mode(NDOF)
+                sleep(0.05)
+                self.imu_status = Status.ACTIVE
+
         except Exception:
             self.imu_status = Status.ERROR
             print(f"[{self.tag}][IMU] error, IMU failed to initialize!")
@@ -200,23 +181,24 @@ class Hardware:
         if self.imu_status == Status.ACTIVE:
             with self.smbus_lock:
                 try:
-                    self.imu_data = self.imu.get_axes()
+                    heading, roll, pitch = self.imu.get_euler_angles()
+
+                    # Correct for physical IMU placement.
+                    pitch += 180
+                    if pitch > 180:
+                        pitch -= 360
+
+
+                    self.imu_data = ImuData(
+                        roll=roll,
+                        pitch=pitch,
+                    )
                 except Exception:
                     self.imu_status = Status.ERROR
 
     def get_imu_data(self) -> ImuData:
         if self.imu_status == Status.ACTIVE:
-            x = self.imu_data["x"]
-            y = self.imu_data["y"]
-            z = self.imu_data["z"]
-
-            roll = atan2(y, z)
-            pitch = atan2(x, sqrt(y**2 + z**2))
-
-            return ImuData(
-                roll=degrees(roll),
-                pitch=degrees(pitch),
-            )
+            return self.imu_data
         else:
             return ImuData(
                 roll=0,
@@ -231,7 +213,7 @@ class Hardware:
     ###############################################################################
 
     def _start(self):
-        print(f"[{self.tag}] worker thread starting")      
+        print(f"[{self.tag}] worker thread starting")
         self.loop_time: float = time()
         self.loop_completion_time_ms: float = 0
         self.exit_event: Event = Event()
@@ -246,11 +228,11 @@ class Hardware:
 
     def _worker(self):
         self.exit_event.clear()
-        
+
         while not self.exit_event.is_set():
-           
+
             # self._process_power_sensor()
-            self._process_imu()                 
+            self._process_imu()
 
             delta = time() - self.loop_time
 
@@ -272,7 +254,4 @@ class Hardware:
     ###############################################################################
 
     def shutdown(self):
-        self._stop()    
-
-        
-       
+        self._stop()
