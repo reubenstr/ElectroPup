@@ -219,7 +219,7 @@ BNO055 address is 0x28
 cd ./ElectroPup/src
 
 
-# Simulation / Mujuco
+# Simulation / Mujoco
 
 On Desktop development PC
 

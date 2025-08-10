@@ -5,7 +5,7 @@ import { useDataTransfer } from '@/services/useDataTransfer';
 import { VerticalText } from './verticalText';
 
 const columnWidths = [40, 30, 30, 30, 30, 50, 50, 50, 50];
-const headerTitles = ['Motor', 'Enabled', 'AllowComms', 'AllowMotion', 'CommsError', 'Position', 'Speed', 'Temperature', 'Watts']
+const headerTitles = ['Motor', 'Enabled', 'AllowComms', 'AllowMotion', 'CommsError', 'Position', 'Speed', 'Temperature', 'Current']
 
 export default function MotorTable() {
 
@@ -51,7 +51,7 @@ export default function MotorTable() {
                         getValue(motor?.values?.positionDegrees),
                         getValue(motor?.values?.motorSpeed),
                         getValue(motor?.values?.temperature),
-                        getValue(motor?.values?.watts)
+                        getValue(motor?.values?.current)
                     ];
 
                     return (

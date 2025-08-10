@@ -210,7 +210,7 @@ export default function Plot3D({ quadData }: Plot3DProps) {
     if (plotData.trajectories) {
       plotData.trajectories.map((trajectory, index) => {
         const pI = trajectory.x.map((_, i) => i);
-        const m = { size: 4, color: pI, colorscale: [[0, '#4a8cffff'], [1, '#0000ffff']] };
+        const m = { size: 4, color: pI, colorscale: [[0, '#ff0000ff'], [1, '#0000ffff']] };
         newPlotData.push({
           x: trajectory.x,
           y: trajectory.y,

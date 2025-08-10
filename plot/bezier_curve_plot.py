@@ -9,13 +9,13 @@ Standalone script to make Bezier curve plot with interpolated points along the p
 
 control_points = np.array(
     [
-        [-0.5, 0],
+        [-1, 0],
         [-1, 0],
         [-1, 1],
         [0, 1],
         [1, 1],
         [1, 0],
-        [0.5, 0],
+        [1, 0],
     ]
 )
 
