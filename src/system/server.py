@@ -108,7 +108,7 @@ def forward_data_to_ui():
                 socketio.start_background_task(socketio.emit, "message", message)
                 last_emit_time = now
         except zmq.Again:
-            time.sleep(0.01)  # Avoid busy waiting
+            time.sleep(0.005)  # Avoid busy waiting
         except zmq.ZMQError as e:
             if not stop_event.is_set():
                 print(f"[red]ZMQ Error: {e}[/red]")
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     forward_thread.start()
 
     try:
-        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev)
+        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev, allow_unsafe_werkzeug=True )
     except KeyboardInterrupt:
         print("[yellow]Shutting down due to keyboard interrupt...[/yellow]")
         cleanup()

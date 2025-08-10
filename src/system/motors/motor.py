@@ -13,6 +13,9 @@ from .interfaces import MotorName
     Info link:
         https://wiki.openelab.io/lkmtech/mg4010e-i10-v3-dual-encoder-robot-motor
 
+    Docs:
+        See docs directory for datasheets, drawings, etc.
+
     Basic specs:
         Rated torque: 2.5Nm
         Rated speed: 260rpm
@@ -68,7 +71,7 @@ class Motor:
         # Motor states (from motor driver):
         self.temperature: int = 0
         self.voltage: float = 0
-        self.watts: float = 0
+        self.current: float = 0
         self.motor_speed: int = 0
         self.encoder_position: int = 0
         self.position_degrees: float = 0
@@ -89,12 +92,12 @@ class Motor:
         self.reply_timeout_count: int = 0
 
         # Driver config:
-        self.angle_pid_kp: int = 5  # Position loop
-        self.angle_pid_ki: int = 5  # Position loop
-        self.speed_pid_kp: int = 60  # Speed loop
-        self.speed_pid_ki: int = 40  # Speed loop
-        self.iq_pid_kp: int = 50  # Torque loop
-        self.iq_pid_ki: int = 50  # Torque loop
+        self.angle_pid_kp: int = 5  # Position loop, default: 100
+        self.angle_pid_ki: int = 5  # Position loop, default: 100
+        self.speed_pid_kp: int = 50  # Speed loop, default: 50
+        self.speed_pid_ki: int = 40  # Speed loop, default: 40
+        self.iq_pid_kp: int = 50  # Torque loop, default: 50
+        self.iq_pid_ki: int = 50  # Torque loop, default: 50
 
         # Other config:
         self.apply_position_offset: bool = False
@@ -238,13 +241,13 @@ class Motor:
                 reply_motor_id = reply.arbitration_id - self.ARBRITATION_BASE_OFFSET
                 if self.motor_id == reply_motor_id and reply.data:
                     self.temperature = reply.data[1]
-                    watts_raw = self.convert_twos_compliment(reply.data[2] | reply.data[3] << 8)
-                    self.watts = self.map_range(float(watts_raw), -2048.0, 2048.0, -33.0, 33.0)
+                    current_raw = self.convert_twos_compliment(reply.data[2] | reply.data[3] << 8)
+                    self.current = self.map_range(float(current_raw), -2000.0, 2000.0, -33.0, 33.0)
                     self.motor_speed = self.convert_twos_compliment(reply.data[4] | reply.data[5] << 8)
                     self.encoder_position = reply.data[6] | reply.data[7] << 8
                     if self.prints_enabled:
                         print(
-                            f"{self.tag }[M{reply_motor_id}] req_state_2 reply, temp.: {self.temperature}C, watts: {self.watts}, motor speed: {self.motor_speed}, encoder position: {self.encoder_position}"
+                            f"{self.tag }[M{reply_motor_id}] req_state_2 reply, temp.: {self.temperature}C, current: {self.current}, motor speed: {self.motor_speed}, encoder position: {self.encoder_position}"
                         )
 
     def req_position(self):

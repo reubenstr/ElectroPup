@@ -12,45 +12,54 @@ from .utilities import process_value, check_value, scale_value
     Class handles deadzone.
 """
 
-
+@dataclass
 class MotionParameters:
-
-
-
 
     ###############################################################################
     # Running values, do not change, will be overwritten
     ###############################################################################
-    _forward_raw: float = 0
-    _heading_degrees: float = 0
-    _heading_magnitude: float = 0
-    _heading_raw: float = 0
-    _heading_x: float = 0
-    _heading_y: float = 0
+    _forward_velocity: float = 0
+    _lateral_velocity: float = 0
+    _angular_velocity: float =0
 
     ###############################################################################
     # Misc. Parameters
     ###############################################################################
-    deadzone = 0.040
+    deadzone: float = 0.040
 
     ###############################################################################
     # Getters / Setters
     ###############################################################################
 
-    def set_forward_raw(self, value: float):
-        self._forward_raw = process_value(-value, self.deadzone)
+    @property
+    def forward_velocity(self):
+        return self._forward_velocity
+    
+    @forward_velocity.setter
+    def forward_velocity(self, value):
+        self._forward_velocity = process_value(-value, self.deadzone)
 
-    def get_forward_raw(self) -> float:
-        return self._forward_raw
+    @property
+    def lateral_velocity(self):
+        return self._lateral_velocity
+    
+    @lateral_velocity.setter
+    def lateral_velocity(self, value):
+        self._lateral_velocity = process_value(value, self.deadzone)
 
-    def get_forward_direction(self) -> bool:
-        return True if self._forward_raw > 0 else False
+    @property
+    def angular_velocity(self):
+        return self._angular_velocity
+   
+    @angular_velocity.setter
+    def angular_velocity(self, value):
+        self._angular_velocity = process_value(value, self.deadzone)      
 
     ###############################################################################
     # Heading
     ###############################################################################
 
-    def set_heading_x(self, value: float):
+    '''def set_heading_x(self, value: float):
         self._heading_x = process_value(-value, self.deadzone)
         self._heading_raw = process_value(-value, self.deadzone)
 
@@ -62,9 +71,10 @@ class MotionParameters:
 
     def get_heading_degrees(self):
         return degrees(atan2(self._heading_x, self._heading_y))
+        '''
 
-    def get_heading_magnitude(self):
-        return sqrt((self._heading_x) ** 2 + (self._heading_y) ** 2)
+    def get_left_magnitude(self):
+        return sqrt((self._lateral_velocity) ** 2 + (self._forward_velocity) ** 2)
 
 
     def slew_heading(
@@ -88,10 +98,10 @@ class MotionParameters:
         dt = current_time - last_time
         max_delta = dt / heading_rate_seconds
 
-        delta = self._heading_raw - heading
+        delta = self._angular_velocity - heading
 
         if abs(delta) <= max_delta:
-            heading = self._heading_raw
+            heading = self._angular_velocity
         else:
             heading += max_delta * (1 if delta > 0 else -1)
 

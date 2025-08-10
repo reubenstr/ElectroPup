@@ -1,11 +1,14 @@
-
 class KeyConverter:
     @staticmethod
     def _snake_to_camel(snake_str: str) -> str:
-        """Convert snake_case to camelCase. Leave other formats untouched."""
-        if "_" not in snake_str:            
-            return snake_str
-        parts = snake_str.split("_")
+        """Convert snake_case to camelCase, removing leading underscores."""
+        # Remove all leading underscores
+        stripped_str = snake_str.lstrip('_')
+        
+        if "_" not in stripped_str:            
+            return stripped_str
+        
+        parts = stripped_str.split("_")
         return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
     @staticmethod

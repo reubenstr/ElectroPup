@@ -9,7 +9,7 @@ class InputMode(StrEnum):
 
 
 # Commands from the touch and gamepad inputs
-class TouchCommand(StrEnum):
+class InputCommand(StrEnum):
     NO_UPDATE = "no_update"   
     DISABLE_ENABLE_MOTORS = "disable_enable_motors"
     E_STOP = "e_stop"
@@ -22,6 +22,7 @@ class TouchCommand(StrEnum):
 
     GAIT_WALK = "gait_walk"
     GAIT_TROT = "gait_trot"
+    GAIT_RUN = "gait_run"
 
     GAMEPAD_INPUT = "gamepad_input"
     TOUCH_INPUT = "touch_input"
@@ -32,4 +33,4 @@ class TouchMessage:
     leftY: float
     rightX: float
     rightY: float
-    command: TouchCommand
+    command: InputCommand

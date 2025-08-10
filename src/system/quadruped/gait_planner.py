@@ -9,11 +9,14 @@ class Gait(StrEnum):
     NONE = "none"
     CRAWL = "crawl"
     TROT = "trot"
+    RUN = "run"
+
 
 class SwingPattern(StrEnum):
     BEZIER = "beizer"
+    BEZIER_ARC = "bezier_arc"
     SIN = "sin"
-   
+
 
 class Phase(Enum):
     STANCE = 0
@@ -21,7 +24,16 @@ class Phase(Enum):
 
 
 class GaitPlanner:
-    def __init__(self, gait: Gait, swing_pattern: SwingPattern, period: float, duty_factor: float, stride_length: float, step_height: float, phase_offsets: Dict[LegName, float]):
+    def __init__(
+        self,
+        gait: Gait,
+        swing_pattern: SwingPattern,
+        period: float,
+        duty_factor: float,
+        stride_length: float,
+        step_height: float,
+        phase_offsets: Dict[LegName, float],
+    ):
         self.gait = gait
 
         self.swing_pattern = swing_pattern
@@ -57,56 +69,81 @@ class GaitPlanner:
 
         return phase, normalized_time
 
-    def foot_trajectory_bezier(self, phase: Phase, phase_time: float):
+    def foot_trajectory_bezier(self, phase: Phase, phase_time: float, stride_length_scale: float=None):
         """Return foot (d: distance, h: height) using Bezier swing and linear stance."""
-
-        def bezier_curve(t, points):
-            """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
-            p = np.array(points)
-            while len(p) > 1:
-                p = (1 - t) * p[:-1] + t * p[1:]
-            return p[0]
-
+        stride_length =  self.stride_length * stride_length_scale
         if phase == Phase.STANCE:
             # Linear backward motion (stroke)
-            d = (1 - phase_time) * self.stride_length - self.stride_length / 2
+            d = (1 - phase_time) * stride_length - stride_length / 2
             h = 0
         elif phase == Phase.SWING:
             # Bezier swing (retract/touchdown)
             control_points = np.array(
                 [
-                    [-self.stride_length / 2, 0],
-                    [-self.stride_length, 0],
-                    [-self.stride_length, self.step_height],
+                    [-stride_length / 2, 0],
+                    [-stride_length, 0],
+                    [-stride_length, self.step_height],
                     [0, self.step_height],
-                    [self.stride_length, self.step_height],
-                    [self.stride_length, 0],
-                    [self.stride_length / 2, 0],
+                    [stride_length, self.step_height],
+                    [stride_length, 0],
+                    [stride_length / 2, 0],
                 ]
             )
-            d, h = bezier_curve(phase_time, control_points)
+            d, h = self._bezier_curve(phase_time, control_points)
         return d, h
 
-    def foot_trajectory_sin(self, phase: Phase, phase_time: float):
+    def foot_trajectory_bezier_arc(self, phase: Phase, phase_time: float, stride_length_scale: float=None):
+        """Return foot (d: distance, h: height) using Bezier swing and linear stance creating an arc."""
+        stride_length =  self.stride_length * stride_length_scale
+        if phase == Phase.STANCE:
+            # Linear backward motion (stroke)
+            d = (1 - phase_time) * stride_length - stride_length / 2
+            h = 0
+        elif phase == Phase.SWING:
+            # Bezier swing (retract/touchdown)
+            control_points = np.array(
+                [
+                    [-stride_length / 2, 0],
+                    [-stride_length / 2, 0],
+                    [-stride_length / 2, self.step_height],
+                    [0, self.step_height],
+                    [stride_length / 2, self.step_height],
+                    [stride_length / 2, 0],
+                    [stride_length / 2, 0],
+                ]
+            )
+            d, h = self._bezier_curve(phase_time, control_points)
+        return d, h
+
+    def foot_trajectory_sin(self, phase: Phase, phase_time: float, stride_length_scale: float=None):
         """Return foot (d: distance, h: height) based on phase and normalized phase time (0-1)."""
+        stride_length =  self.stride_length * stride_length_scale
         if phase == Phase.STANCE:
             # Stance: foot moves backward linearly along x, stays on ground
-            d = (1 - phase_time) * self.stride_length - self.stride_length / 2
+            d = (1 - phase_time) * stride_length - stride_length / 2
             h = 0
         else:
             # Swing: foot moves forward with parabolic height
-            d = phase_time * self.stride_length - self.stride_length / 2
+            d = phase_time * stride_length - stride_length / 2
             h = self.step_height * np.sin(np.pi * phase_time)
         return d, h
 
-    def get_foot_position(self, leg: LegName, gait_time: float) -> Dict[LegName, Point]:
+    def get_foot_position(self, leg: LegName, gait_time: float, stride_length_scale: float = 1) -> Point:
         phase, phase_time = self.get_leg_phase_time(leg, gait_time)
         if self.swing_pattern is SwingPattern.BEZIER:
-            d, h = self.foot_trajectory_bezier(phase, phase_time)
+            d, h = self.foot_trajectory_bezier(phase, phase_time, stride_length_scale)
+        elif self.swing_pattern is SwingPattern.BEZIER_ARC:
+            d, h = self.foot_trajectory_bezier_arc(phase, phase_time, stride_length_scale)
         elif self.swing_pattern is SwingPattern.SIN:
             d, h = self.foot_trajectory_sin(phase, phase_time)
         return Point(d, 0, h)
-    
 
-    def get_gait(self) -> Gait:
-        return self.gait
+    @staticmethod
+    def _bezier_curve(t, points):
+        """Evaluate a Bezier curve at t ∈ [0, 1] using De Casteljau's algorithm."""
+        p = np.array(points)
+        while len(p) > 1:
+            p = (1 - t) * p[:-1] + t * p[1:]
+        return p[0]
+
+

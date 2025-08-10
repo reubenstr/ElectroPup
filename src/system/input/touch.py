@@ -9,7 +9,7 @@ import json
 
 from input.gamepad_interface import PS4
 from quadruped.interfaces import Status
-from input.interfaces import TouchCommand, TouchMessage
+from input.interfaces import InputCommand, TouchMessage
 from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 
@@ -23,10 +23,10 @@ class ControlMessage:
     leftY: float
     rightX: float
     rightY: float
-    command: TouchCommand
+    command: InputCommand
 
 class Touch:
-    def __init__(self, callback: Optional[Callable[[TouchCommand], None]] = None):
+    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
         self.callback = callback
 
         context = zmq.Context()
@@ -48,7 +48,7 @@ class Touch:
     # Events
     ###############################################################################
 
-    def _send_input_command_as_event(self, event: TouchCommand):
+    def _send_input_command_as_event(self, event: InputCommand):
         if self.callback:
             self.callback(event)
 
@@ -73,7 +73,7 @@ class Touch:
         self.ik_parameters.set_height_translation(message.rightY)
         self.motion_parameters.set_heading_y(message.rightY)
            
-        if message.command != TouchCommand.NO_UPDATE:   
+        if message.command != InputCommand.NO_UPDATE:   
             self._send_input_command_as_event(message.command)
         
 

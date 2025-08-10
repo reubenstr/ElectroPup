@@ -399,7 +399,7 @@ class Motors:
             values = {}
             values["temperature"] = motor.temperature
             values["voltage"] = motor.voltage
-            values["watts"] = motor.watts
+            values["current"] = motor.current
             values["motorSpeed"] = motor.motor_speed
             values["encoderPosition"] = motor.encoder_position
             values["positionDegrees"] = motor.position_degrees

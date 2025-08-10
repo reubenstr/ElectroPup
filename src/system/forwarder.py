@@ -11,6 +11,7 @@ from status import SystemStatus
 from quadruped.quad import Quad
 from hardware.interfaces import Contacts
 from quadruped.parameters.ik_parameters import IKParameters
+from quadruped.parameters.motion_parameters import MotionParameters
 
 
 """
@@ -29,6 +30,7 @@ class Forwarder:
         self.sim_quad: Quad = None
         self.live_quad: Quad = None
         self.ik_parameters: IKParameters = None
+        self.motion_parameters: MotionParameters = None
         self.trajectories = None
         self.transitions = None
         self.hold_trajectories = None
@@ -58,6 +60,10 @@ class Forwarder:
     def set_ik_parameters(self, ik_parameters: IKParameters):
         with self.data_lock:
             self.ik_parameters = ik_parameters
+
+    def set_motion_parameters(self, motion_parameters: MotionParameters):
+        with self.data_lock:
+            self.motion_parameters = motion_parameters
 
     def set_trajectories(self, trajectories):
         with self.data_lock:
@@ -110,6 +116,7 @@ class Forwarder:
                 data["contacts"] = None if self.contacts is None else asdict(self.contacts)
                 data["motors"] = self.motor_states
                 data["ikParameters"] = None if self.ik_parameters is None else asdict(self.ik_parameters)
+                data["motionParameters"] = None if self.motion_parameters is None else asdict(self.motion_parameters)
 
             converted_data = KeyConverter.convert_keys_to_camel_case(data)
             try:

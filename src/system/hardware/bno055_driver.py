@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 
 import smbus
+from smbus2 import SMBus
 from time import sleep
 
 # BNO005 I2C address
 BNO055_ADDR = 0x28  # Change if your address is different
+
+# Modes
+CONFIGMODE = 0b00000000
+ACCONLY = 0b00000001
+NDOF = 0b00001100
 
 # Register addresses
 SYS_TRIGGER = 0x3F
@@ -15,6 +21,7 @@ ST_RESULT = 0x36
 ACCEL_DATA = 0x08
 GYRO_DATA = 0x0C
 MAG_DATA = 0x0E
+EULER_H_LSB = 0x1A  # heading LSB register
 
 class BNO055:
     def __init__(self, bus):       
@@ -64,7 +71,13 @@ class BNO055:
         sleep(1) 
         
     def get_calibration_status(self):
-        return self.read_register(CALIB_STAT)    
+        calib = self.read_register(CALIB_STAT)
+        sys = (calib >> 6) & 0x03
+        gyro = (calib >> 4) & 0x03
+        accel = (calib >> 2) & 0x03
+        mag = calib & 0x03
+        return sys, gyro, accel, mag
+
     
     def get_temperature(self):        
         temperature = self.read_register(TEMPERATURE_REGISTER)
@@ -91,6 +104,13 @@ class BNO055:
         mz = self.convert_to_signed((data[5] << 8) | data[4])
         return mx, my, mz
     
+
+    def get_euler_angles(self):
+        data = self.read_data(EULER_H_LSB)
+        heading = self.convert_to_signed(data[1] << 8 | data[0]) / 16.0
+        roll = self.convert_to_signed(data[3] << 8 | data[2]) / 16.0
+        pitch = self.convert_to_signed(data[5] << 8 | data[4]) / 16.0
+        return heading, roll, pitch
    
     ###############################################################################
     # Helpers
@@ -104,29 +124,38 @@ class BNO055:
 # Entry
 ###############################################################################
 if __name__ == "__main__":
-    imu = BNO055()
+
+    SMBUS_ID = 1
+
+    bus: SMBus = SMBus(SMBUS_ID)
+
+    imu = BNO055(bus)
     
     imu.reset()
     
     #imu.start_self_test()
+
+    sleep(1)
         
     # Set to CONFIG
-    CONFIGMODE = 0b00000000
     imu.set_mode(CONFIGMODE) 
     # Make changes to registers once in config mode 
+
+    sleep(.05)
     
     # Set mode.
-    ACCONLY = 0b00000001
-    NDOF = 0b00001100
-    imu.set_mode(ACCONLY)
+    imu.set_mode(NDOF)
+
+    sleep(0.1)
     
-    while True:
-        calibration_status = imu.get_calibration_status()
-        print(f"Calibration status: {calibration_status}")
-        if calibration_status > 0: 
-            print("BNO055 is calibrated and ready.")
+    # Calibrate: requires rotation in all directions, angles, orientations, etc....
+    '''while True:
+        sys, gyro, accel, mag = imu.get_calibration_status()
+        print(f"Calibration status - SYS:{sys} GYRO:{gyro} ACCEL:{accel} MAG:{mag}")
+        if sys == 3 and gyro == 3 and accel == 3 and mag == 3:
+            print("BNO055 is fully calibrated and ready.")
             break
-        sleep(1)
+        sleep(1)'''
     
     temperature = imu.get_temperature()
     print(f"Temperature: {temperature}C")
@@ -135,10 +164,13 @@ if __name__ == "__main__":
     while True:
         accel = imu.get_acceleration()
         gyro = imu.get_gyroscope()
-        mag = imu.get_magnetometer()        
-        print(f"Acceleration: {accel}")
-        print(f"Gyroscope:    {gyro}")
-        print(f"Magnetometer: {mag}")
+        mag = imu.get_magnetometer() 
+        temp = imu.get_temperature()       
+        print(f"Accel: {accel}, Gyro: {gyro}, Mag: {mag}, Temp: {temp}C")
+
+
+        heading, roll, pitch = imu.get_euler_angles()
+        print(f"heading: {heading}, roll: {roll}, pitch: {pitch}")
         sleep(1)
   
   

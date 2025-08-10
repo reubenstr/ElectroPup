@@ -72,35 +72,6 @@ class Quad(object):
     # Methods
     ###############################################################################
 
-    def get_base_foot_point(self, name: LegName) -> Point:
-        """ """
-        base_foot_positions = self.get_base_foot_points()
-        if name in base_foot_positions:
-            return base_foot_positions[name]
-
-    def get_base_foot_points(self) -> Dict[LegName, Point]:
-        """
-        Creates default foot positions in Z up coord system
-        """
-
-        l = self.body_length + 0
-        w = self.body_width + 0
-        l1 = self.hip_length
-        offset = 0
-
-        global_foot_positions = {}
-        # global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
-        # global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
-        # global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
-        # global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
-
-        global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
-        global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
-        global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
-        global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
-
-        return global_foot_positions
-
     def set_body_pose_by_transform_inputs(self, ik_parameters: IKParameters, foot_points: Dict[LegName, Point]) -> QuadErrorState:
         """
         Set the body translation and orientation angles
@@ -117,15 +88,8 @@ class Quad(object):
         on a physical system.
         """
 
-        phi = radians(ik_parameters.roll)
-        theta = radians(ik_parameters.pitch)
-        psi = radians(ik_parameters.yaw)
-        x = ik_parameters.forward_translation
-        y = ik_parameters.height_translation
-        z = ik_parameters. lateral_translation
-
         try:
-            ht_body = np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
+            ht_body = self.calc_ht_body(ik_parameters)
 
             self.legs[LegName.FR] = Leg(
                 0,
@@ -192,6 +156,65 @@ class Quad(object):
         self.joint_angle_error = False
         self.ik_error = False
 
+    def calc_ht_body(self, ik_parameters: IKParameters):
+        phi = radians(ik_parameters.roll)
+        theta = radians(ik_parameters.pitch)
+        psi = radians(ik_parameters.yaw)
+        x = ik_parameters.forward_translation
+        y = ik_parameters.height_translation
+        z = ik_parameters.lateral_translation
+
+        return np.matmul(transformations.homog_transxyz(x, y, z), transformations.homog_rotxyz(phi, psi, theta))
+
+    def set_joint_angles_degrees(self, leg_angles: Dict[LegName, List[float]]):
+        """Set the joint angles for all four legs for simulation.
+
+        Args:
+            Dict of legs containing list of angles as floats in degrees.
+            Angles in the order q1,q2,q3.
+        """
+
+        # Convert all angles in degrees to radians.
+        for leg, angles in leg_angles.items():
+            leg_angles[leg] = [radians(angle) for angle in angles]
+
+        # Apply the angles to the legs.
+        for leg, joint_angles in leg_angles.items():
+            self.legs[leg].set_angles(joint_angles[0], joint_angles[1], joint_angles[2])
+
+    ###############################################################################
+    # Outputs
+    ###############################################################################
+
+    def get_base_foot_point(self, name: LegName) -> Point:
+        """ """
+        base_foot_positions = self.get_base_foot_points()
+        if name in base_foot_positions:
+            return base_foot_positions[name]
+
+    def get_base_foot_points(self) -> Dict[LegName, Point]:
+        """
+        Creates default foot positions in Z up coord system
+        """
+
+        l = self.body_length + 0
+        w = self.body_width + 0
+        l1 = self.hip_length
+        offset = 0
+
+        global_foot_positions = {}
+        # global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
+        # global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
+        # global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
+        # global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
+
+        global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
+        global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
+        global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
+
+        return global_foot_positions
+
     def get_body_coordinates(self) -> dict[LegName, Point]:
         """
         Return coordinates of each hip as a list of 4 points
@@ -246,6 +269,19 @@ class Quad(object):
 
         return joint_angles
 
+    def get_support_polygon(self):
+
+        return {
+            LegName.BL: self.legs[LegName.BL].get_foot_point(),
+            LegName.FL: self.legs[LegName.FL].get_foot_point(),
+            LegName.FR: self.legs[LegName.FR].get_foot_point(),
+            LegName.BR: self.legs[LegName.BR].get_foot_point(),
+        }
+
+    ###############################################################################
+    # Checks
+    ###############################################################################
+
     def check_joint_angles(self):
         """Checks the bounds of joint angles
         Args:
@@ -279,32 +315,6 @@ class Quad(object):
                 if point.z < -0.001:
                     return f"[{self.tag}] Leg {leg_name} has a joint angle penetrating the ground at [{round(point.x, 3)}, {round(point.y, 3)}, {round(point.z, 3)}]!"
         return None
-
-    def set_joint_angles_degrees(self, leg_angles: Dict[LegName, List[float]]):
-        """Set the joint angles for all four legs for simulation.
-
-        Args:
-            Dict of legs containing list of angles as floats in degrees.
-            Angles in the order q1,q2,q3.
-        """
-
-        # Convert all angles in degrees to radians.
-        for leg, angles in leg_angles.items():
-            leg_angles[leg] = [radians(angle) for angle in angles]
-
-        # Apply the angles to the legs.
-        for leg, joint_angles in leg_angles.items():
-            self.legs[leg].set_angles(joint_angles[0], joint_angles[1], joint_angles[2])
-
-    def get_support_polygon(self):
-
-         return {
-            LegName.BL: self.legs[LegName.BL].get_foot_point(),
-            LegName.FL: self.legs[LegName.FL].get_foot_point(),
-            LegName.FR: self.legs[LegName.FR].get_foot_point(),
-            LegName.BR: self.legs[LegName.BR].get_foot_point(),
-        }
-
 
     ###############################################################################
     # Getters / Setters
