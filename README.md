@@ -1,9 +1,9 @@
 
 # ElectroPup
 
-A quadrudped robot... dog!?
+A quadrudped robot using BLDC motors.
 
-# 🐶 About
+# About
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 

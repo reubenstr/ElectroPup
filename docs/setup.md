@@ -210,7 +210,7 @@ Work in progress
 cd ./ElectroPup/src
 
 
-# Simulation / Mujuco
+# Simulation / Mujoco
 
 On Desktop development PC
 

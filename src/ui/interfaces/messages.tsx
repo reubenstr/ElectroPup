@@ -52,7 +52,7 @@ export interface PlotDataExtras {
 export interface MotorValues {
     temperature: number;
     voltage: number;
-    watts: number;
+    current: number;
     motorSpeed: number;
     encoderPosition: number;
     positionDegrees: number;
