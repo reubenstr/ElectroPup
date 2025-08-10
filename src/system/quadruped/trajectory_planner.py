@@ -1,4 +1,4 @@
-from math import radians, copysign, atan2, degrees, copysign
+from math import radians, copysign, atan2, degrees, copysign, log1p
 import numpy as np
 from typing import Dict, Tuple
 from time import sleep
@@ -102,18 +102,21 @@ class TrajectoryPlanner:
         """
         Calculate a leg's foot position given the gait_time and heading.
         """
-        max_cor = 5
+     
+        
+        max_cor = 10
 
         heading = (degrees(atan2(-lateral_velocity, forward_velocity))) % 360
-        print(heading)
+        #print(heading)
 
         if angular_velocity == 0:   
             foot_point = gait_planner.get_foot_position(leg_name, gait_time)       
             foot_point.update_point_wrt_frame(rotz(heading))          
             foot_point.move_xyz(base_foot_point.x, base_foot_point.y, base_foot_point.z)
             return foot_point, heading, max_cor, cor
-        else:
-            cor = Point(-lateral_velocity/angular_velocity, forward_velocity/angular_velocity, 0)
+        else:              
+            cor = Point(0, -forward_velocity/angular_velocity, 0)  
+            cor = rotate_z(cor, heading)
 
         # Get the radius from CoR to the leg's nominal foot position
         bend_radius = get_distance_xy(cor, base_foot_point)
@@ -121,12 +124,21 @@ class TrajectoryPlanner:
         #if cor.y > 0:      
         #    bend_radius *= -1
 
-        q = 0
-
-        # Angle from CoR to the foot, rotate to tangent position, convert to 0 to 360.
-   
         twist_angle = angle_between_xy(cor, base_foot_point)
-        if cor.y < 0:
+
+        if lateral_velocity < 0:
+            twist_angle -= 180
+        elif lateral_velocity > 0:
+             twist_angle += 180
+
+        if angular_velocity < 0:
+            twist_angle -= 90
+        elif angular_velocity > 0:
+             twist_angle += 90
+             bend_radius *= -1
+        
+        
+        '''if cor.y < 0:
             twist_angle -= 90
         elif cor.y > 0:            
             twist_angle += 90
@@ -136,10 +148,10 @@ class TrajectoryPlanner:
                 twist_angle -= 90   
             elif angular_velocity > 0:
                 twist_angle += 90
-                bend_radius *= -1
+                bend_radius *= -1'''
     
-        #if leg_name is LegName.FL:
-        #    print(f"{bend_radius:8.2f} - [{cor.x:8.3f}, {cor.y:8.3f}] ---  {twist_angle:8.3f}  {twist_angle:8.3f}")
+        if leg_name is LegName.FL:
+            print(f"{bend_radius:8.2f} - [{cor.x:8.3f}, {cor.y:8.3f}] ---  {twist_angle:8.3f}  {twist_angle:8.3f}")
 
         # Foot swing trajectory (unrotated, origin-relative)
         foot_point = gait_planner.get_foot_position(leg_name, gait_time)

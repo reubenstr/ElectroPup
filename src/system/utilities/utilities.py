@@ -1,5 +1,5 @@
 import subprocess
-from math import log
+from math import log, copysign, log1p
 
 @staticmethod
 def is_service_running(service_name):
@@ -30,29 +30,20 @@ def safe_divide(numerator: float, denominator: float) -> float:
     return numerator / denominator
 
 @staticmethod
-def log_scale_value(value, old_min, old_max, new_min, new_max):
-    if old_max == old_min:
-        raise ValueError("old_max and old_min cannot be the same value.")
-
-    # Detect and store the sign
-    sign = 1 if value >= 0 else -1
-    abs_value = abs(value)
-
-    # Handle edge case for non-positive values
-    if abs_value == 0:
-        return sign * new_min
-
-    # Adjust old_min for log scale if it's non-positive
-    adjusted_old_min = old_min if old_min > 0 else 0.000001
-    log_old_min = log(adjusted_old_min)
-    log_old_max = log(old_max)
-    log_abs_value = log(abs_value)
-
-    # Perform log scaling
-    scaled = (log_abs_value - log_old_min) / (log_old_max - log_old_min) * (new_max - new_min) + new_min
-
-    # Restore original sign
-    return sign * scaled
+def log_scale_value(x, in_min, in_max, out_min, out_max, k=9.0):
+        """
+        Map x from [in_min, in_max] to [out_min, out_max] using a signed log-like scale.
+        k controls curvature: higher k -> more compression near ends, more resolution near 0.
+        """
+        # Normalize x to [-1, 1]
+        norm_x = ( (x - in_min) / (in_max - in_min) ) * 2.0 - 1.0
+        norm_x = max(-1.0, min(1.0, norm_x))  # clamp
+        
+        # Signed log shaping
+        shaped = copysign(log1p(k * abs(norm_x)) / log1p(k), norm_x)
+        
+        # Map shaped value from [-1, 1] to [out_min, out_max]
+        return out_min + (shaped + 1.0) * 0.5 * (out_max - out_min)
 
 @staticmethod
 def angle_difference_deg(a, b):

@@ -32,7 +32,7 @@ class Motion:
         self.tag = "Motion"
 
         print(self.op_mode)
-       
+
         self.trajector_planner: TrajectoryPlanner = TrajectoryPlanner()
 
         self.motion_state: MotionState = MotionState.STANDBY
@@ -44,7 +44,6 @@ class Motion:
         self.quad = Quad()
         self.motion_parameters: MotionParameters = MotionParameters()
         self.ik_parameters: IKParameters = IKParameters()
-    
 
         self.phase_time: float = 0
         self.phase_time_rate_slow: float = 0.001
@@ -91,12 +90,12 @@ class Motion:
             self.set_target_motion_state(MotionState.WALK, force=True)
         elif self.op_mode is OpMode.LIVE:
             self.set_target_motion_state(MotionState.STANDBY)
-        
+
         allow_enable = True if self.op_mode is OpMode.LIVE else False
         self.motors: Motors = Motors(allow_enable)
 
         self.loop_min_rate_seconds: float = 0.010
-        self.loop_completion_time_ms: float = 0.0       
+        self.loop_completion_time_ms: float = 0.0
         self._start()
 
     ###############################################################################
@@ -104,7 +103,7 @@ class Motion:
     ###############################################################################
 
     def _start(self):
-        print(f"[{self.tag}] starting worker thread")        
+        print(f"[{self.tag}] starting worker thread")
         self.thread_handle = Thread(target=self._worker)
         self.thread_handle.start()
 
@@ -169,9 +168,11 @@ class Motion:
         self.angular_velocity = self.motion_parameters.angular_velocity
 
     def _process_dt(self):
-        self.pose_time += self.pose_time_rate    
+        self.pose_time += self.pose_time_rate
 
-        self.phase_time += scale_value( self.motion_parameters.get_left_magnitude(), 0, 1, 0, self.phase_time_rate_fast)      
+        heading_reate = scale_value(self.motion_parameters.get_left_magnitude(), 0, 1, 0, self.phase_time_rate_fast)
+        angular_rate = scale_value(abs(self.motion_parameters.angular_velocity), 0, 1, 0, self.phase_time_rate_fast)
+        self.phase_time += max(heading_reate, angular_rate)
 
         self.transition_time += self.transition_time_rate
 
@@ -249,14 +250,23 @@ class Motion:
     def _process_motion_state_walk(self):
         # Get foot points in latest trajectory.
         new_foot_points = self.trajector_planner.get_foot_points(
-            self.quad.get_base_foot_points(), self.phase_time, self.forward_velocity, self.lateral_velocity, self.angular_velocity,
+            self.quad.get_base_foot_points(),
+            self.phase_time,
+            self.forward_velocity,
+            self.lateral_velocity,
+            self.angular_velocity,
         )
 
         if self.transition_hold_flag:
             if self.transition_enable:
                 # Large heading changes trigger a transition.
                 old_twist_angle = self.trajector_planner.get_twist_angle(
-                    self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.transition_angular_velocity, self.transition_lateral_velocity, self.transition_forward_velocity
+                    self.quad.get_base_foot_points(),
+                    LegName.FR,
+                    self.phase_time,
+                    self.transition_angular_velocity,
+                    self.transition_lateral_velocity,
+                    self.transition_forward_velocity,
                 )
                 new_twist_angle = self.trajector_planner.get_twist_angle(
                     self.quad.get_base_foot_points(), LegName.FR, self.phase_time, self.angular_velocity, self.lateral_velocity, self.forward_velocity
@@ -292,7 +302,11 @@ class Motion:
         if self.soft_transition_flag:
             # Get foot positions from hold.
             old_foot_points = self.trajector_planner.get_foot_points(
-                self.quad.get_base_foot_points(), self.phase_time, self.transition_forward_velocity, self.transition_lateral_velocity, self.transition_angular_velocity
+                self.quad.get_base_foot_points(),
+                self.phase_time,
+                self.transition_forward_velocity,
+                self.transition_lateral_velocity,
+                self.transition_angular_velocity,
             )
 
             # Select which trajectory to apply to foot
@@ -301,8 +315,8 @@ class Motion:
                 combined_foot_points[leg] = new_foot_points[leg] if self.soft_transition_legs_started_swing[leg] else old_foot_points[leg]
 
             # TEMP TEST
-            #ik_parameters = IKParameters()
-            #ik_parameters.forward_translation = self.ik_parameters.forward_translation           
+            # ik_parameters = IKParameters()
+            # ik_parameters.forward_translation = self.ik_parameters.forward_translation
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), combined_foot_points)
         else:
             self.transition_angular_velocity = self.angular_velocity
@@ -310,8 +324,8 @@ class Motion:
             self.transition_forward_velocity = self.forward_velocity
 
             # TEMP TEST
-            #ik_parameters = IKParameters()
-            #ik_parameters.forward_translation = self.ik_parameters.forward_translation           
+            # ik_parameters = IKParameters()
+            # ik_parameters.forward_translation = self.ik_parameters.forward_translation
             self.quad.set_body_pose_by_transform_inputs(IKParameters(), new_foot_points)
 
         self.transition_hold_flag = True
@@ -340,7 +354,11 @@ class Motion:
         if self.target_motion_state is MotionState.WALK:
             phase_time = 0
             target_foot_points = self.trajector_planner.get_foot_points(
-                self.quad.get_base_foot_points(), phase_time, self.forward_velocity, self.lateral_velocity, self.angular_velocity,
+                self.quad.get_base_foot_points(),
+                phase_time,
+                self.forward_velocity,
+                self.lateral_velocity,
+                self.angular_velocity,
             )
         else:
             target_foot_points = self.quad.get_base_foot_points()
@@ -354,21 +372,17 @@ class Motion:
 
     ###############################################################################
     # Motors
-    ###############################################################################    
-    
+    ###############################################################################
+
     def _apply_joints_angles(self):
-        if self.motors.is_error() or \
-            self.quad.get_ik_error() or \
-            self.quad.get_joint_angle_error():
+        if self.motors.is_error() or self.quad.get_ik_error() or self.quad.get_joint_angle_error():
             return
 
-        if self.motion_state is MotionState.STANDBY or \
-            self.motion_state is MotionState.SIT or \
-            self.motion_state is MotionState.STAND:
+        if self.motion_state is MotionState.STANDBY or self.motion_state is MotionState.SIT or self.motion_state is MotionState.STAND:
             speed = MotorSpeeds.SLOW
         else:
             speed = MotorSpeeds.MOTION
-  
+
         joint_angles = self.quad.get_joint_angles(AngleUnits.DEGREES)
         self.motors.set_motor_targets(MotorName.FLA, speed, joint_angles[LegName.FL][JointName.ABDUCTION])
         self.motors.set_motor_targets(MotorName.FLH, speed, joint_angles[LegName.FL][JointName.HIP])
@@ -381,8 +395,8 @@ class Motion:
         self.motors.set_motor_targets(MotorName.BLK, speed, joint_angles[LegName.BL][JointName.KNEE])
         self.motors.set_motor_targets(MotorName.BRA, speed, joint_angles[LegName.BR][JointName.ABDUCTION])
         self.motors.set_motor_targets(MotorName.BRH, speed, joint_angles[LegName.BR][JointName.HIP])
-        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR][JointName.KNEE])      
-    
+        self.motors.set_motor_targets(MotorName.BRK, speed, joint_angles[LegName.BR][JointName.KNEE])
+
     ###############################################################################
     # Methods
     ###############################################################################
