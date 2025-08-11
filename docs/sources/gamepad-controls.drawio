@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6">
   <diagram name="Page-1" id="d8LAQHF-23BGTQ1HWr0r">
-    <mxGraphModel dx="1583" dy="1102" grid="0" gridSize="10" guides="0" tooltips="1" connect="0" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1527" dy="1102" grid="0" gridSize="10" guides="0" tooltips="1" connect="0" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -13,10 +13,10 @@
         <mxCell id="lLM2VOGk3ZtSX5og6oSA-4" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Stand&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#000000;fontColor=#333333;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="567" y="293" width="100" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="lLM2VOGk3ZtSX5og6oSA-5" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;POSE&lt;/b&gt;&lt;/span&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: height&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: yaw&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;MOTION&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: ---&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: yaw&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=10;" parent="1" vertex="1">
+        <mxCell id="lLM2VOGk3ZtSX5og6oSA-5" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;POSE&lt;/b&gt;&lt;/span&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: height&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: yaw&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;MOTION&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: ---&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: angular&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=10;" parent="1" vertex="1">
           <mxGeometry x="1377" y="504" width="190" height="200" as="geometry" />
         </mxCell>
-        <mxCell id="lLM2VOGk3ZtSX5og6oSA-6" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;POSE&lt;/b&gt;&lt;/span&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: roll&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: pitch&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;MOTION&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: step rate&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: ---&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=10;" parent="1" vertex="1">
+        <mxCell id="lLM2VOGk3ZtSX5og6oSA-6" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;POSE&lt;/b&gt;&lt;/span&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: roll&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: pitch&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;MOTION&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;blockquote style=&quot;margin: 0 0 0 40px; border: none; padding: 0px;&quot;&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Y: forward&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;X: lateral&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/blockquote&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;spacingLeft=10;" parent="1" vertex="1">
           <mxGeometry x="232" y="517" width="190" height="200" as="geometry" />
         </mxCell>
         <mxCell id="lLM2VOGk3ZtSX5og6oSA-16" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;" parent="1" source="lLM2VOGk3ZtSX5og6oSA-7" edge="1">
@@ -60,14 +60,17 @@
         <mxCell id="NnbGZok3LyFGmh9v1Ykq-5" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Gait: Trot&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="1115" y="458" width="150" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="yffCbg6cEN3pQ0vU5Yb0-1" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Enable/Disable Motors&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="yffCbg6cEN3pQ0vU5Yb0-1" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Enable/Disable Motors&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="622" y="135" width="288" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="yffCbg6cEN3pQ0vU5Yb0-2" value="x" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;exitX=0.485;exitY=0.925;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.317;entryY=0.122;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="yffCbg6cEN3pQ0vU5Yb0-1" target="lLM2VOGk3ZtSX5og6oSA-1">
+        <mxCell id="yffCbg6cEN3pQ0vU5Yb0-2" value="x" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;exitX=0.485;exitY=0.925;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.317;entryY=0.122;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="yffCbg6cEN3pQ0vU5Yb0-1" target="lLM2VOGk3ZtSX5og6oSA-1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="889" y="144" as="targetPoint" />
             <mxPoint x="985" y="196" as="sourcePoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="PMdnJ90Tiu9s_Zq20W29-1" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;Gait: Run&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1258" y="370" width="150" height="40" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

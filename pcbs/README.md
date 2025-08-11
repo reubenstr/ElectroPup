@@ -4,7 +4,7 @@ PCBs are designed in [KiCad](https://www.kicad.org/) (v8)
 
 Custom libraries used for these projects may be found on my github repo: [https://github.com/reubenstr/kicad-libraries](https://github.com/reubenstr/kicad-libraries)
 
-See the notes.txt in each project for next revision error fixes.
+See the README.md in each project for next revision error fixes.
 
 
 ## Auxiliary Board
