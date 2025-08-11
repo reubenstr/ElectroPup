@@ -94,10 +94,10 @@ export default function Viewer() {
                         />
                     </View>
 
-                      <View style={styles.horizontalLine} />
+                    <View style={styles.horizontalLine} />
 
                     <View style={styles.indicatorRow}>
-                         <StatusIndicator
+                        <StatusIndicator
                             name='MOT'
                             status={quadData?.status?.motor?.status}
                         />
@@ -118,7 +118,7 @@ export default function Viewer() {
                         <StatusIndicator
                             name='I2C'
                             status={quadData?.status?.smbus?.status}
-                        />                        
+                        />
                         <StatusIndicator
                             name='IMU'
                             status={quadData?.status?.imu?.status}
@@ -141,7 +141,7 @@ export default function Viewer() {
                             name='Voltage'
                             value={Number(quadData?.status?.voltage?.voltage ?? 0).toFixed(2)}
                             status={quadData?.status?.voltage?.status}
-                        />                       
+                        />
                     </View>
 
                     <View style={styles.plotRow}>
@@ -188,9 +188,9 @@ export default function Viewer() {
                                     ))}
                             </View>
 
-                           
 
-                            
+
+
                         </View>
                         {
                             showMotorInfo &&
@@ -207,67 +207,75 @@ export default function Viewer() {
                         </View>
                     </View>
 
-                     <View style={styles.bottomInfoRow}>
+                    <View style={styles.bottomInfoRow}>
 
                         <View style={OverlayStyles.infoContainer}>
-                                <Text style={OverlayStyles.header}>Loop Times</Text>
-                                <View style={OverlayStyles.line} />
-                                <View style={OverlayStyles.columns}>
-                                    <View style={OverlayStyles.column}>
-                                        <Text>Main: {quadData?.status?.loopTimes.main.toFixed(2)} ms</Text>
-                                        <Text>Motion: {quadData?.status?.loopTimes.motion.toFixed(2)} ms</Text>
-                                        <Text>CAN 0: {quadData?.status?.loopTimes.can0.toFixed(2)} ms</Text>
-                                        <Text>CAN 1: {quadData?.status?.loopTimes.can1.toFixed(2)} ms</Text>
+                            <Text style={OverlayStyles.header}>Loop Times</Text>
+                            <View style={OverlayStyles.line} />
+                            <View style={OverlayStyles.columns}>
+                                <View style={OverlayStyles.column}>
+                                    <Text>Main: {quadData?.status?.loopTimes.main.toFixed(2)} ms</Text>
+                                    <Text>Motion: {quadData?.status?.loopTimes.motion.toFixed(2)} ms</Text>
+                                    <Text>CAN 0: {quadData?.status?.loopTimes.can0.toFixed(2)} ms</Text>
+                                    <Text>CAN 1: {quadData?.status?.loopTimes.can1.toFixed(2)} ms</Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={OverlayStyles.infoContainer}>
+                            <View style={{ flexDirection: 'row' }}>
+                                <View style={{ flex: 1, marginRight: 20 }}>
+                                    <Text style={OverlayStyles.header}>IK Inputs</Text>
+                                    <View style={OverlayStyles.line} />
+                                    <View style={OverlayStyles.columns}>
+                                        <View style={OverlayStyles.column}>
+                                            <Text style={OverlayStyles.text}>Translation</Text>
+                                            <Text>Forward: {quadData?.ikParameters?.forwardTranslation?.toFixed(3)}</Text>
+                                            <Text>Side: {quadData?.ikParameters?.sideTranslation?.toFixed(3)}</Text>
+                                            <Text>Height: {quadData?.ikParameters?.heightTranslation?.toFixed(3)}</Text>
+                                        </View>
+                                        <View style={OverlayStyles.column}>
+                                            <Text style={OverlayStyles.text}>Rotation</Text>
+                                            <Text>Roll: {quadData?.ikParameters?.roll?.toFixed(2)}</Text>
+                                            <Text>Pitch: {quadData?.ikParameters?.pitch?.toFixed(2)}</Text>
+                                            <Text>Yaw: {quadData?.ikParameters?.yaw?.toFixed(2)}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                                <View style={{ flex: 1, marginLeft: 20 }}>
+                                    <Text style={OverlayStyles.header}>Motion Inputs</Text>
+                                    <View style={OverlayStyles.line} />
+                                    <View style={OverlayStyles.columns}>
+                                        <View style={OverlayStyles.column}>
+                                            <Text style={OverlayStyles.text}>Velocities</Text>
+                                            <Text>Forward: {quadData?.motionParameters?.forwardVelocity?.toFixed(3)}</Text>
+                                            <Text>Lateral: {quadData?.motionParameters?.lateralVelocity?.toFixed(3)}</Text>
+                                            <Text>Angular: {quadData?.motionParameters?.angularVelocity?.toFixed(3)}</Text>
+                                        </View>
+                                        <View style={OverlayStyles.column}>
+
+                                        </View>
                                     </View>
                                 </View>
                             </View>
 
-                            <View style={OverlayStyles.infoContainer}>
-                                <Text style={OverlayStyles.header}>IK Inputs</Text>
-                                <View style={OverlayStyles.line} />
-                                <View style={OverlayStyles.columns}>
-                                    <View style={OverlayStyles.column}>
-                                        <Text style={OverlayStyles.text}>Translation</Text>
-                                        <Text>Forward: {quadData?.ikParameters?.forwardTranslation?.toFixed(3)}</Text>
-                                        <Text>Side: {quadData?.ikParameters?.sideTranslation?.toFixed(3)}</Text>
-                                        <Text>Height: {quadData?.ikParameters?.heightTranslation?.toFixed(3)}</Text>
-                                    </View>
-                                    <View style={OverlayStyles.column}>
-                                        <Text style={OverlayStyles.text}>Rotation</Text>
-                                        <Text>Roll: {quadData?.ikParameters?.roll?.toFixed(2)}</Text>
-                                        <Text>Pitch: {quadData?.ikParameters?.pitch?.toFixed(2)}</Text>
-                                        <Text>Yaw: {quadData?.ikParameters?.yaw?.toFixed(2)}</Text>
-                                    </View>
-                                </View>
-                                <Text style={OverlayStyles.mHeader}>Motion Inputs</Text>
-                                <View style={OverlayStyles.line} />
-                                <View style={OverlayStyles.columns}>
-                                    <View style={OverlayStyles.column}>
-                                        <Text style={OverlayStyles.text}>Velocities</Text>
-                                        <Text>Forward: {quadData?.motionParameters?.forwardVelocity?.toFixed(3)}</Text>
-                                        <Text>Lateral: {quadData?.motionParameters?.lateralVelocity?.toFixed(3)}</Text>
-                                        <Text>Angular: {quadData?.motionParameters?.angularVelocity?.toFixed(3)}</Text>
-                                    </View>
-                                    <View style={OverlayStyles.column}>
-                                       
-                                    </View>
-                                </View>
-                            </View>
 
-                         <View style={OverlayStyles.infoContainer}>
-                                <Text style={OverlayStyles.header}>IMU</Text>
-                                <View style={OverlayStyles.line} />
-                                <View style={OverlayStyles.columns}>
-                                    <View style={OverlayStyles.column}>
-                                        <Text>
-                                            Roll: {isNaN(Number(quadData?.status?.imu?.roll)) ? 'N/A' : Number(quadData?.status?.imu?.roll).toFixed(2)}°
-                                        </Text>
-                                        <Text>
-                                            Pitch: {isNaN(Number(quadData?.status?.imu?.pitch)) ? 'N/A' : Number(quadData?.status?.imu?.pitch).toFixed(2)}°
-                                        </Text>
-                                    </View>
+                        </View>
+
+                        <View style={OverlayStyles.infoContainer}>
+                            <Text style={OverlayStyles.header}>IMU</Text>
+                            <View style={OverlayStyles.line} />
+                            <View style={OverlayStyles.columns}>
+                                <View style={OverlayStyles.column}>
+                                    <Text>
+                                        Roll: {isNaN(Number(quadData?.status?.imu?.roll)) ? 'N/A' : Number(quadData?.status?.imu?.roll).toFixed(2)}°
+                                    </Text>
+                                    <Text>
+                                        Pitch: {isNaN(Number(quadData?.status?.imu?.pitch)) ? 'N/A' : Number(quadData?.status?.imu?.pitch).toFixed(2)}°
+                                    </Text>
                                 </View>
                             </View>
+                        </View>
                     </View>
 
                 </View>
@@ -310,9 +318,9 @@ const styles = StyleSheet.create({
         width: '100%',
         backgroundColor: "#2a2a2a"
     },
-     bottomInfoRow: {      
-        marginTop: 5, 
-       flexDirection: 'row',
+    bottomInfoRow: {
+        marginTop: 5,
+        flexDirection: 'row',
         width: '100%',
         justifyContent: 'center',
         backgroundColor: "#2a2a2a"
@@ -334,7 +342,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         marginVertical: 5
     },
-     horizontalLine: {
+    horizontalLine: {
         width: '100%',
         height: 1,
         backgroundColor: '#000',
@@ -480,13 +488,6 @@ const OverlayStyles = StyleSheet.create({
     },
     column: {
         marginRight: 15,
-    },
-    mHeader: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginTop: 14,
-        marginBottom: 4,
-
     },
     showMotorInfoButton: {
         position: 'absolute',
