@@ -181,6 +181,14 @@ class Main:
         system_status.gamepad.status = self.input.gamepad.get_status()
         system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
 
+        voltage_accumulator: float = 0.0
+        motors: Dict[str, Motor] = self.motion.motors.get_all_motors()
+        for index, (motor_tag, motor) in enumerate(motors.items()):           
+            voltage_accumulator += motor.voltage
+        voltage = voltage_accumulator / len(motors)
+        system_status.voltage.voltage = voltage
+        system_status.voltage.status = Status.ACTIVE if voltage > 0 else Status.ERROR
+
         self.forwarder.set_sim_quad(self.motion.get_quad())
         self.forwarder.set_system_status(system_status)
         # self.forwarder.set_contacts(self.hardware.get_contacts())
@@ -231,8 +239,7 @@ class Main:
 
     def sleep_loop(self):
         """
-        Keep a consistance loop rate by sleeping the delta of processing time.
-        Sleep required to share the CPU.
+        Keep a consistance loop rate by sleeping the delta of processing time.    
         """
         delta = time() - self.main_loop_time
 
@@ -253,11 +260,9 @@ class Main:
     # Helpers
     ###############################################################################
 
-    def shutdown(self, full_shutdown_flag: bool):
+    def shutdown(self, full_shutdown_flag = False):
         print(f"[{self.tag }] shutdown...")
-
-        # TODO: sit quadruped to avoid hard crashes
-
+ 
         # self.hardware.beep(BeepType.SHUTDOWN)        
         self.hardware.shutdown()
         self.input.shutdown()
@@ -287,10 +292,10 @@ if __name__ == "__main__":
 
     if args.reset:
         try:
-            subprocess.run(["sudo", "systemctl", "restart", "live.service"], check=True)
-            print("[System] live.service has been restarted.")
+            subprocess.run(["sudo", "systemctl", "restart", "main.service"], check=True)
+            print("[System] main.service has been restarted.")
         except subprocess.CalledProcessError as e:
-            print(f"[System] error, failed to restart live.service: {str(e)}")
+            print(f"[System] error, failed to restart main.service: {str(e)}")
         except Exception as e:
             print(str(e))
             print(traceback.format_exc())
@@ -320,4 +325,4 @@ if __name__ == "__main__":
         print(str(e))
         print(traceback.format_exc())
     finally:
-        main.shutdown(full_shutdown_flag=False)
+        main.shutdown()
