@@ -13,7 +13,7 @@ from flask_socketio import SocketIO
 # Parameters
 ###############################################################################
 
-FORWARD_DATA_RATE_LIMIT_SEC = 0.050 
+FORWARD_DATA_RATE_LIMIT_SEC = 0.050
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
 
@@ -21,7 +21,7 @@ DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
 # Flask App Setup
 ###############################################################################
 
-app = Flask(__name__, static_folder=DIST_DIR)
+app = Flask(__name__)
 CORS(app)
 app.config["SECRET_KEY"] = "secret_token_that_is_ok_to_be_hardcoded"
 
@@ -45,6 +45,7 @@ pull_socket.connect("tcp://127.0.0.1:5559")
 
 stop_event = threading.Event()
 
+
 def cleanup():
     print("[yellow]Cleaning up ZMQ sockets and context...[/yellow]")
     try:
@@ -55,28 +56,45 @@ def cleanup():
     context.term()
     stop_event.set()
 
+
 atexit.register(cleanup)
 
 ###############################################################################
 # Routes - Serve React Frontend
 ###############################################################################
 
+
 @app.route("/")
 def index():
-    return send_from_directory(app.static_folder, "index.html")
+    return send_from_directory(DIST_DIR, "index.html")
 
+
+@app.route("/_expo/<path:filename>")
+def serve_expo(filename):
+    return send_from_directory(os.path.join(DIST_DIR, "_expo"), filename)
+
+
+# Catch-all: serve files if they exist, otherwise fall back to index.html
+@app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory(app.static_folder, path)
+def catch_all(path):
+    full_path = os.path.join(DIST_DIR, path)
+    if os.path.exists(full_path):
+        return send_from_directory(DIST_DIR, path)
+    else:
+        return send_from_directory(DIST_DIR, "index.html")
+
 
 ###############################################################################
 # SocketIO Events
 ###############################################################################
 
+
 @socketio.on("connect")
 def handle_connect():
     ip = request.remote_addr
     print(f"[green]Client connected from IP: {ip}[/green]")
+
 
 @socketio.on("message")
 def handle_message(msg):
@@ -85,14 +103,17 @@ def handle_message(msg):
     except Exception as e:
         print(f"[red]ZMQ send error: {e}[/red]")
 
+
 @socketio.on("disconnect")
 def handle_disconnect():
     ip = request.remote_addr
     print(f"[yellow]Client disconnected from IP: {ip}[/yellow]")
 
+
 ###############################################################################
 # Background Thread - Forward messages from ZMQ to SocketIO clients
 ###############################################################################
+
 
 def forward_data_to_ui():
     print("[cyan]Forwarding data thread starting[/cyan]")
@@ -118,6 +139,7 @@ def forward_data_to_ui():
             print(f"[red]Unexpected error: {e}[/red]")
             break
 
+
 ###############################################################################
 # Main Entry Point
 ###############################################################################
@@ -137,7 +159,7 @@ if __name__ == "__main__":
     forward_thread.start()
 
     try:
-        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev, allow_unsafe_werkzeug=True )
+        socketio.run(app, host="0.0.0.0", port=port, debug=is_dev, allow_unsafe_werkzeug=True)
     except KeyboardInterrupt:
         print("[yellow]Shutting down due to keyboard interrupt...[/yellow]")
         cleanup()
