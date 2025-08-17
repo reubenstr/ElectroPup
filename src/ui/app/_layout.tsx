@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import * as NavigationBar from 'expo-navigation-bar';
 import { useConfigStore } from '@/services/config/useConfigStore';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function RootLayout() {
   const [loaded] = useFonts({

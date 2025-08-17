@@ -1,3 +1,7 @@
+# Setup
+
+Read the entire guide prior to beginning the setup procress as this document may not be sequential order.
+
 # Development PC (Ubuntu)
 
 The development PC is used to display UI, Mujoco simulation, and charts as well as remote into the Raspberry Pi for code development.
@@ -393,6 +397,12 @@ npm install
 Start app in development mode:
 ```bash
 npm expo start --web
+```
+
+
+Build app for web (exports to ./src/ui/dist):
+```bash
+npx expo export --platform web
 ```
 
 ---

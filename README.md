@@ -1,29 +1,27 @@
 
 # ElectroPup
 
-A quadrudped robot using BLDC motors.
+A DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
 
 # About
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
-ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my [Zuko robot dog](https://github.com/reubenstr/zuko) project. ElectroPup applies lessons learned from building Zuko, such as:
-- simplifying the code by dropping ROS2 in favor of pure Python
-- reducing reprints by designing the frame to have less interdependent parts
-- creating an open frame concept that allows for easier part additions such as cameras and LiDAR
-- designing the leg system to allow flipping the quadruped upright after a rollover
-- swapping out the RC servos for backdrivable BLDC motors that allow for compliance
-- cheaper (j/k 😥)
+ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my [Zuko robot dog](https://github.com/reubenstr/zuko) project. 
 
-For ROS2 example of a quadruped robot dog see [Zuko](https://github.com/reubenstr/zuko).
+ElectroPup uses a Raspberry Pi 5 and is programed in Python. For ROS2 example of a quadruped robot dog see [Zuko](https://github.com/reubenstr/zuko).
 
-# Status
 
-Work in progress, see TODO section for major tasks.
+# UI
+
+
+# Calcs
+
+
 
 # Docs
 
-See the docs directory for bill of materials (BOM), 3D printed parts info, and notes on software, design, and assembly.
+See the docs directory for a setup guide, bill of materials (BOM), 3D printed parts info, and miscellaneous design notes.
 
 # Kinematics
 
@@ -101,12 +99,11 @@ See docs directory for more infomation.
 - closed source firmware
 - foreign sourced and warranty process
 - CAN unable to configure all parameters
-- UART required to configure error thresholds, motor torque limits (for compliance), et cetera
+- UART required to configure error thresholds, motor torque limits (for compliance), etc.
 - some motors are more difficult to turn by hand and require slightly more operational current
 
-### Other Options
+Future projects will prioritize ODrive compatible drivers.
 
-There are other promising actuators on the market that are less expensive and may better fit for projects starting from scratch: [Xiaomi CyberGear](https://www.aliexpress.us/item/3256805896329964.html) and [Steadywin 5N.M GIM6010-8](https://www.aliexpress.us/item/3256806153022534.html). These motors have larger diameters, more weight, require more power, and provide more torque. ElectroPup's motor driver libraries are not directly compatible. There are discussions and resources worth checking out from the SimpleFOC community: [CyberGear discussion](https://community.simplefoc.com/t/xiaomi-cyber-dog-geared-motor-60/3855) and [Steadywin discussion](https://community.simplefoc.com/t/steadywin-new-cheap-gear-motor/4509).
 
 ### Motor Zero Positions
 
@@ -144,9 +141,7 @@ Each CAN controller drivers six motors with an average motor update rate of ~70h
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
 
-ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may also be used with minor software modifications in [gamepad.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad.py) and [gamepad_inferface.py](https://github.com/reubenstr/ElectroPup/blob/250d78c293b20c71e25bdc08a2818614014fc070/src/system/gamepad/gamepad_interface.py#L404).
-
-Future controller additions may include commands to flip the quadruped after a rollover, change gaits, hop, etc.
+ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may be used with minor software modifications.
 
 # Environment and IDEs 
 
@@ -161,13 +156,13 @@ Software: VSCode (with remote SSH and PlatformIO extensions), Drawio, LibreOffic
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 4. A Raspberry Pi 5 is untested and may need code updates due to GPIO hardware differences.
+The quadruped is driven by a Raspberry Pi 5.
 
 The OS is Raspberry Pi OS Lite (Bookworm 64-bit) which is headless so all development is performed using remote SSH.
 
 ### STM32 - Auxiliary Board
 
-A STM32F401 Black Pill dev kit operates the auxiliary board to display the motor and system status on a LCD display and interface with other peripherals such as the IMU. 
+A STM32F401 Black Pill dev kit operates the auxiliary board to display the motor and system status on a LCD display and interface with other peripherals such as the buzzer. 
 
 Uses VSCode with PlatformIO on the PC/Laptop for development.
 
@@ -203,29 +198,27 @@ In progress.
 
 # TODO  
 
-### Major
+Combination of TODO items for this revision and updates for a future revision
 
-- build and document battery pack
-- implement gait controller and start walking
-- update kinematics to include hip to foot x-axis offset
-- finish IMU code
-- implement machine learning to handle uneven terrian
-- implement vision system (camera or LiDAR) for obstacle avoidance
-- complete BOM and documentation
-
-### Minor
-- design and install foot bolt clips to keep foot bolt in place
-- design and install electronic covers to protect PCBs from potential shorts
-- swap foot lag bolt from SAE to metric (test for fit, update lower leg model if required)
-- convert kinematics orientation from Z being forward to X being forward to match simulation
+- add upside down control (the frame supports walking even after flipped)
+- apply IMU for smoother gaits
+- add center if mass calculations for smoother gaits
+- swap foot lag bolt from SAE to metric
+- add curvature to lower leg
 - add speaker for barks
-- add a tail ੭ 
-- rework NeoPixel strip brackets to include a light diffusing layer
-- add keyboard commands to sim.py
+- add a tail
+- add voltage/current sensor (such as an INA228)
+- remove STM32 from aux board and use RPI directly for buzzer, LCD, etc.
+- create a [MPC](https://en.wikipedia.org/wiki/Model_predictive_control) controller
 
-### Future Version Updates/Changes
-- add current sensor for entire system
-- rework PCBs to move DC-DC from Power Carrier to Auxiliary Board
+# Thoughts
+
+Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
+
+The carbon rods twist during the run gait which can be remedied by extending the rods through the hip plates and adding face / butt plates to limit twisting. 
+
+
+
 
 # Questions
 

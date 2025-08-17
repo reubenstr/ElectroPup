@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { StatusBar } from 'expo-status-bar';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome } from '@expo/vector-icons';
 import { useConfigStore } from '@/services/config/useConfigStore'
 import ServerSelector from '@/components/ServerSelector';
 import ConfirmationModal from '../components/modals/ConfirmationModal'
