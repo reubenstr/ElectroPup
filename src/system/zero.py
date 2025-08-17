@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-    Utility to zero the MG4010E-i10v3 motors and verify motor layout.
-    
-    Not all motors are required to be attached.
-    
-    Motors require a power cycle for a new zero to take effect!
-"""
-
 import sys
 import time
 import math
@@ -88,7 +80,7 @@ def get_motor_line(i):
         ("class:" + state_style, f"{state_text:13} "),
         (
             "class:" + line_style,
-            f"| {position:}° | {motor_id:2} | {motor_name:18} | {can_id} | {zeroed}",
+            f"| {position:}° | {motor_id:2} | {motor_name:4} | {can_id} | {zeroed}",
         ),
     ]
 
@@ -112,7 +104,7 @@ layout = Layout(
                     [
                         (
                             "class:text",
-                            "   State      |   Angle  | ID |       Name         | CAN  | Zeroed",
+                            "   State      |   Angle  | ID | Name | CAN  | Zeroed",
                         )
                     ]
                 ),
@@ -124,7 +116,7 @@ layout = Layout(
                     [
                         (
                             "class:text",
-                            "--------------------------------------------------------------------",
+                            "------------------------------------------------------------",
                         )
                     ]
                 ),

@@ -17,7 +17,7 @@ from quadruped.parameters.ik_parameters import IKParameters
 from hardware.hardware import Hardware
 from motors.motors import Motor, Motors
 from motors.interfaces import MotorName, MotorSpeeds
-from auxiliary.aux import Aux, AuxMessage
+from auxiliary.aux import Aux, AuxMessage, Sequence
 from utilities.utilities import *
 from input.interfaces import InputCommand
 from input.input import Input
@@ -32,8 +32,8 @@ from forwarder import Forwarder
 class Main:
     def __init__(self, mode: OpMode):
         self.op_mode: OpMode = mode
-        
-        self.tag = 'Main'
+
+        self.tag = "Main"
 
         print(f"[{self.tag }] starting in operation mode: {self.op_mode}")
 
@@ -41,12 +41,17 @@ class Main:
         self.input = Input(callback=self.controller_event_callback)
         self.motion = Motion(op_mode=self.op_mode)
         self.forwarder = Forwarder()
-        
+
         self.aux = Aux()
 
         self.main_loop_rate_seconds = 0.010
         self.main_loop_time: float = 0
-        self.main_loop_completion_time_ms: float = 0      
+        self.main_loop_completion_time_ms: float = 0
+
+        self.battery_voltage: float = 0
+        self.low_battery_voltage_threadhold: float = 19.8
+        self.low_battery_alert_rate_seconds: float = 30
+        self.low_battery_last_alert_time: float = time()
 
     ###############################################################################
     # Callback from Input(s)
@@ -62,17 +67,19 @@ class Main:
                 else:
                     self.motion.motors.enable_all_motors()
             else:
-                print(f"[MAIN] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
+                self.aux.play_sound(Sequence.ERROR)
+                print(f"[{self.tag}] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
 
         if event is InputCommand.CLEAR_ERRORS:
             print(f"[{self.tag }] clearing errors...")
             self.motion.motors.clear_errors_all_motors()
             return
-        
+
         if self.op_mode is OpMode.LIVE:
             if self.motion.get_motion_state() is MotionState.STANDBY:
                 if not self.motion.motors.is_motors_enabled():
-                    print(f"[MAIN] Controller event {event.name} blocked, motors not enabled.")
+                    self.aux.play_sound(Sequence.ERROR)
+                    print(f"[{self.tag}] Controller event {event.name} blocked, motors not enabled.")
                     return
 
         if event is InputCommand.STAND:
@@ -98,6 +105,7 @@ class Main:
             self.motion.set_target_gait(Gait.TROT)
 
         print(f"[MAIN] Controller event received: {event.name}")
+        self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
 
     ###############################################################################
     # Main Loop
@@ -106,13 +114,15 @@ class Main:
     def run(self):
         while True:
 
-            self.update_inputs()        
+            self.update_inputs()
+
+            self.check_low_battery()
 
             self.process_aux()
 
             self.forward_states()
 
-            self.sleep_loop()          
+            self.sleep_loop()
 
     ###############################################################################
     # Loop Methods
@@ -121,21 +131,26 @@ class Main:
     def update_inputs(self):
         self.motion.set_ik_parameters(self.input.get_ik_parameters())
         self.motion.set_motion_parameters(self.input.get_motion_parameters())
-   
+
+    def check_low_battery(self):
+        if self.battery_voltage > 0 and self.battery_voltage < self.low_battery_voltage_threadhold:
+            if time() - self.low_battery_last_alert_time > self.low_battery_alert_rate_seconds:
+                self.low_battery_last_alert_time = time()
+                print("PLAY LOW", time())
+                self.aux.play_sound(Sequence.LOW_BATTERY)
 
     def process_aux(self):
         """
         Check for commands and send latest status data to Auxiliary Board.
         """
-
         message = AuxMessage()
         message.joint_angle_error = self.motion.get_quad().get_joint_angle_error()
         message.inverse_kinematics_error = self.motion.get_quad().get_ik_error()
         message.joystick_error = self.input.gamepad.is_connected() == False
         message.can_error = self.motion.motors.is_can_error()
-        message.imuError = False
+        message.imu_error = False
+        message.low_battery = True if self.battery_voltage < self.low_battery_voltage_threadhold else False
 
-        voltage_accumulator: float = 0.0
         motors: Dict[str, Motor] = self.motion.motors.get_all_motors()
         for index, (motor_tag, motor) in enumerate(motors.items()):
             message.motor_ons[index] = motor.is_enabled()
@@ -148,8 +163,8 @@ class Main:
                 message.under_voltage_error = True
             if motor.is_comms_error() == True:
                 message.motor_communication_error = True
-            voltage_accumulator += motor.voltage
-        message.battery_voltage = voltage_accumulator / len(motors)
+
+        message.battery_voltage = self.battery_voltage
         message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
         self.aux.send_at_rate(message.pack())
         self.aux.check_for_commands()
@@ -160,7 +175,7 @@ class Main:
 
         system_status.motion.state = self.motion.get_motion_state()
         system_status.target_motion.state = self.motion.get_target_motion_state()
-        system_status.gait.state = self.motion.gait     
+        system_status.gait.state = self.motion.gait
         system_status.ik.status = Status.ERROR if self.motion.get_quad().get_ik_error() else Status.NONE
         system_status.joint_angle.status = Status.ERROR if self.motion.get_quad().get_joint_angle_error() else Status.NONE
         system_status.input.state = self.input.get_input_mode()
@@ -183,11 +198,11 @@ class Main:
 
         voltage_accumulator: float = 0.0
         motors: Dict[str, Motor] = self.motion.motors.get_all_motors()
-        for index, (motor_tag, motor) in enumerate(motors.items()):           
+        for index, (motor_tag, motor) in enumerate(motors.items()):
             voltage_accumulator += motor.voltage
-        voltage = voltage_accumulator / len(motors)
-        system_status.voltage.voltage = voltage
-        system_status.voltage.status = Status.ACTIVE if voltage > 0 else Status.ERROR
+        self.battery_voltage = voltage_accumulator / len(motors)
+        system_status.voltage.voltage = self.battery_voltage
+        system_status.voltage.status = Status.ACTIVE if self.battery_voltage > 0 else Status.ERROR
 
         self.forwarder.set_sim_quad(self.motion.get_quad())
         self.forwarder.set_system_status(system_status)
@@ -227,19 +242,19 @@ class Main:
         ]
         for leg, angles in leg_angles.items():
             leg_angles[leg] = [angle if angle is not None else 0.0 for angle in angles]
-        live_quad = Quad()        
-        #live_quad.set_joint_angles_degrees(leg_angles)      
-        #live_quad.update_ht_body(self.input.get_ik_parameters())  
+        live_quad = Quad()
+        # live_quad.set_joint_angles_degrees(leg_angles)
+        # live_quad.update_ht_body(self.input.get_ik_parameters())
         ik_parameters = IKParameters()
         ik_parameters.roll = self.hardware.get_imu_data().roll
-        ik_parameters.pitch = self.hardware.get_imu_data().pitch    
+        ik_parameters.pitch = self.hardware.get_imu_data().pitch
         live_quad.set_body_pose_by_transform_inputs(ik_parameters, live_quad.get_base_foot_points())
-        live_quad.set_joint_angles_degrees(leg_angles) 
+        live_quad.set_joint_angles_degrees(leg_angles)
         self.forwarder.set_live_quad(live_quad)
 
     def sleep_loop(self):
         """
-        Keep a consistance loop rate by sleeping the delta of processing time.    
+        Keep a consistance loop rate by sleeping the delta of processing time.
         """
         delta = time() - self.main_loop_time
 
@@ -250,20 +265,18 @@ class Main:
         # if delta > self.main_loop_rate_ms:
         #    print(f"[Main] Warning, loop time exceeded tick rate! Loop time: {delta:0.3f}, tick rate: {self.main_loop_rate_ms:0.3f}")
 
-        #print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
+        # print(f"[Loop] time to complete a loop: {delta:.3f}, sleep time: {sleep_time:.3f}")
         self.main_loop_completion_time_ms = (time() - self.main_loop_time) * 1000
         self.main_loop_time = time()
-
-       
 
     ###############################################################################
     # Helpers
     ###############################################################################
 
-    def shutdown(self, full_shutdown_flag = False):
+    def shutdown(self, full_shutdown_flag=False):
         print(f"[{self.tag }] shutdown...")
- 
-        # self.hardware.beep(BeepType.SHUTDOWN)        
+
+        # self.hardware.beep(BeepType.SHUTDOWN)
         self.hardware.shutdown()
         self.input.shutdown()
         self.motion.shutdown()

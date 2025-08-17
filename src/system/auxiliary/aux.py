@@ -28,6 +28,18 @@ class MessageType(Enum):
     PLAY_SOUND = 1
     SHUTDOWN_RPI = 2
 
+# Must match auxiliary board firmware's Sequence struct.
+class Sequence(Enum):
+    NONE = -1
+    MCU_STARTUP = 0
+    RPI_ON = 1
+    RPI_OFF = 2
+    MOTORS_ON = 3
+    MOTORS_OFF = 4
+    LOW_BATTERY = 5
+    ERROR = 6
+    SHUTDOWN = 7
+    BTN_BEEP_SHORT = 8
 
 class AuxMessage:
     def __init__(self):
@@ -39,7 +51,8 @@ class AuxMessage:
         self.over_temperature_error : bool = False
         self.under_voltage_error : bool = False  
         self.motor_communication_error : bool = False 
-        self.imuError : bool = False       
+        self.imu_error : bool = False     
+        self.low_battery : bool = False     
         self.motor_ons : List[bool] = [False] * 12
         self.motor_errors : List[bool] = [False] * 12
         self.battery_voltage : float = 0.0
@@ -55,7 +68,8 @@ class AuxMessage:
             self.over_temperature_error,
             self.under_voltage_error,
             self.motor_communication_error,
-            self.imuError) + tuple(self.motor_ons) + tuple(self.motor_errors)
+            self.imu_error,
+            self.low_battery) + tuple(self.motor_ons) + tuple(self.motor_errors)
     
         packed_message_id = bytes([MessageType.STATUS.value])
         packed_bools = bytearray(bool(b) for b in bools)   
@@ -67,8 +81,8 @@ class AuxMessage:
    
    
 class PlaySoundMessage:
-    def __init__(self, sequence_id : int = -1):
-        self.sound_id : int = sequence_id
+    def __init__(self, sequence : int = -1):
+        self.sound_id : int = sequence
         
     def pack(self): 
         packed_message_id = bytes([MessageType.PLAY_SOUND.value])
@@ -121,6 +135,11 @@ class Aux():
             print(f"[AUX] error, unable to send message on serial port: {self.port}, exception: {e}")            
       
       
+    def play_sound(self, sequence: Sequence):
+        psm = PlaySoundMessage(sequence.value)      
+        self.send(psm.pack())
+    
+    
     def check_for_commands(self):        
         """Check for commands from Auxilary Board"""
          
