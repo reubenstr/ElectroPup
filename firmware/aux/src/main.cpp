@@ -258,7 +258,7 @@ void CheckForMessage()
         setValueFromStatusString("UVo", message.statusData.underVoltageError);
         setValueFromStatusString("MCo", message.statusData.motorCommunicationError);
         setValueFromStatusString("IMU", message.statusData.imuError);
-        setValueFromStatusString("---", false);
+        setValueFromStatusString("BAT", message.statusData.lowBattery);
 
         for (int i = 0; i < numMotors; i++)
         {
@@ -405,7 +405,7 @@ void ProcessNeopixels()
           allMotorsOn = false;
       }
       if (allMotorsOn)
-        neopixels.setMode(PixelMode::RIDER, PixelColor::RED);
+        neopixels.setMode(PixelMode::RIDER, PixelColor::GREEN);
       else
         neopixels.setMode(PixelMode::RIDER, PixelColor::BLUE);
     }

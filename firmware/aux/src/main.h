@@ -36,7 +36,7 @@ enum class Page
 };
 
 const int numSystemStatus{12};
-const char *systemStatusStrings[numSystemStatus] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "IMU", "---"};
+const char *systemStatusStrings[numSystemStatus] = {"RPI", "SFT", "JOY", "LIM", "JA", "IK", "CAN", "OTe", "UVo", "MCo", "IMU", "BAT"};
 const char *motorStatusStrings[] = {"FLA", "FLH", "FLK", "FRA", "FRH", "FRK", "BLA", "BLH", "BLK", "BRA", "BRH", "BRK"};
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,6 +67,7 @@ struct StatusData
     bool underVoltageError;
     bool motorCommunicationError;
     bool imuError;
+    bool lowBattery;
 
     bool motorOns[numMotors];
     bool motorErrors[numMotors];
