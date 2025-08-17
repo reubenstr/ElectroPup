@@ -166,28 +166,28 @@ class Gamepad:
     """ L2 and R2 Triggers """
     def axis_l2_changed_callback(self, value):        
         new = scale_value(value, -1, 1, 0, 1)
-        self.ik_parameters.set_forward_translation(new)
+        self.ik_parameters.set_forward_transation_from_axis(new)
        
     def axis_r2_changed_callback(self, value):
         new = scale_value(value, -1, 1, 0, -1)
-        self.ik_parameters.set_forward_translation(new)
+        self.ik_parameters.set_forward_transation_from_axis(new)
 
     """ AXIS JOY-STICKS """
 
     def axis_left_x_changed_callback(self, value):
-        self.ik_parameters.set_roll(value)
-        self.motion_parameters.lateral_velocity = value
+        self.ik_parameters.set_roll_by_axis(value)
+        self.motion_parameters.set_lateral_velocity_by_axis(value)
 
     def axis_left_y_changed_callback(self, value): 
-        self.ik_parameters.set_pitch(value)
-        self.motion_parameters.forward_velocity = value
+        self.ik_parameters.set_pitch_by_axis(value)
+        self.motion_parameters.set_forward_velocity_by_axis(value)
 
     def axis_right_x_changed_callback(self, value):
-        self.ik_parameters.set_yaw(value)
+        self.ik_parameters.set_yaw_by_axis(value)
         self.motion_parameters.angular_velocity = value
 
     def axis_right_y_changed_callback(self, value):  
-        self.ik_parameters.set_height_translation(value)
+        self.ik_parameters.set_height_transition_by_axis(value)
       
 
     ###############################################################################
