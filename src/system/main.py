@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import argparse
 import traceback
@@ -41,7 +40,6 @@ class Main:
         self.input = Input(callback=self.controller_event_callback)
         self.motion = Motion(op_mode=self.op_mode)
         self.forwarder = Forwarder()
-
         self.aux = Aux()
 
         self.main_loop_rate_seconds = 0.010
