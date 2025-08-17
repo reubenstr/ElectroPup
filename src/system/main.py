@@ -95,7 +95,7 @@ class Main:
         if event is InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event is InputCommand.GAIT_WALK:
+        if event is InputCommand.GAIT_CRAWL:
             self.motion.set_target_gait(Gait.CRAWL)
 
         if event is InputCommand.GAIT_RUN:
@@ -103,6 +103,9 @@ class Main:
 
         if event is InputCommand.GAIT_TROT:
             self.motion.set_target_gait(Gait.TROT)
+
+        if event is InputCommand.GAIT_CLIMB:
+            self.motion.set_target_gait(Gait.CLIMB)
 
         print(f"[MAIN] Controller event received: {event.name}")
         self.aux.play_sound(Sequence.BTN_BEEP_SHORT)

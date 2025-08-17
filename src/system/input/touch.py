@@ -63,16 +63,16 @@ class Touch:
         # print('[TOUCH] message received from UI: ', message)
 
         self.ik_parameters.set_roll(message.leftX)
+        self.motion_parameters.lateral_velocity = message.leftX
 
         self.ik_parameters.set_pitch(message.leftY)
-        self.motion_parameters.set_forward_raw(message.leftY)
+        self.motion_parameters.forward_velocity = message.leftY
 
         self.ik_parameters.set_yaw(message.rightX)
-        self.motion_parameters.set_heading_x(message.rightX)    
+        self.motion_parameters.angular_velocity = message.rightX
 
         self.ik_parameters.set_height_translation(message.rightY)
-        self.motion_parameters.set_heading_y(message.rightY)
-           
+                   
         if message.command != InputCommand.NO_UPDATE:   
             self._send_input_command_as_event(message.command)
         

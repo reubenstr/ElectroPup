@@ -49,7 +49,7 @@ class Main:
         if event is InputCommand.WALK:
             self.motion.set_target_motion_state(MotionState.WALK)
 
-        if event is InputCommand.GAIT_WALK:
+        if event is InputCommand.GAIT_CRAWL:
             self.motion.set_target_gait(Gait.CRAWL)
 
         if event is InputCommand.GAIT_TROT:

@@ -92,19 +92,19 @@ class Gamepad:
 
     def btn_triangle_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_WALK)
+            self._send_input_command_as_event(InputCommand.GAIT_CLIMB)
 
     def btn_circle_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_RUN)
+            self._send_input_command_as_event(InputCommand.GAIT_TROT)
 
     def btn_cross_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_TROT)
+            self._send_input_command_as_event(InputCommand.GAIT_RUN)
 
     def btn_square_changed_callback(self, state):
         if state == True:
-            pass
+            self._send_input_command_as_event(InputCommand.GAIT_CRAWL)
 
     """ BUTTONS SHOULDER AND TRIGGER """
 

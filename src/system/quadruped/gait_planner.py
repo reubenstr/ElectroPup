@@ -10,6 +10,7 @@ class Gait(StrEnum):
     CRAWL = "crawl"
     TROT = "trot"
     RUN = "run"
+    CLIMB = "climb"
 
 
 class SwingPattern(StrEnum):

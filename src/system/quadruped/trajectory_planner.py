@@ -69,6 +69,21 @@ class TrajectoryPlanner:
                     LegName.BR: 0.5,
                 },
             )
+        elif gait == Gait.CLIMB:
+            return GaitPlanner(
+                gait=Gait.CLIMB,
+                swing_pattern=SwingPattern.BEZIER_ARC,
+                period=1.0,
+                duty_factor=0.5,
+                stride_length=0.10,
+                step_height=0.040,
+                phase_offsets={
+                    LegName.FR: 0.0,
+                    LegName.BL: 0.0,
+                    LegName.FL: 0.5,
+                    LegName.BR: 0.5,
+                },
+            )
 
     ###############################################################################
     # Methods

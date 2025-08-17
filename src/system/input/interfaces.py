@@ -20,9 +20,10 @@ class InputCommand(StrEnum):
     POSE = "pose"
     WALK = "walk"
 
-    GAIT_WALK = "gait_walk"
+    GAIT_CRAWL = "gait_crawl"
     GAIT_TROT = "gait_trot"
     GAIT_RUN = "gait_run"
+    GAIT_CLIMB= "gait_climb"
 
     GAMEPAD_INPUT = "gamepad_input"
     TOUCH_INPUT = "touch_input"
