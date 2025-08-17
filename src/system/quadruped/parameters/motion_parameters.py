@@ -1,7 +1,7 @@
 from time import time
 from dataclasses import dataclass
 from math import degrees, atan2, sqrt
-from .utilities import process_value
+from .utilities import process_axis_value
 
 """
     Class containing motion parameters for movement.
@@ -31,13 +31,13 @@ class MotionParameters:
     ###############################################################################
 
     def set_forward_velocity_by_axis(self, value):
-        self.forward_velocity = process_value(-value, self.deadzone)
+        self.forward_velocity = process_axis_value(-value, self.deadzone)
 
     def set_lateral_velocity_by_axis(self, value):
-        self.lateral_velocity = process_value(value, self.deadzone)
+        self.lateral_velocity = process_axis_value(value, self.deadzone)
 
     def set_angular_velocity_by_axis(self, value):
-        self.angular_velocity = process_value(value, self.deadzone)
+        self.angular_velocity = process_axis_value(value, self.deadzone)
 
     ###############################################################################
     # Getters / Setters

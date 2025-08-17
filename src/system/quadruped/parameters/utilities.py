@@ -1,7 +1,14 @@
+def process_axis_value(value, deadzone):
+    """
+    Processes a joystick axis value, applying a deadzone and scaling.
 
+    Args:
+        value (float): The raw axis value in range [-1, 1].
+        deadzone (float): Threshold around 0 where small movements are ignored.
 
-
-def process_value(value, deadzone):
+    Returns:
+        float: The scaled axis value, with deadzone applied.
+    """
     check_value(value)
 
     if abs(value) < deadzone:

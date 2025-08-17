@@ -107,7 +107,7 @@ class Main:
         if event is InputCommand.GAIT_CLIMB:
             self.motion.set_target_gait(Gait.CLIMB)
 
-        print(f"[MAIN] Controller event received: {event.name}")
+        print(f"[{self.tag}] Controller event received: {event.name}")
         self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
 
     ###############################################################################
@@ -279,14 +279,14 @@ class Main:
     def shutdown(self, full_shutdown_flag=False):
         print(f"[{self.tag }] shutdown...")
 
-        # self.hardware.beep(BeepType.SHUTDOWN)
+        self.aux.play_sound(Sequence.SHUTDOWN)
         self.hardware.shutdown()
         self.input.shutdown()
         self.motion.shutdown()
         self.forwarder.shutdown()
 
         if full_shutdown_flag:
-            print(f"[MAIN] shutting down system...")
+            print(f"[{self.tag}] shutting down system...")
             sleep(1)
             os.system("sudo shutdown now")
 
@@ -295,16 +295,43 @@ class Main:
 # Entry
 ###############################################################################
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run in live or development mode.")
+    parser = argparse.ArgumentParser(description="Run in live or development mode.")  
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-d", "--dev", action="store_true", help="Run in development mode")
     group.add_argument("-l", "--live", action="store_true", help="Run in live mode")
-    parser.add_argument("-r", "--reset", action="store_true", help="Restart the service")
+    group.add_argument("--start", action="store_true", help="Start the service")
+    group.add_argument("--stop", action="store_true", help="Stop the service")
+    group.add_argument("--reset", action="store_true", help="Restart the service")
+
     args = parser.parse_args()
 
     ###############################################################################
     # Process Arguments
     ###############################################################################
+
+    if args.start:
+        try:
+            subprocess.run(["sudo", "systemctl", "start", "main.service"], check=True)
+            print("[System] main.service has been started.")
+        except subprocess.CalledProcessError as e:
+            print(f"[System] error, failed to start main.service: {str(e)}")
+        except Exception as e:
+            print(str(e))
+            print(traceback.format_exc())
+        finally:
+            exit(1)
+
+    if args.stop:
+        try:
+            subprocess.run(["sudo", "systemctl", "stop", "main.service"], check=True)
+            print("[System] main.service has been stopped.")
+        except subprocess.CalledProcessError as e:
+            print(f"[System] error, failed to stop main.service: {str(e)}")
+        except Exception as e:
+            print(str(e))
+            print(traceback.format_exc())
+        finally:
+            exit(1)
 
     if args.reset:
         try:

@@ -1,8 +1,6 @@
 from time import time, sleep
-from typing import List
 from threading import Thread, Lock, Event
 from typing import List, Dict, Tuple, Callable
-from itertools import product
 from rich import print  # Overrides print and injects colors
 
 from quadruped.point import Point, get_distance_xy
@@ -44,17 +42,17 @@ class Motion:
         self.ik_parameters: IKParameters = IKParameters()
 
         self.phase_time: float = 0
-        self.phase_time_rate_fast: float = 0.020
+        self.phase_time_rate_fast: float = 0.015
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.005
         self.pose_period: float = 1
 
         self.transition_time: float = 0
-        self.transition_time_rate: float = 0.005
+        self.transition_time_rate: float = 0.010
 
         self.idle_time: float = 0
-        self.idle_time_trigger_seconds: float = 500
+        self.idle_time_trigger_seconds: float = 5
         self.idle_flag: bool = True
 
         self.forward_velocity: float = 0

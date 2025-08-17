@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from .utilities import process_value, check_value, scale_value
+from .utilities import process_axis_value, check_value, scale_value
 
 """
    Class container parameters for pose.
@@ -59,22 +59,22 @@ class IKParameters:
     ###############################################################################
 
     def set_roll_by_axis(self, value):
-        self.roll = scale_value(process_value(-value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
+        self.roll = scale_value(process_axis_value(-value, self.deadzone), -1, 1, self.roll_min, self.roll_max)
 
     def set_pitch_by_axis(self, value):
-        self.pitch = scale_value(process_value(-value, self.deadzone), -1, 1, self.pitch_min, self.pitch_max)
+        self.pitch = scale_value(process_axis_value(-value, self.deadzone), -1, 1, self.pitch_min, self.pitch_max)
 
     def set_yaw_by_axis(self, value):
-        self.yaw = scale_value(process_value(value, self.deadzone), -1, 1, self.yaw_min, self.yaw_max)
+        self.yaw = scale_value(process_axis_value(value, self.deadzone), -1, 1, self.yaw_min, self.yaw_max)
 
     def set_forward_transation_from_axis(self, value):
-        self.forward_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.forward_translation_min, self.forward_translation_max)
+        self.forward_translation = scale_value(process_axis_value(value, self.deadzone), -1, 1, self.forward_translation_min, self.forward_translation_max)
 
     def set_lateral_transation_by_axis(self, value):
-        self.lateral_translation = scale_value(process_value(value, self.deadzone), -1, 1, self.lateral_translation_min, self.lateral_translation_max)
+        self.lateral_translation = scale_value(process_axis_value(value, self.deadzone), -1, 1, self.lateral_translation_min, self.lateral_translation_max)
 
     def set_height_transition_by_axis(self, value):
-        value = process_value(-value, self.deadzone)
+        value = process_axis_value(-value, self.deadzone)
         if value < 0:
             self.height_translation = scale_value(value, -1, 0, self.height_translation_min, self.height_translation_neutral)
         else:

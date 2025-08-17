@@ -184,7 +184,7 @@ class Gamepad:
 
     def axis_right_x_changed_callback(self, value):
         self.ik_parameters.set_yaw_by_axis(value)
-        self.motion_parameters.angular_velocity = value
+        self.motion_parameters.set_angular_velocity_by_axis(value)
 
     def axis_right_y_changed_callback(self, value):  
         self.ik_parameters.set_height_transition_by_axis(value)
