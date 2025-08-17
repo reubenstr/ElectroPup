@@ -14,13 +14,14 @@ from flask_socketio import SocketIO
 ###############################################################################
 
 FORWARD_DATA_RATE_LIMIT_SEC = 0.050 
-DIST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui", "dist")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DIST_DIR = os.path.join(BASE_DIR, "ui", "dist")
 
 ###############################################################################
 # Flask App Setup
 ###############################################################################
 
-app = Flask(__name__, static_folder=DIST_DIR, template_folder=DIST_DIR)
+app = Flask(__name__, static_folder=DIST_DIR)
 CORS(app)
 app.config["SECRET_KEY"] = "secret_token_that_is_ok_to_be_hardcoded"
 
@@ -62,7 +63,7 @@ atexit.register(cleanup)
 
 @app.route("/")
 def index():
-    return send_from_directory(app.template_folder, "index.html")
+    return send_from_directory(app.static_folder, "index.html")
 
 @app.route("/<path:path>")
 def static_files(path):

@@ -31,7 +31,7 @@ class TrajectoryPlanner:
                 period=1.0,
                 duty_factor=0.75,
                 stride_length=0.1,
-                step_height=0.02,
+                step_height=0.01,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.25,
@@ -61,7 +61,7 @@ class TrajectoryPlanner:
                 period=1.0,
                 duty_factor=0.5,
                 stride_length=0.10,
-                step_height=0.02,
+                step_height=0.01,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
@@ -76,7 +76,7 @@ class TrajectoryPlanner:
                 period=1.0,
                 duty_factor=0.5,
                 stride_length=0.10,
-                step_height=0.040,
+                step_height=0.025,
                 phase_offsets={
                     LegName.FR: 0.0,
                     LegName.BL: 0.0,
