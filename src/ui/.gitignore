@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# But do NOT ignore node_modules under dist/assets
+!dist/assets/node_modules/
+!dist/assets/node_modules/** 
+
 # Expo
 .expo/
 # dist/
