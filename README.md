@@ -11,17 +11,16 @@ A DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
 
 ElectroPup uses pure Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).
 
+# Docs
+
+See the docs directory for a setup guide, bill of materials (BOM), 3D printed parts info, and miscellaneous design notes.
+
 
 # UI
 
 
-# Calcs
+The UI framework is React Native using Expo.
 
-
-
-# Docs
-
-See the docs directory for a setup guide, bill of materials (BOM), 3D printed parts info, and miscellaneous design notes.
 
 # Kinematics
 
@@ -30,7 +29,7 @@ See the docs directory for a setup guide, bill of materials (BOM), 3D printed pa
 Inverse kinematics, leg position, and gamepad inputs are verifed using the UI.
 
 
-# Trajectories
+### Trajectories
 
 Bezier curves, sin arcs, and curvature projection are used to generate trajectories. Below are plots of various control points configurations. 
 
@@ -49,7 +48,7 @@ The output of `./src/plot/projection_plot.py`
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
 
-Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, inputs are only provided by the gamepad.
+Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, input controlls are only provided by the gamepad. The `ElectroPup.xml` currently does not have approximate masses or inertial so the simulated quadruped is rather bouncy.
 
 # PCBs
 
@@ -194,7 +193,7 @@ In progress.
 
 # TODO  
 
-Combination of TODO items for this revision and updates for a future revision
+This is a general TODO list which may span this revision or a future revision. 
 
 - add upside down control (the frame supports walking even after flipped)
 - apply IMU for smoother gaits
