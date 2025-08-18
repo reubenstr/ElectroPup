@@ -1,15 +1,15 @@
-
-# ElectroPup
-
 A DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
-
-# About
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
 
-ElectroPup is a MIT Mini Cheetah inspired quadruped robot and a successor to my [Zuko robot dog](https://github.com/reubenstr/zuko) project. 
+- RPi 5
+- Auxilary board w/LCD display
+- 9-axis accelerometer/gyro sensor 
+- BLDC motors
+- 6s Li-Ion battery, ~70wH
+- 4.5kg
 
-ElectroPup uses a Raspberry Pi 5 and is programed in Python. For ROS2 example of a quadruped robot dog see [Zuko](https://github.com/reubenstr/zuko).
+ElectroPup uses pure Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).
 
 
 # UI
@@ -27,17 +27,29 @@ See the docs directory for a setup guide, bill of materials (BOM), 3D printed pa
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
 
-Inverse kinematics, leg position, and gamepad inputs are verifed using a live plot.
+Inverse kinematics, leg position, and gamepad inputs are verifed using the UI.
 
-Run plot.py to start the plot. A gamepad is required to update the plot but if a gamepad is not connected the plot will display a static pose.
+
+# Trajectories
+
+Bezier curves, sin arcs, and curvature projection are used to generate trajectories. Below are plots of various control points configurations. 
+
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/beizer-control-points-chart.png" width="800">
+
+The output of `./src/plot/bezier_curve_plot.py`
+
+Rotation is achieved by projecting a linear trajectory onto a curve. Below are plot ofs the projection calculation.
+
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/arc-projection-chart.png" width="800">
+
+The output of `./src/plot/projection_plot.py`
+
 
 # Simulation
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
 
-Simulation is performed in [MuJoCo](https://mujoco.org/).
-
-Run ./sim.py to start the simulation. A gamepad is required to drive the robot as keyboard input is not yet added.
+Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, inputs are only provided by the gamepad.
 
 # PCBs
 
@@ -52,6 +64,8 @@ The Power Carrier PCB provides a main on/off power switch and distributes power 
 ### Auxiliary Board
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png" width="800">
+
+The auxiliary board is optional and not required for the quadruped to operate.
 
 Features:
 - Powers RPi via terminal header
@@ -68,8 +82,6 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
 
-The current version of the Auxiliary Board uses a STM32 Black Pill dev board for quicker development and assembly since there will likely be future revisions with more advanced features such as a built in speaker amplifier.
-
 # Motors
 
 The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be purchased from [Aliexpress](https://www.aliexpress.us/item/3256805950420462.html?spm=a2g0o.order_list.order_list_main.5.32491802no3XMa&gatewayAdapt=glo2usa).
@@ -85,8 +97,6 @@ The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be pur
 - encoders: 18-bit motor, 14-bit reducer
 - size: 53mm diameter, 41mm tall
 - weight: 238 grams
-
-See docs directory for more infomation.
 
 ### MG4010E-i10v3 Pros
 - easy to use configuration software over non-proprietary USB to UART hardware
@@ -111,23 +121,13 @@ Future projects will prioritize ODrive compatible drivers.
 
 ### Motor Tags
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motor-labels.png" width="800">
+<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-topdown-motor-tags.png" width="800">
 
 ### Motor Calibration
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-zero-motors-script.png" width="800">
 
-The zero-motors.py script is a quick way to verify correct motor configuration and zero the motors.
-
-| State | Description |
-| ------------- | ------------- |
-| STBY | Motor found with on the associated CAN bus with and motor ID. The motor has not been zeroed since the script started  |
-| ZEROED  | Motor was zeroed  |
-| ERROR | No communication with motor on the accociated the CAN bus and motor ID |
-
-🚩 Motor zero does not take effect until the motor is power cycled. 🚩
-
-The zero_motors.py script applies an offset after zeroing a motor as a convience to continue calibration without power cycling.
+The zero-motors.py script is a quick way to verify correct motor configuration and to zero the motors.
 
 # CAN Bus
 
@@ -149,16 +149,16 @@ There are three hardware/software environments described below.
 
 ### PC/Laptop - Plotting, Simulation, and Development
 
-Desktop or laptop computer running Ubuntu 22.04 Desktop. Newer Ubuntu versions or other distros are likely to work as well. 
+Desktop or laptop computer running Ubuntu Desktop (or your prefered flavor of Linux).
 
 Software: VSCode (with remote SSH and PlatformIO extensions), Drawio, LibreOffice, KiCad, OrcaSlicer, Chrome/Firefox
 
 
 ### Raspberry Pi - Quadruped Hardware Driver
 
-The quadruped is driven by a Raspberry Pi 5.
+The quadruped compute is a Raspberry Pi 5.
 
-The OS is Raspberry Pi OS Lite (Bookworm 64-bit) which is headless so all development is performed using remote SSH.
+The OS is Raspberry Pi OS Lite (Bookworm 64-bit), which is headless, so all development is performed using remote SSH.
 
 ### STM32 - Auxiliary Board
 
@@ -177,11 +177,7 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for 
 
 ### CAD
 
-Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commericial use.
-
-### Links
-
-All parts have export permissions to allow copying the workspace for modifications.
+Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commericial use. The links below should have export permissions to allow copying the workspace.
 
 - [Assembly](https://cad.onshape.com/documents/b02341d4ebb7f3e9dd488186)
 - [Legs](https://cad.onshape.com/documents/6da583196278caf8e90b3122)
@@ -203,6 +199,7 @@ Combination of TODO items for this revision and updates for a future revision
 - add upside down control (the frame supports walking even after flipped)
 - apply IMU for smoother gaits
 - add center if mass calculations for smoother gaits
+- swap battery and RPi positions for better center of mass
 - swap foot lag bolt from SAE to metric
 - add curvature to lower leg
 - add speaker for barks
@@ -215,10 +212,7 @@ Combination of TODO items for this revision and updates for a future revision
 
 Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
 
-The carbon rods twist during the run gait which can be remedied by extending the rods through the hip plates and adding face / butt plates to limit twisting. 
-
-
-
+The carbon rods twist during the run gait which can be greatly reduced by extending the rods through the hip plates and adding face / butt plates. 
 
 # Questions
 
