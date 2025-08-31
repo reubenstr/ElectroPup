@@ -22,6 +22,14 @@ else
     exit 1
 fi
 
+# Source .env variables
+if [ -f ".env" ]; then
+    source .env
+else
+    echo ".env file not found." >&2
+    exit 1
+fi
+
 exec python3 system/main.py "$@"
 
 # Profiler test:
