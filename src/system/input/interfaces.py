@@ -28,6 +28,9 @@ class InputCommand(StrEnum):
     GAMEPAD_INPUT = "gamepad_input"
     TOUCH_INPUT = "touch_input"
 
+    WIFI_AS_CLIENT = "wifi_as_client"
+    WIFI_AS_HOTSPOT = "wifi_as_hotspot"
+
 @dataclass
 class TouchMessage:
     leftX: float

@@ -18,6 +18,7 @@ from motors.motors import Motor, Motors
 from motors.interfaces import MotorName, MotorSpeeds
 from auxiliary.aux import Aux, AuxMessage, Sequence
 from utilities.utilities import *
+from utilities.wifi import Wifi
 from input.interfaces import InputCommand
 from input.input import Input
 from status import SystemStatus
@@ -36,6 +37,7 @@ class Main:
 
         print(f"[{self.tag }] starting in operation mode: {self.op_mode}")
 
+        self.wifi = Wifi()
         self.hardware = Hardware()
         self.input = Input(callback=self.controller_event_callback)
         self.motion = Motion(op_mode=self.op_mode)
@@ -50,12 +52,21 @@ class Main:
         self.low_battery_voltage_threadhold: float = 19.8
         self.low_battery_alert_rate_seconds: float = 30
         self.low_battery_last_alert_time: float = time()
+      
 
     ###############################################################################
     # Callback from Input(s)
     ###############################################################################
 
     def controller_event_callback(self, event: InputCommand):
+
+        if event is InputCommand.WIFI_AS_CLIENT:
+            self.wifi.connect_to_wifi()  
+            return  
+
+        if event is InputCommand.WIFI_AS_HOTSPOT:
+            self.wifi.create_hotspot()    
+            return
 
         if event is InputCommand.DISABLE_ENABLE_MOTORS:
             if self.op_mode is OpMode.LIVE:
@@ -103,7 +114,7 @@ class Main:
             self.motion.set_target_gait(Gait.TROT)
 
         if event is InputCommand.GAIT_CLIMB:
-            self.motion.set_target_gait(Gait.CLIMB)
+            self.motion.set_target_gait(Gait.CLIMB)          
 
         print(f"[{self.tag}] Controller event received: {event.name}")
         self.aux.play_sound(Sequence.BTN_BEEP_SHORT)

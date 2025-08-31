@@ -91,7 +91,10 @@ class Gamepad:
     """ BUTTONS FACE """
 
     def btn_triangle_changed_callback(self, state):
-        if state == True:
+        if self.left_shift or self.right_shift:
+            if state == True:
+                self._send_input_command_as_event(InputCommand.WIFI_AS_CLIENT)
+        elif state == True:
             self._send_input_command_as_event(InputCommand.GAIT_CLIMB)
 
     def btn_circle_changed_callback(self, state):
@@ -99,10 +102,13 @@ class Gamepad:
             self._send_input_command_as_event(InputCommand.GAIT_TROT)
 
     def btn_cross_changed_callback(self, state):
-        if state == True:
+        if self.left_shift or self.right_shift:
+            if state == True:
+                self._send_input_command_as_event(InputCommand.WIFI_AS_HOTSPOT)
+        elif state == True:
             self._send_input_command_as_event(InputCommand.GAIT_RUN)
 
-    def btn_square_changed_callback(self, state):
+    def btn_square_changed_callback(self, state):      
         if state == True:
             self._send_input_command_as_event(InputCommand.GAIT_CRAWL)
 

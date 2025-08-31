@@ -356,6 +356,17 @@ View services logs live
 sudo journalctl -u main.service -f
 ```
 
+
+## Wifi Client and Hotspot
+
+To create a hotpot on the Raspberry Pi for SSH and UI access when not near the WiFi AP add the following environmental variables to .bashrc
+
+```export ELECTROPUP_CLIENT_SSID="<your-wifi-ssid>"
+export ELECTROPUP_CLIENT_PASS="<your-wifi-password>"
+```
+
+The gamepad keybind image shows the commands to create a hotspot and to connect back to the WiFi AP.
+
 ---
 
 # Motor Zeroing
