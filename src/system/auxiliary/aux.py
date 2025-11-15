@@ -108,10 +108,10 @@ class Aux():
         try:
             self.ser = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
             self.error = False
-            print(f"[AUX] serial port opened. Port: {self.port}, baud: {self.baudrate}, timeout: {self.timeout}") 
+            print(f"[Aux] serial port opened. Port: {self.port}, baud: {self.baudrate}, timeout: {self.timeout}") 
         except Exception as e:
             self.error = True
-            print(f"[AUX] error, unable open serial port: {self.port}, exception: {e}")            
+            print(f"[Aux] error, unable open serial port: {self.port}, exception: {e}")            
                                         
     def send_at_rate(self, data : bytes):
         """Sends data only when a specific amount of time has passed."""
@@ -129,10 +129,10 @@ class Aux():
                 num_bytes_written = self.ser.write(data)
                                                     
                 # print([byte for byte in data])                
-                # print(f"[AUX] message sent, num bytes written: {num_bytes_written}")
+                # print(f"[Aux] message sent, num bytes written: {num_bytes_written}")
             
         except Exception as e:
-            print(f"[AUX] error, unable to send message on serial port: {self.port}, exception: {e}")            
+            print(f"[Aux] error, unable to send message on serial port: {self.port}, exception: {e}")            
       
       
     def play_sound(self, sequence: Sequence):

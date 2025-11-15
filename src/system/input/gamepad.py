@@ -145,7 +145,10 @@ class Gamepad:
 
     def btn_options_changed_callback(self, state):
         if state == True:
-            self._send_command(InputCommand.CLEAR_ERRORS)
+            if self.left_shift or self.right_shift:
+                self._send_command(InputCommand.SHUTDOWN)
+            else:
+                self._send_command(InputCommand.CLEAR_ERRORS)
 
     def btn_ps_changed_callback(self, state):
         if state == True:
@@ -203,13 +206,13 @@ class Gamepad:
 
     def start(self):
         if not self.thread_handle or not self.thread_handle.is_alive():
-            print("[GAMEPAD] starting thread")
+            print("[Gamepad] starting thread")
             self.thread_handle = Thread(target=self.worker)
             self.thread_handle.start()
 
     def stop(self):
         if self.thread_handle and self.thread_handle.is_alive():
-            print("[GAMEPAD] stopping thread")
+            print("[Gamepad] stopping thread")
             self.exit_event.set()
             self.thread_handle.join()
             self.gamepad_inferface.disconnect()

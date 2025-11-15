@@ -113,7 +113,7 @@ class Main:
         message = AuxMessage()
         message.joint_angle_error = self.motion.get_quad().get_joint_angle_error()
         message.inverse_kinematics_error = self.motion.get_quad().get_ik_error()
-        message.joystick_error = self.input.gamepad.is_connected() == False
+        message.joystick_error = self.gamepad.is_connected() == False
         message.can_error = self.motion.motors.is_can_error()
         message.imu_error = False
         message.low_battery = True if self.battery_voltage < self.low_battery_voltage_threadhold else False
@@ -132,7 +132,7 @@ class Main:
                 message.motor_communication_error = True
 
         message.battery_voltage = self.battery_voltage
-        message.gamepad_battery_percent = self.input.gamepad.get_battery_life_percent()
+        message.gamepad_battery_percent = self.gamepad.get_battery_life_percent()
         self.aux.send_at_rate(message.pack())
         self.aux.check_for_commands()
 
@@ -145,7 +145,7 @@ class Main:
         system_status.gait.state = self.motion.gait
         system_status.ik.status = Status.ERROR if self.motion.get_quad().get_ik_error() else Status.NONE
         system_status.joint_angle.status = Status.ERROR if self.motion.get_quad().get_joint_angle_error() else Status.NONE
-        system_status.input.state = self.input.get_input_mode()
+        system_status.input.state = self.input_mode
         system_status.loopTimes.main = self.main_loop_completion_time_ms
         system_status.loopTimes.motion = self.motion.get_loop_time_ms()
         system_status.loopTimes.can0 = self.motion.motors.get_can_loop_time("can0")
