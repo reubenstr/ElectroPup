@@ -29,6 +29,9 @@ class FrameParameters:
     # distance between left and right foot centers at ground touch
     foot_width = 0.261
 
+    # moves the feet inside the body for stylistic positioning
+    foot_internal_offset = -0.025
+
     # Joint bounds (degrees):
     abduction_joint_lower_bounds = -45.0
     abduction_joint_upper_bounds = 45.0

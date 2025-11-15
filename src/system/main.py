@@ -184,40 +184,8 @@ class Main:
 
         self.forwarder.set_ik_parameters(self.get_ik_parameters())
         self.forwarder.set_motion_parameters(self.get_motion_parameters())
-
-        # Get joint angles from physical quadruped.
-        leg_angles: Dict[LegName, List[float]] = {}
-        leg_angles[LegName.FL] = [
-            self.motion.motors.get_motor_position(MotorName.FLA),
-            self.motion.motors.get_motor_position(MotorName.FLH),
-            self.motion.motors.get_motor_position(MotorName.FLK),
-        ]
-        leg_angles[LegName.FR] = [
-            self.motion.motors.get_motor_position(MotorName.FRA),
-            self.motion.motors.get_motor_position(MotorName.FRH),
-            self.motion.motors.get_motor_position(MotorName.FRK),
-        ]
-        leg_angles[LegName.BL] = [
-            self.motion.motors.get_motor_position(MotorName.BLA),
-            self.motion.motors.get_motor_position(MotorName.BLH),
-            self.motion.motors.get_motor_position(MotorName.BLK),
-        ]
-        leg_angles[LegName.BR] = [
-            self.motion.motors.get_motor_position(MotorName.BRA),
-            self.motion.motors.get_motor_position(MotorName.BRH),
-            self.motion.motors.get_motor_position(MotorName.BRK),
-        ]
-        for leg, angles in leg_angles.items():
-            leg_angles[leg] = [angle if angle is not None else 0.0 for angle in angles]
-        live_quad = Quad()
-        # live_quad.set_joint_angles_degrees(leg_angles)
-        # live_quad.update_ht_body(self.input.get_ik_parameters())
-        ik_parameters = IKParameters()
-        ik_parameters.roll = self.hardware.get_imu_data().roll
-        ik_parameters.pitch = self.hardware.get_imu_data().pitch
-        live_quad.set_body_pose_by_transform_inputs(ik_parameters, live_quad.get_base_foot_points())
-        live_quad.set_joint_angles_degrees(leg_angles)
-        self.forwarder.set_live_quad(live_quad)
+        
+        self.forwarder.set_live_quad(self.create_live_quadruped())
 
     def sleep_loop(self):
         """
@@ -317,6 +285,41 @@ class Main:
             return self.gamepad.get_ik_parameters()
         elif self.input_mode is InputMode.TOUCH:
             return self.touch.get_ik_parameters()
+        
+    def create_live_quadruped(self) -> Quad:
+        # Get joint angles from physical quadruped.
+        leg_angles: Dict[LegName, List[float]] = {}
+        leg_angles[LegName.FL] = [
+            self.motion.motors.get_motor_position(MotorName.FLA),
+            self.motion.motors.get_motor_position(MotorName.FLH),
+            self.motion.motors.get_motor_position(MotorName.FLK),
+        ]
+        leg_angles[LegName.FR] = [
+            self.motion.motors.get_motor_position(MotorName.FRA),
+            self.motion.motors.get_motor_position(MotorName.FRH),
+            self.motion.motors.get_motor_position(MotorName.FRK),
+        ]
+        leg_angles[LegName.BL] = [
+            self.motion.motors.get_motor_position(MotorName.BLA),
+            self.motion.motors.get_motor_position(MotorName.BLH),
+            self.motion.motors.get_motor_position(MotorName.BLK),
+        ]
+        leg_angles[LegName.BR] = [
+            self.motion.motors.get_motor_position(MotorName.BRA),
+            self.motion.motors.get_motor_position(MotorName.BRH),
+            self.motion.motors.get_motor_position(MotorName.BRK),
+        ]
+        for leg, angles in leg_angles.items():
+            leg_angles[leg] = [angle if angle is not None else 0.0 for angle in angles]
+        quad = Quad()      
+        ik_parameters = IKParameters()
+        ik_parameters.roll = self.hardware.get_imu_data().roll
+        ik_parameters.pitch = self.hardware.get_imu_data().pitch
+        ik_parameters.yaw = self.get_ik_parameters().yaw
+        quad.set_body_pose_by_transform_inputs(ik_parameters, quad.get_base_foot_points())
+        quad.set_joint_angles_degrees(leg_angles)
+        return quad
+
     
     def shutdown(self, full_shutdown_flag=False):
         print(f"[Main] shutdown...")

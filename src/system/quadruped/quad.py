@@ -55,6 +55,7 @@ class Quad(object):
         self.body_length = self.frame_parameters.body_length
         self.foot_length = self.frame_parameters.foot_length
         self.foot_width = self.frame_parameters.foot_width
+        self.foot_internal_offset = self.frame_parameters.foot_internal_offset
 
         self.tag = "Quad"
 
@@ -200,14 +201,9 @@ class Quad(object):
         l = self.body_length + 0
         w = self.body_width + 0
         l1 = self.hip_length
-        offset = 0
+        offset = self.foot_internal_offset
 
-        global_foot_positions = {}
-        # global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
-        # global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
-        # global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
-        # global_foot_positions[LegName.BL] = Point(-l / 2, w / 2 + l1 + offset, 0)
-
+        global_foot_positions = {}  
         global_foot_positions[LegName.FR] = Point(l / 2, -w / 2 - l1 - offset, 0)
         global_foot_positions[LegName.FL] = Point(l / 2, w / 2 + l1 + offset, 0)
         global_foot_positions[LegName.BR] = Point(-l / 2, -w / 2 - l1 - offset, 0)
