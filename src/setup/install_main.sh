@@ -22,7 +22,7 @@ After=multi-user.target
 [Service]
 Type=simple
 WorkingDirectory=$HOME/ElectroPup/src
-ExecStart=$HOME/ElectroPup/src/main.sh --live
+ExecStart=$HOME/ElectroPup/src/main.sh --service
 Restart=on-failure
 RestartSec=5s
 
@@ -36,3 +36,5 @@ sudo systemctl stop main.service
 sudo systemctl start main.service
 
 echo "Installation complete"
+echo "Run this command to see the service status: sudo systemctl status main.service"
+echo "Run this command to see live logs: sudo journalctl -u main.service -f"

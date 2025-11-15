@@ -19,10 +19,12 @@ from motors.interfaces import MotorName, MotorSpeeds
 from auxiliary.aux import Aux, AuxMessage, Sequence
 from utilities.utilities import *
 from utilities.wifi import Wifi
+from utilities.service import ServiceCommand, service_action
 from input.interfaces import InputCommand
 from input.input import Input
 from status import SystemStatus
 from forwarder import Forwarder
+
 
 """
     ElectroPup main application.
@@ -308,9 +310,11 @@ if __name__ == "__main__":
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-d", "--dev", action="store_true", help="Run in development mode")
     group.add_argument("-l", "--live", action="store_true", help="Run in live mode")
+    group.add_argument("-s", "--service", action="store_true", help="Executed by the service")
     group.add_argument("--start", action="store_true", help="Start the service")
     group.add_argument("--stop", action="store_true", help="Stop the service")
-    group.add_argument("--reset", action="store_true", help="Restart the service")
+    group.add_argument("--disable", action="store_true", help="Disable the service")
+    group.add_argument("--restart", action="store_true", help="Restart the service")
 
     args = parser.parse_args()
 
@@ -319,54 +323,31 @@ if __name__ == "__main__":
     ###############################################################################
 
     if args.start:
-        try:
-            subprocess.run(["sudo", "systemctl", "start", "main.service"], check=True)
-            print("[System] main.service has been started.")
-        except subprocess.CalledProcessError as e:
-            print(f"[System] error, failed to start main.service: {str(e)}")
-        except Exception as e:
-            print(str(e))
-            print(traceback.format_exc())
-        finally:
-            exit(1)
+        service_action(ServiceCommand.START, "main.service")
 
     if args.stop:
-        try:
-            subprocess.run(["sudo", "systemctl", "stop", "main.service"], check=True)
-            print("[System] main.service has been stopped.")
-        except subprocess.CalledProcessError as e:
-            print(f"[System] error, failed to stop main.service: {str(e)}")
-        except Exception as e:
-            print(str(e))
-            print(traceback.format_exc())
-        finally:
-            exit(1)
+        service_action(ServiceCommand.STOP, "main.service")
 
-    if args.reset:
-        try:
-            subprocess.run(["sudo", "systemctl", "restart", "main.service"], check=True)
-            print("[System] main.service has been restarted.")
-        except subprocess.CalledProcessError as e:
-            print(f"[System] error, failed to restart main.service: {str(e)}")
-        except Exception as e:
-            print(str(e))
-            print(traceback.format_exc())
-        finally:
-            exit(1)
+    if args.disable:
+        service_action(ServiceCommand.DISABLE, "main.service")
+
+    if args.restart:
+        service_action(ServiceCommand.RESET, "main.service")
 
     if args.dev:
         mode = OpMode.DEV
-    elif args.live:
+    elif args.live or args.service:
         mode = OpMode.LIVE
+ 
+    if args.service == False:
+        if is_service_running("main.service"):
+            print(f"[Main] error, main.service is running, unable to start main.py")
+            exit(1)
 
     ###############################################################################
     # Run Main Program
     ###############################################################################
-
-    if is_service_running("live.service"):
-        print(f"[Live] error, live.service is running, unable to start live.py")
-        exit(1)
-
+  
     main = Main(mode=mode)
 
     try:
