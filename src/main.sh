@@ -31,6 +31,3 @@ else
 fi
 
 exec python3 system/main.py "$@"
-
-# Profiler test:
-# exec python3 -m cProfile -o profile_results.prof system/main.py "$@"

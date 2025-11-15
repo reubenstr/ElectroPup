@@ -219,9 +219,5 @@ class Forwarder:
         return plot
 
     @staticmethod
-    def scale(value: float) -> float:
-        """
-        The kinematics uses a different convention that standard ploting libaries,
-        therefore rotate the points to match the expected convention of the UI plotting library.
-        """
+    def scale(value: float) -> float:       
         return round(value * 1000, 2)

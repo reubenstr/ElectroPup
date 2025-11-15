@@ -136,7 +136,7 @@ The CAN bus controller is a [2-Channel Isolated CAN Expansion HAT](https://www.w
 
 Each CAN controller drivers six motors with an average motor update rate of ~70hz. This includes fetching encoder position, setting target angle/speed, and getting error states.
 
-# 🎮 Gamepad
+# Gamepad
 
 <img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
 
@@ -215,7 +215,7 @@ The carbon rods twist during the run gait which can be greatly reduced by extend
 
 # Questions
 
-For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues).
+For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues) on the repo's gitlab page..
 
 # Credits
 

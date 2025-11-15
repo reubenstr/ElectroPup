@@ -43,6 +43,7 @@ pyparsing==3.2.3
 pyserial==3.5
 python-can==4.5.0
 python-dateutil==2.9.0.post0
+python-dotenv==1.2.1
 python-engineio==4.12.2
 python-socketio==5.13.0
 PyYAML==6.0.2
