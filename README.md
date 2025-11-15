@@ -1,7 +1,8 @@
-A DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
+<img src="images/electropup-cad-front-angle.png" width="800">
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-front-angle.png" width="800">
+ElectroPup is DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
 
+Specifications:
 - RPi 5
 - Auxilary board w/LCD display
 - 9-axis accelerometer/gyro sensor 
@@ -9,7 +10,7 @@ A DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
 - 6s Li-Ion battery, ~70wH
 - 4.5kg
 
-ElectroPup uses pure Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).
+ElectroPup uses Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).
 
 # Docs
 
@@ -24,29 +25,29 @@ The UI framework is React Native using Expo.
 
 # Kinematics
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-wireframe-demo.gif" width="800">
+<img src="images/electro-pup-wireframe-demo.gif" width="800">
 
 Inverse kinematics, leg position, and gamepad inputs are verifed using the UI.
 
 
 ### Trajectories
 
-Bezier curves, sin arcs, and curvature projection are used to generate trajectories. Below are plots of various control points configurations. 
+Bezier curves, sin arcs, and curvature projection are used to generate trajectories. The plots below are examples of control points configurations. 
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/beizer-control-points-chart.png" width="800">
+<img src="images/beizer-control-points-chart.png" width="800">
 
 The output of `./src/plot/bezier_curve_plot.py`
 
-Rotation is achieved by projecting a linear trajectory onto a curve. Below are plot ofs the projection calculation.
+Rotation is achieved by projecting a linear trajectory onto a curve. The plots are of example projection calculations.
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/arc-projection-chart.png" width="800">
+<img src="images/arc-projection-chart.png" width="800">
 
 The output of `./src/plot/projection_plot.py`
 
 
 # Simulation
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-mujuco-simulation-pose.png" width="800">
+<img src="images/electro-pup-mujuco-simulation-pose.png" width="800">
 
 Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, input controlls are only provided by the gamepad. The `ElectroPup.xml` currently does not have approximate masses or inertial so the simulated quadruped is rather bouncy.
 
@@ -56,13 +57,13 @@ PCBs are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB
 
 ### Power Carrier
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-power-carrier-v1-render.png" width="800">
+<img src="images/electro-pup-power-carrier-v1-render.png" width="800">
 
 The Power Carrier PCB provides a main on/off power switch and distributes power the the motor headers. The Power Carrier creates four CAN bus networks one for each leg. Solder jumpers allow merging the front two legs into a single network and the back two legs into another single network.
 
 ### Auxiliary Board
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-auxiliary-board-v1-render.png" width="800">
+<img src="images/electro-pup-auxiliary-board-v1-render.png" width="800">
 
 The auxiliary board is optional and not required for the quadruped to operate.
 
@@ -116,21 +117,21 @@ Future projects will prioritize ODrive compatible drivers.
 
 ### Motor Zero Positions
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-motors-in-zero-position.png" width="800">
+<img src="images/electro-pup-motors-in-zero-position.png" width="800">
 
 ### Motor Tags
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electropup-cad-topdown-motor-tags.png" width="800">
+<img src="images/electropup-cad-topdown-motor-tags.png" width="800">
 
 ### Motor Calibration
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-zero-motors-script.png" width="800">
+<img src="images/electro-pup-zero-motors-script.png" width="800">
 
 The zero-motors.py script is a quick way to verify correct motor configuration and to zero the motors.
 
 # CAN Bus
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-can-bus-controller.png" width="800">
+<img src="images/electro-pup-can-bus-controller.png" width="800">
 
 The CAN bus controller is a [2-Channel Isolated CAN Expansion HAT](https://www.waveshare.com/2-ch-can-hat.htm) from waveshare.
 
@@ -138,7 +139,7 @@ Each CAN controller drivers six motors with an average motor update rate of ~70h
 
 # Gamepad
 
-<img src="https://github.com/reubenstr/ElectroPup/blob/main/images/electro-pup-gamepad-controls.png" width="800">
+<img src="images/electro-pup-gamepad-controls.png" width="800">
 
 ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may be used with minor software modifications.
 
@@ -211,7 +212,13 @@ This is a general TODO list which may span this revision or a future revision.
 
 Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
 
-The carbon rods twist during the run gait which can be greatly reduced by extending the rods through the hip plates and adding face / butt plates. 
+Future Auxilary board revisions will remove the STM32 and either drive the LCD directly from the RPi or remove it completly. The extra complexity outweights the LCD's usefullness, especially when the GUI provides significantly more data. 
+
+Future power carrier PCB revisions will include a voltage/current sensor such as a INA228 and a fuse.
+
+The carbon rods twist during the run gait which can be reduced by extending the rods through the hip plates and adding face / butt plates. 
+
+Future revisions will prioritze adding contact sensors that will allow for better terrain handling and future AI training.
 
 # Questions
 

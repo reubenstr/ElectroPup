@@ -121,7 +121,7 @@ export default function ServerSelector() {
                                 selectedValue={server.selectedEndpoint?.address}
                                 onValueChange={(selectedValue) => handleEndpointChange(server, selectedValue)}
                                 mode="dialog"
-                                prompt="Select ROS Endpoint"
+                                prompt="Select Endpoint"
                             >
                                 {server.endpoints.map((endpoint, index) => (
                                     <Picker.Item
