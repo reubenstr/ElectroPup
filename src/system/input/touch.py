@@ -5,6 +5,7 @@ from threading import Thread, Event
 from dataclasses import dataclass
 from typing import Optional
 from copy import deepcopy
+from queue import Queue
 import json
 
 from input.gamepad_interface import PS4
@@ -14,7 +15,7 @@ from quadruped.parameters.ik_parameters import IKParameters
 from quadruped.parameters.motion_parameters import MotionParameters
 
 """"
-    Get forwarded touch message from the server.py script as provided by the UI
+    Get forwarded touch message from the server.py script as provided by the UI.   
 """
 
 @dataclass
@@ -26,8 +27,8 @@ class ControlMessage:
     command: InputCommand
 
 class Touch:
-    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
-        self.callback = callback
+    def __init__(self, command_queue: Queue[InputCommand]):
+        self.command_queue = command_queue
 
         context = zmq.Context()
         self.socket = context.socket(zmq.PULL)
@@ -45,12 +46,11 @@ class Touch:
         self.message_check_rate_ms: float = 0.010
 
     ###############################################################################
-    # Events
+    # Queue
     ###############################################################################
 
-    def _send_input_command_as_event(self, event: InputCommand):
-        if self.callback:
-            self.callback(event)
+    def _send_command(self, command: InputCommand):
+        self.command_queue.put(command)
 
     ###############################################################################
     # Mesage
@@ -62,19 +62,19 @@ class Touch:
 
         # print('[TOUCH] message received from UI: ', message)
 
-        self.ik_parameters.set_roll(message.leftX)
+        self.ik_parameters.set_roll_by_axis(message.leftX)
         self.motion_parameters.lateral_velocity = message.leftX
 
-        self.ik_parameters.set_pitch(message.leftY)
+        self.ik_parameters.set_pitch_by_axis(message.leftY)
         self.motion_parameters.forward_velocity = message.leftY
 
-        self.ik_parameters.set_yaw(message.rightX)
+        self.ik_parameters.set_yaw_by_axis(message.rightX)
         self.motion_parameters.angular_velocity = message.rightX
 
-        self.ik_parameters.set_height_translation(message.rightY)
+        self.ik_parameters.set_height_transition_by_axis(message.rightY)
                    
         if message.command != InputCommand.NO_UPDATE:   
-            self._send_input_command_as_event(message.command)
+            self._send_command(message.command)
         
 
     ###############################################################################

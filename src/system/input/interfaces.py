@@ -6,6 +6,7 @@ class InputMode(StrEnum):
     NA = "N/A"
     GAMEPAD = "gamepad"
     TOUCH = "touch"
+    KEYBOARD = "keyboard"
 
 
 # Commands from the touch and gamepad inputs
@@ -30,6 +31,8 @@ class InputCommand(StrEnum):
 
     WIFI_AS_CLIENT = "wifi_as_client"
     WIFI_AS_HOTSPOT = "wifi_as_hotspot"
+
+    SHUTDOWN = "shutdown"
 
 @dataclass
 class TouchMessage:

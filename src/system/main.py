@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import os
+import queue
 import argparse
 import traceback
-import subprocess
+from queue import Queue
 from time import sleep, time
 from rich import print  # Overrides print and injects colors
 from typing import Dict, List
@@ -20,7 +21,9 @@ from auxiliary.aux import Aux, AuxMessage, Sequence
 from utilities.utilities import *
 from utilities.wifi import Wifi
 from utilities.service import ServiceCommand, service_action
-from input.interfaces import InputCommand
+from input.interfaces import InputCommand, InputMode
+from input.gamepad import Gamepad
+from input.touch import Touch
 from input.input import Input
 from status import SystemStatus
 from forwarder import Forwarder
@@ -33,18 +36,19 @@ from forwarder import Forwarder
 
 class Main:
     def __init__(self, mode: OpMode):
-        self.op_mode: OpMode = mode
+        self.op_mode: OpMode = mode 
 
-        self.tag = "Main"
+        print(f"[Main] starting in operation mode: {self.op_mode}")
 
-        print(f"[{self.tag }] starting in operation mode: {self.op_mode}")
+        self.command_queue = Queue()
 
         self.wifi = Wifi()
-        self.hardware = Hardware()
-        self.input = Input(callback=self.controller_event_callback)
+        self.hardware = Hardware()      
         self.motion = Motion(op_mode=self.op_mode)
         self.forwarder = Forwarder()
         self.aux = Aux()
+        self.gamepad = Gamepad(self.command_queue)
+        self.touch = Touch(self.command_queue)
 
         self.main_loop_rate_seconds = 0.010
         self.main_loop_time: float = 0
@@ -54,79 +58,17 @@ class Main:
         self.low_battery_voltage_threadhold: float = 19.8
         self.low_battery_alert_rate_seconds: float = 30
         self.low_battery_last_alert_time: float = time()
-      
 
-    ###############################################################################
-    # Callback from Input(s)
-    ###############################################################################
-
-    def controller_event_callback(self, event: InputCommand):
-
-        if event is InputCommand.WIFI_AS_CLIENT:
-            self.wifi.connect_to_wifi()  
-            return  
-
-        if event is InputCommand.WIFI_AS_HOTSPOT:
-            self.wifi.create_hotspot()    
-            return
-
-        if event is InputCommand.DISABLE_ENABLE_MOTORS:
-            if self.op_mode is OpMode.LIVE:
-                if self.motion.motors.is_motors_enabled():
-                    self.motion.motors.disable_all_motors()
-                    self.motion.set_target_motion_state(MotionState.STANDBY)
-                else:
-                    self.motion.motors.enable_all_motors()
-            else:
-                self.aux.play_sound(Sequence.ERROR)
-                print(f"[{self.tag}] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
-
-        if event is InputCommand.CLEAR_ERRORS:
-            print(f"[{self.tag }] clearing errors...")
-            self.motion.motors.clear_errors_all_motors()
-            return
-
-        if self.op_mode is OpMode.LIVE:
-            if self.motion.get_motion_state() is MotionState.STANDBY:
-                if not self.motion.motors.is_motors_enabled():
-                    self.aux.play_sound(Sequence.ERROR)
-                    print(f"[{self.tag}] Controller event {event.name} blocked, motors not enabled.")
-                    return
-
-        if event is InputCommand.STAND:
-            self.motion.set_target_motion_state(MotionState.STAND)
-            self.motor_enable_flag = True
-
-        if event is InputCommand.SIT:
-            self.motion.set_target_motion_state(MotionState.SIT)
-
-        if event is InputCommand.POSE:
-            self.motion.set_target_motion_state(MotionState.POSE)
-
-        if event is InputCommand.WALK:
-            self.motion.set_target_motion_state(MotionState.WALK)
-
-        if event is InputCommand.GAIT_CRAWL:
-            self.motion.set_target_gait(Gait.CRAWL)
-
-        if event is InputCommand.GAIT_RUN:
-            self.motion.set_target_gait(Gait.RUN)
-
-        if event is InputCommand.GAIT_TROT:
-            self.motion.set_target_gait(Gait.TROT)
-
-        if event is InputCommand.GAIT_CLIMB:
-            self.motion.set_target_gait(Gait.CLIMB)          
-
-        print(f"[{self.tag}] Controller event received: {event.name}")
-        self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
-
+        self.input_mode: InputMode = InputMode.GAMEPAD
+         
     ###############################################################################
     # Main Loop
     ###############################################################################
 
     def run(self):
         while True:
+
+            self.get_commands()
 
             self.update_inputs()
 
@@ -142,9 +84,20 @@ class Main:
     # Loop Methods
     ###############################################################################
 
+    def get_commands(self):
+        command = None
+        try:
+            command = self.command_queue.get_nowait()
+        except queue.Empty:
+            pass
+
+        if command is not None:
+            self.process_command(command)
+    
+    
     def update_inputs(self):
-        self.motion.set_ik_parameters(self.input.get_ik_parameters())
-        self.motion.set_motion_parameters(self.input.get_motion_parameters())
+        self.motion.set_ik_parameters(self.get_ik_parameters())
+        self.motion.set_motion_parameters(self.get_motion_parameters())
 
     def check_low_battery(self):
         if self.battery_voltage > 0 and self.battery_voltage < self.low_battery_voltage_threadhold:
@@ -207,8 +160,8 @@ class Main:
         system_status.imu.pitch = self.hardware.get_imu_data().pitch
         system_status.can0.status = self.motion.motors.get_can_status("can0")
         system_status.can1.status = self.motion.motors.get_can_status("can1")
-        system_status.gamepad.status = self.input.gamepad.get_status()
-        system_status.gamepad.battery = self.input.gamepad.get_battery_life_str()
+        system_status.gamepad.status = self.gamepad.get_status()
+        system_status.gamepad.battery = self.gamepad.get_battery_life_str()
 
         voltage_accumulator: float = 0.0
         motors: Dict[str, Motor] = self.motion.motors.get_all_motors()
@@ -229,8 +182,8 @@ class Main:
         self.forwarder.set_transitions(transitions)
         self.forwarder.set_hold_trajectories(hold_trajectories)
 
-        self.forwarder.set_ik_parameters(self.input.get_ik_parameters())
-        self.forwarder.set_motion_parameters(self.input.get_motion_parameters())
+        self.forwarder.set_ik_parameters(self.get_ik_parameters())
+        self.forwarder.set_motion_parameters(self.get_motion_parameters())
 
         # Get joint angles from physical quadruped.
         leg_angles: Dict[LegName, List[float]] = {}
@@ -286,18 +239,97 @@ class Main:
     ###############################################################################
     # Helpers
     ###############################################################################
+  
+    def process_command(self, command: InputCommand):
 
+        if command is InputCommand.SHUTDOWN:
+            self.shutdown(full_shutdown_flag=True) 
+
+        if command is InputCommand.WIFI_AS_CLIENT:
+            self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
+            self.wifi.connect_to_wifi()  
+            return  
+
+        if command is InputCommand.WIFI_AS_HOTSPOT:
+            self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
+            self.wifi.create_hotspot()    
+            return
+
+        if command is InputCommand.DISABLE_ENABLE_MOTORS:
+            if self.op_mode is OpMode.LIVE:
+                if self.motion.motors.is_motors_enabled():
+                    self.motion.motors.disable_all_motors()
+                    self.motion.set_target_motion_state(MotionState.STANDBY)
+                else:
+                    self.motion.motors.enable_all_motors()
+            else:
+                self.aux.play_sound(Sequence.ERROR)
+                print(f"[Main] Warning, enable/disable motors blocked, LIVE operation mode not enabled.")
+
+        if command is InputCommand.CLEAR_ERRORS:
+            print(f"[Main] clearing errors...")
+            self.motion.motors.clear_errors_all_motors()
+            return
+
+        if self.op_mode is OpMode.LIVE:
+            if self.motion.get_motion_state() is MotionState.STANDBY:
+                if not self.motion.motors.is_motors_enabled():
+                    self.aux.play_sound(Sequence.ERROR)
+                    print(f"[Main] Controller event {command.name} blocked, motors not enabled.")
+                    return
+
+        if command is InputCommand.STAND:
+            self.motion.set_target_motion_state(MotionState.STAND)
+            self.motor_enable_flag = True
+
+        if command is InputCommand.SIT:
+            self.motion.set_target_motion_state(MotionState.SIT)
+
+        if command is InputCommand.POSE:
+            self.motion.set_target_motion_state(MotionState.POSE)
+
+        if command is InputCommand.WALK:
+            self.motion.set_target_motion_state(MotionState.WALK)
+
+        if command is InputCommand.GAIT_CRAWL:
+            self.motion.set_target_gait(Gait.CRAWL)
+
+        if command is InputCommand.GAIT_RUN:
+            self.motion.set_target_gait(Gait.RUN)
+
+        if command is InputCommand.GAIT_TROT:
+            self.motion.set_target_gait(Gait.TROT)
+
+        if command is InputCommand.GAIT_CLIMB:
+            self.motion.set_target_gait(Gait.CLIMB)          
+
+        print(f"[Main] Controller event received: {command.name}")
+        self.aux.play_sound(Sequence.BTN_BEEP_SHORT)
+
+    def get_motion_parameters(self):
+        if self.input_mode is InputMode.GAMEPAD:
+            return self.gamepad.get_motion_parameters()
+        elif self.input_mode is InputMode.TOUCH:
+            return self.touch.get_motion_parameters()
+
+    def get_ik_parameters(self):
+        if self.input_mode is InputMode.GAMEPAD:
+            return self.gamepad.get_ik_parameters()
+        elif self.input_mode is InputMode.TOUCH:
+            return self.touch.get_ik_parameters()
+    
     def shutdown(self, full_shutdown_flag=False):
-        print(f"[{self.tag }] shutdown...")
+        print(f"[Main] shutdown...")
 
         self.aux.play_sound(Sequence.SHUTDOWN)
         self.hardware.shutdown()
-        self.input.shutdown()
+        self.gamepad.stop()
+        self.touch.stop()
         self.motion.shutdown()
         self.forwarder.shutdown()
 
         if full_shutdown_flag:
-            print(f"[{self.tag}] shutting down system...")
+            print(f"[Main] shutting down system...")
             sleep(1)
             os.system("sudo shutdown now")
 

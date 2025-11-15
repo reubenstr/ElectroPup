@@ -3,6 +3,7 @@ from typing import Callable, Optional
 from threading import Thread, Event
 from copy import deepcopy
 from math import copysign
+from queue import Queue
 
 from input.gamepad_interface import PS4
 from quadruped.interfaces import Status
@@ -27,8 +28,8 @@ DPAD_DIRECTION_DOWN = 1
 DPAD_DIRECTION_RIGHT = 1
 
 class Gamepad:
-    def __init__(self, callback: Optional[Callable[[InputCommand], None]] = None):
-        self.callback = callback
+    def __init__(self, command_queue: Queue[InputCommand]):
+        self.command_queue = command_queue
 
         self.ik_parameters = IKParameters()
         self.motion_parameters = MotionParameters()
@@ -75,14 +76,14 @@ class Gamepad:
         self.worker_rate_seconds: float = 0.025
         self.gamepad_last_battery_check_time: float = 0
         self.gamepad_battery_check_rate_seconds: float = 1.0
+        self.start()
 
     ###############################################################################
-    # Events
+    # Queue
     ###############################################################################
 
-    def _send_input_command_as_event(self, event: InputCommand):
-        if self.callback:
-            self.callback(event)
+    def _send_command(self, command: InputCommand):
+        self.command_queue.put(command)
 
     ###############################################################################
     # Callback handlers from Gamepad
@@ -93,24 +94,24 @@ class Gamepad:
     def btn_triangle_changed_callback(self, state):
         if self.left_shift or self.right_shift:
             if state == True:
-                self._send_input_command_as_event(InputCommand.WIFI_AS_CLIENT)
+                self._send_command(InputCommand.WIFI_AS_CLIENT)
         elif state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_CLIMB)
+            self._send_command(InputCommand.GAIT_CLIMB)
 
     def btn_circle_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_TROT)
+            self._send_command(InputCommand.GAIT_TROT)
 
     def btn_cross_changed_callback(self, state):
         if self.left_shift or self.right_shift:
             if state == True:
-                self._send_input_command_as_event(InputCommand.WIFI_AS_HOTSPOT)
+                self._send_command(InputCommand.WIFI_AS_HOTSPOT)
         elif state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_RUN)
+            self._send_command(InputCommand.GAIT_RUN)
 
     def btn_square_changed_callback(self, state):      
         if state == True:
-            self._send_input_command_as_event(InputCommand.GAIT_CRAWL)
+            self._send_command(InputCommand.GAIT_CRAWL)
 
     """ BUTTONS SHOULDER AND TRIGGER """
 
@@ -140,11 +141,11 @@ class Gamepad:
 
     def btn_share_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.DISABLE_ENABLE_MOTORS)
+            self._send_command(InputCommand.DISABLE_ENABLE_MOTORS)
 
     def btn_options_changed_callback(self, state):
         if state == True:
-            self._send_input_command_as_event(InputCommand.CLEAR_ERRORS)
+            self._send_command(InputCommand.CLEAR_ERRORS)
 
     def btn_ps_changed_callback(self, state):
         if state == True:
@@ -154,19 +155,19 @@ class Gamepad:
 
     def axis_dpad_x_changed_callback(self, state):
         if state == DPAD_DIRECTION_LEFT:
-            self._send_input_command_as_event(InputCommand.POSE)
+            self._send_command(InputCommand.POSE)
         elif state == DPAD_DIRECTION_CENTER:
             pass
         elif state == DPAD_DIRECTION_RIGHT:
-            self._send_input_command_as_event(InputCommand.WALK)
+            self._send_command(InputCommand.WALK)
 
     def axis_dpad_y_changed_callback(self, state):
         if state == DPAD_DIRECTION_UP:  
-            self._send_input_command_as_event(InputCommand.STAND)
+            self._send_command(InputCommand.STAND)
         elif state == DPAD_DIRECTION_CENTER:
             pass
         elif state == DPAD_DIRECTION_DOWN:          
-            self._send_input_command_as_event(InputCommand.SIT)
+            self._send_command(InputCommand.SIT)
 
 
     """ L2 and R2 Triggers """
