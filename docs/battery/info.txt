@@ -1,0 +1,2 @@
+6x 18650 in series forr 24v nominal.
+At 3300mAh per cell: 12.21Wh x 6 == 73.26Wh
