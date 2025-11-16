@@ -42,7 +42,7 @@ class Motion:
         self.ik_parameters: IKParameters = IKParameters()
 
         self.phase_time: float = 0
-        self.phase_time_rate_fast: float = 0.015
+        self.phase_time_rate_fast: float = 0.0125
 
         self.pose_time: float = 0
         self.pose_time_rate: float = 0.005
@@ -52,7 +52,7 @@ class Motion:
         self.transition_time_rate: float = 0.010
 
         self.idle_time: float = 0
-        self.idle_time_trigger_seconds: float = 5
+        self.idle_time_trigger_seconds: float = 30
         self.idle_flag: bool = True
 
         self.forward_velocity: float = 0
@@ -62,7 +62,7 @@ class Motion:
         self.angular_velocity_slew_rate_seconds: float = 2
         self.angular_velocity_time: float = 0
 
-        self.transition_enable: bool = False
+        self.transition_enable: bool = False # Config
         self.transition_planner = TransitionPlanner(touchdown_period=0.15, arc_period=0.3, height=0.025)
         self.transition_start_foot_points: Dict[LegName, Point] = {}
         self.transition_end_foot_points: Dict[LegName, Point] = {}
@@ -71,7 +71,7 @@ class Motion:
         self.transition_forward_velocity: float = 0
         self.transition_angle_threadhold: float = 20
 
-        self.soft_transition_enable: bool = True
+        self.soft_transition_enable: bool = False # Config
         self.soft_transition_flag: bool = False
         self.soft_transition_legs_started_swing: Dict[LegName, bool] = []
         self.soft_transition_previous_foot_points: Dict[LegName, Point] = self.quad.get_foot_points()

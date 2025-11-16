@@ -53,7 +53,7 @@ class Motors:
         self.target_positions: Dict[str, float] = {}
         self.target_speeds: Dict[str, int] = {}
 
-        default_speed: int = 250
+        default_speed: int = 300
 
         for motor in motor_list():
             if motor.can_channel in can_channels:
@@ -194,6 +194,9 @@ class Motors:
         return True
 
     def set_pid_all_motors(self):
+        """
+        Set motor PID parameters to motor's default values.
+        """
         start = time()
         self.acquire_can_locks()
         for motor_tag, motor in self.motors.items():

@@ -367,7 +367,7 @@ if __name__ == "__main__":
         service_action(ServiceCommand.DISABLE, "main.service")
 
     if args.restart:
-        service_action(ServiceCommand.RESET, "main.service")
+        service_action(ServiceCommand.RESTART, "main.service")
 
     if args.dev:
         mode = OpMode.DEV

@@ -30,7 +30,7 @@ class FrameParameters:
     foot_width = 0.261
 
     # moves the feet inside the body for stylistic positioning
-    foot_internal_offset = -0.025
+    foot_internal_offset = 0.0
 
     # Joint bounds (degrees):
     abduction_joint_lower_bounds = -45.0

@@ -6,7 +6,7 @@ class ServiceCommand(Enum):
     START = "start"
     STOP = "stop"
     DISABLE = "disable"
-    RESET = "reset"
+    RESTART = "restart"
 
 def service_action(action: ServiceCommand, service_name: str):
     try:
