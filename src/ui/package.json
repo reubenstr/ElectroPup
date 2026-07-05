@@ -18,7 +18,7 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
-    "expo": "^53.0.20",
+    "expo": "^53.0.27",
     "expo-blur": "~14.1.4",
     "expo-constants": "~17.1.6",
     "expo-dev-client": "~5.1.8",

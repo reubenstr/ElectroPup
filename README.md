@@ -6,8 +6,8 @@ Specifications:
 - RPi 5
 - Auxilary board w/LCD display
 - 9-axis accelerometer/gyro sensor 
-- BLDC motors
-- 6s Li-Ion battery, ~70wH
+- 12x BLDC motors
+- 6s Li-Ion battery, ~74wH
 - 4.5kg
 
 ElectroPup uses Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).

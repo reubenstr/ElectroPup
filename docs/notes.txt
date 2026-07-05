@@ -13,6 +13,10 @@ Fully loaded:
     Suspended (motors disabled): 1.08A @ 20vDC = 21.6 watts
     Standing (motors enabled): 1.79A @ 20vDC = 33.8 watts
 
+Battery:
+    6x 18650 in series, 24v nominal
+    At 3300mAh per cell: 12.21Wh x 6 == 73.26Wh
+
 ###############################################################################
 # Body
 ###############################################################################
