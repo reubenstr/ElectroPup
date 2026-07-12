@@ -6,6 +6,7 @@ import { View } from "react-native";
 import { TopNav } from "@/components/TopNav";
 import { StyleSheet } from "react-native-unistyles";
 import { createShadow } from "@/styles/themeComponents";
+import { useData } from "@/services/data/useData";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,6 +29,10 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  /* Single owner of the socket for the whole app; screens read useDataStore.
+     Must stay above the early return to keep hook order stable. */
+  useData();
 
   if (!fontsLoaded && !fontError) {
     return null;
