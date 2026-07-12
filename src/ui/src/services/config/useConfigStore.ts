@@ -17,7 +17,6 @@ interface ConfigStore {
   restoreDefaults: () => void;
 }
 
-/* Keeps `selection` pointing at a real endpoint after the list changes. */
 const clampSelection = (selection: number, length: number) =>
   Math.max(0, Math.min(selection, length - 1));
 

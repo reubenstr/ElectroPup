@@ -7,7 +7,6 @@ import { MotorState } from "@/services/data/dataTypes";
 type Column = {
   key: string;
   header: string;
-  /* Grow factor; the motor id column is wider than the numeric ones. */
   flex: number;
   render: (motor: MotorState | undefined) => string;
 };

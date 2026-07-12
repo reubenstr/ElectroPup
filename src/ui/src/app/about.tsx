@@ -3,9 +3,6 @@ import { StyleSheet } from "react-native-unistyles";
 import { createText, createShadow } from "@/styles/themeComponents";
 
 const GITHUB_URL = "https://github.com/reubenstr/ElectroPup/";
-
-/* electropup.png's native pixel size; Image doesn't reliably honor
-   `aspectRatio` for scaling a local asset, so height is computed directly. */
 const LOGO_WIDTH = 640;
 const LOGO_HEIGHT = LOGO_WIDTH * (1161 / 2132);
 

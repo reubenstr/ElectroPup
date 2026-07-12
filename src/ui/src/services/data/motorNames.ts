@@ -1,5 +1,4 @@
-/* Motor id -> human-readable joint name. Keys match the motor keys the robot
-   publishes in `data.motors`. Order here drives display order. */
+// Maps motor IDs to human readable name.
 export const motorNames = {
   // Left side.
   FLA: "front left abduction",

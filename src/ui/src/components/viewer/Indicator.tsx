@@ -6,13 +6,9 @@ import { Status } from "@/services/data/dataTypes";
 
 type IndicatorProps = {
   label: string;
-  /* When present, renders on a second row below the label. */
   value?: string | number;
-  /* Signal-colored fill (op status tiles). Takes precedence over `active`. */
-  status?: Status;
-  /* On/off fill for boolean state (foot contacts, motor enabled). */
+  status?: Status;  
   active?: boolean;
-  /* Hover popup (web); used for the motor id -> joint name hint. */
   tooltip?: string;
   minWidth?: number;
 };

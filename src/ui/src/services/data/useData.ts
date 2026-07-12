@@ -11,7 +11,7 @@ let socket: Socket | null = null;
 
 export function sendMessage(message: string) {
     if (!socket?.connected) {
-        console.warn("[data] cannot send, socket not connected");
+        console.warn("[Data] cannot send, socket not connected");
         return;
     }
     socket.emit("message", message);
@@ -46,7 +46,7 @@ export function useData() {
             try {
                 setData(JSON.parse(message) as Data);
             } catch {
-                console.warn("[data] discarding unparseable message");
+                console.warn("[Data] discarding unparseable message");
                 return;
             }
             clearTimeout(staleTimer);

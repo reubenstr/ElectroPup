@@ -30,6 +30,26 @@ const buttonBackgroundLight = "rgba(217, 217, 217, 0.75)";
 const buttonBackgroundDark = "rgba(25, 25, 25, 0.75)";
 const indicatorNeutral = "#8a8a8a";
 
+/* Synthwave retro '90s palette — hot pink, electric cyan, neon purple,
+   sunset orange, all glowing against deep indigo/violet-black surfaces. */
+const synthHotPink = "#ff2ec4";
+const synthCyan = "#00f0ff";
+const synthPurple = "#b967ff";
+const synthMagenta = "#ff00aa";
+const synthOrange = "#ff7a18";
+const synthYellow = "#ffe700";
+const synthGreen = "#05ffa1";
+const synthBlueViolet = "#7b2ff7";
+
+const synthTextPrimary = "#f5e8ff";
+const synthTextSecondary = "#c9a4f5";
+const synthTextDisabled = "#6b5480";
+const synthTextInverse = "#170a2e";
+
+const synthAccent = "#a24bd6";
+const synthButtonBackground = "rgba(43, 15, 74, 0.75)";
+const synthIndicatorNeutral = "#6b5480";
+
 
 /* `active`/`on` use `colorSelected` (the same vivid green as button.active and
    the nav's selected tab) rather than the variants.success olive green, which
@@ -50,14 +70,14 @@ const indicatorColors = {
 };
 
 const robotColorsLight = {
-  sim: { body: "#00a400", joint: "#00cd00", foot: "#0aff0a" },
-  live: { body: "#b00000", joint: "#d10000", foot: "#ff3b30" },
-  support: "#ffa801",
-  ring: "#dddd00",
-  transition: "#ffa801",
-  trajectory: { start: "#ff0000", end: "#0000ff" },
-  hold: { start: "#ff0000", end: "#9e0000" },
-  line: "#000000",
+  sim: { body: "#00d9c0", joint: "#00f0ff", foot: "#05ffa1" },
+  live: { body: "#d6008c", joint: "#ff2ec4", foot: "#ff5fd8" },
+  support: synthOrange,
+  ring: synthYellow,
+  transition: synthOrange,
+  trajectory: { start: synthMagenta, end: synthCyan },
+  hold: { start: synthMagenta, end: "#7a0050" },
+  line: "#665288",
 };
 
 const robotColorsDark = {
@@ -73,87 +93,87 @@ const robotColorsDark = {
 
 const lightColors = {
   text: {
-    primary: textPrimaryLight,
-    inverse: textInverseLight,
-    secondary: textSecondaryLight,
-    disabled: textDisabledLight,
+    primary: synthTextPrimary,
+    inverse: synthTextInverse,
+    secondary: synthTextSecondary,
+    disabled: synthTextDisabled,
 
-    action: colorAction,
-    info: colorInfo,
-    success: colorSuccess,
-    warning: colorWarning,
-    danger: colorError,
-    error: colorError,
+    action: synthCyan,
+    info: synthPurple,
+    success: synthGreen,
+    warning: synthYellow,
+    danger: synthMagenta,
+    error: synthMagenta,
   },
 
-  selected: colorSelected,
+  selected: synthHotPink,
 
-  divider: accentLight,
+  divider: synthAccent,
 
   border: {
-    surface: black,
-    card: black,
-    inset: black,
-    selected: colorSelected,
-    input: accentDark,
+    surface: synthBlueViolet,
+    card: synthHotPink,
+    inset: synthCyan,
+    selected: synthHotPink,
+    input: synthAccent,
   },
 
   background: {
-    surface: "rgba(215, 215, 215, 0.95)",
-    card: "rgba(200, 200, 200, 0.95)",
-    inset: "rgba(185, 185, 185, 0.95)",
-    overlay: "rgba(76, 76, 76, 0.6)",
-    modal: "rgba(76, 76, 76, 0.90)",
+    surface: "rgba(24, 10, 46, 0.95)",
+    card: "rgba(35, 14, 64, 0.95)",
+    inset: "rgba(18, 6, 38, 0.95)",
+    overlay: "rgba(10, 3, 26, 0.75)",
+    modal: "rgba(15, 5, 36, 0.92)",
   },
 
   button: {
-    text: textPrimaryLight,
-    inverse: textPrimaryLight,
-    hover: colorSelected,
-    active: colorSelected,
-    icon: textPrimaryLight,
-    border: black,
-    background: buttonBackgroundLight,
+    text: synthTextPrimary,
+    inverse: synthTextInverse,
+    hover: synthCyan,
+    active: synthHotPink,
+    icon: synthTextPrimary,
+    border: synthHotPink,
+    background: synthButtonBackground,
     disabled: {
-      icon: textPrimaryLight,
-      text: textDisabledLight,
-      background: buttonBackgroundLight,
-      border: textDisabledLight,
+      icon: synthTextDisabled,
+      text: synthTextDisabled,
+      background: synthButtonBackground,
+      border: synthTextDisabled,
     },
     variants: {
-      action: colorAction,
-      info: colorInfo,
-      success: colorSuccess,
-      warning: colorWarning,
-      danger: colorDanger,
-      navigation: black,
+      action: synthCyan,
+      info: synthPurple,
+      success: synthGreen,
+      warning: synthYellow,
+      danger: synthMagenta,
+      navigation: synthBlueViolet,
     },
   },
 
   joystick: {
     feature: {
-      pad: "rgba(25, 25, 25, 0.75)",
-      crosshair: "rgba(100, 100, 100, 0.75)",
-      stick: "rgba(125, 125, 125, 0.75)",
-      knob: "rgba(150, 150, 150, 0.75)",
+      pad: "rgba(35, 14, 64, 0.75)",
+      crosshair: "rgba(185, 103, 255, 0.75)",
+      stick: "rgba(255, 46, 196, 0.75)",
+      knob: "rgba(0, 240, 255, 0.75)",
     },
     border: {
-      pad: "rgba(25, 25, 25, 0.75)",
-      crosshair: "rgba(100, 100, 100, 0.75)",
-      stick: "rgba(125, 125, 125, 0.75)",
-      knob: "rgba(150, 150, 150, 0.75)",
+      pad: "rgba(185, 103, 255, 0.75)",
+      crosshair: "rgba(0, 240, 255, 0.75)",
+      stick: "rgba(255, 46, 196, 0.75)",
+      knob: "rgba(255, 231, 0, 0.75)",
     },
   },
 
   input: {
-    label: "#c4c4c4",
-    placeholder: "#888888",
-    text: textPrimaryDark,
-    disabledtext: "#242424",
-    border: "#353535",
-    borderFocus: colorSelected,
-    background: "#a6a6a6",
-    disabledBackground: "#242424",
+    label: synthTextSecondary,
+    placeholder: "#7a5c9e",
+    text: synthTextPrimary,
+    disabledtext: "#3a2a52",
+    border: synthAccent,
+    borderFocus: synthHotPink,
+    background: "#2b0f4a",
+    disabledBackground: "#1c0a30",
   },
 
   status: statusColors,

@@ -8,8 +8,13 @@ export const defaultEndpoints: EndpointConfig = {
       port: 80,
     },
     {
-      description: "Dev Machine",
+      description: "Local Machine",
       address: "localhost",
+      port: 80,
+    },
+    {
+      description: "Remote Machine",
+      address: "192.168.1.143",
       port: 80,
     },
   ],
