@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 const isWeb = Platform.OS === "web";
 
 const black = "#000000";
+const white = "#ffffff";
 
 const colorAction = "#0079e4";
 const colorInfo = "#f5f5f5";
@@ -10,11 +11,16 @@ const colorSuccess = "#7eb14f";
 const colorWarning = "#fbd117";
 const colorDanger = "#f72e20";
 const colorError = "#f72e20";
+const colorCritical = "#d42316";
+const colorUnknown = "#555555";
 
-const colorSelected = "#27c521";
+const colorSelected = "#f49f00";
+const colorPending = "#815502";
 
 const accentLight = "#747474";
+const accentLightSecondary = "#747474";
 const accentDark = "#6c6c6c";
+const accentDarkSecondary = "#414141";
 
 const textPrimaryDark = "#dfdfdf";
 const textSecondaryDark = "#a0a0a0";
@@ -29,6 +35,24 @@ const textInverseLight = "#ffffff";
 const buttonBackgroundLight = "rgba(217, 217, 217, 0.75)";
 const buttonBackgroundDark = "rgba(25, 25, 25, 0.75)";
 
+export const sharedColors = {
+  mapFeatures: {
+    drawing: {
+      poi: "#57fc5799",
+      keepins: "#8383f8ff",
+      keepouts: "#f86b6bff",
+      unknown: "#000000",
+    },
+    onMap: {
+      poi: "#FF9500",
+      keepins: "#007AFF",
+      keepouts: "#FF3B30",
+      primary: "#006EDB",
+      unknown: "#000000",
+    },
+  },
+} as const;
+
 const lightColors = {
   text: {
     primary: textPrimaryLight,
@@ -41,27 +65,35 @@ const lightColors = {
     success: colorSuccess,
     warning: colorWarning,
     danger: colorError,
-    error: colorError,   
+    error: colorError,
+    critical: colorCritical,
+    unknown: colorUnknown,
+    selected: colorSelected,
   },
 
   selected: colorSelected,
+  pending: colorPending,
 
   divider: accentLight,
 
-  border: { 
+  border: {
+    glass: black,
     surface: black,
     card: black,
-    inset: black,   
+    inset: black,
+    accent: accentDark,
     selected: colorSelected,
     input: accentDark,
   },
 
-  background: {   
+  background: {
+    glass: "rgba(230, 230, 230, 0.75)",
     surface: "rgba(215, 215, 215, 0.95)",
     card: "rgba(200, 200, 200, 0.95)",
     inset: "rgba(185, 185, 185, 0.95)",
     overlay: "rgba(76, 76, 76, 0.6)",
-    modal: "rgba(76, 76, 76, 0.90)",  
+    modal: "rgba(76, 76, 76, 0.90)",
+    opaque: white,
   },
 
   button: {
@@ -113,6 +145,8 @@ const lightColors = {
     background: "#a6a6a6",
     disabledBackground: "#242424",
   },
+
+  mapFeatures: sharedColors.mapFeatures,
 } as const;
 
 const darkColors = {
@@ -128,26 +162,34 @@ const darkColors = {
     warning: colorWarning,
     danger: colorError,
     error: colorError,
+    critical: colorCritical,
+    unknown: colorUnknown,
+    selected: colorSelected,
   },
 
   selected: colorSelected,
+  pending: colorPending,
 
   divider: accentLight,
 
   border: {
+    glass: black,
     surface: black,
     card: black,
     inset: black,
+    accent: accentDark,
     selected: colorSelected,
     input: accentDark,
   },
 
   background: {
+    glass: "rgba(54, 54, 54, 0.75)",
     surface: "rgba(85, 85, 85, 0.95)",
     card: "rgba(75, 75, 75, 0.95)",
     inset: "rgba(65, 65, 65, 0.95)",
     overlay: "rgba(25, 25, 25, 0.6)",
     modal: "rgba(25, 25, 25, 0.90)",
+    opaque: black,
   },
 
   button: {
@@ -199,18 +241,31 @@ const darkColors = {
     background: "#333333",
     disabledBackground: "#242424",
   },
+
+  mapFeatures: sharedColors.mapFeatures,
 } as const;
 
+/* Layout */
+
+const layout = {
+  width: {
+    leftColumn: isWeb ? 120 : 80, // View selector
+    rightColumn: isWeb ? 120 : 80, // Platform selector
+    navigation: isWeb ? 160 : 120, // Config selector, info selector
+  },
+  padding: isWeb ? 15 : 10, // Padding around major elements
+} as const;
 
 /* Sizes */
 
 const padding = {
+  glass: isWeb ? 15 : 10,
   surface: isWeb ? 15 : 10,
   card: isWeb ? 12 : 8,
   inset: isWeb ? 10 : 5,
   modal: isWeb ? 30 : 20,
 
-  control: {
+  generalButton: {
     horizontal: isWeb ? 10 : 5,
     vertical: isWeb ? 8 : 8,
   },
@@ -220,39 +275,54 @@ const padding = {
   },
 } as const;
 
-const gap = { 
+const gap = {
+  glass: isWeb ? 8 : 6,
   surface: isWeb ? 10 : 6,
   card: isWeb ? 8 : 4,
   inset: isWeb ? 8 : 4,
-  control: isWeb ? 10 : 6,
+  generalButton: isWeb ? 10 : 6,
   input: isWeb ? 10 : 8,
 };
 
 const size = {
-  content: {
-    maxWidth: 1280,
+  icons: {
+    viewSelector: isWeb ? 30 : 24,
+    platformSelector: isWeb ? 40 : 35,
+    generalButton: isWeb ? 20 : 16,
   },
   input: {
     height: isWeb ? 40 : 36,
   },
-  control: {
+  generalButton: {
     minHeight: 36,
     minWidth: 40,
-  }, 
+  },
+  viewSelector: {
+    minHeight: 40,
+    minWidth: 40,
+  },
   joystick: {
     pad: 120,
     stick: 30,
     knob: 60,
+  },
+
+  // TODO: move other icons here, add to style guide
+  icon: {
+    viewSelector: 24,
+    platformSelector: 40,
+    cameraSelector: 24,
   },
 } as const;
 
 /* Textures */
 
 const borderWidth = {
+  glass: 2,
   surface: 2,
   card: 1,
   inset: 1,
-  control: isWeb ? 2 : 1,
+  generalButton: isWeb ? 2 : 1,
   input: 1,
   divider: 1,
 
@@ -265,10 +335,11 @@ const borderWidth = {
 } as const;
 
 const radius = {
+  glass: 5,
   surface: 5,
   card: 5,
   inset: 5,
-  control: 5,
+  generalButton: 5,
   input: 4,
 } as const;
 
@@ -337,31 +408,38 @@ const typography = {
     fontSize: isWeb ? 16 : 14,
     lineHeight: 18,
     letterSpacing: 0,
-  }, 
+  },
+  generalButton: {
+    fontFamily: "OrbitronMedium",
+    fontSize: isWeb ? 18 : 14,
+    lineHeight: isWeb ? 22 : 18,
+    letterSpacing: 0,
+  },
 } as const;
 
 /* Miscellaneous */
 
 const shadows = {
-  large: {
+  glass: {
     boxShadow: "0px 3px 3.35px rgba(0,0,0,0.27)",
   },
   medium: {
     boxShadow: "0px 2px 2.62px rgba(0,0,0,0.23)",
   },
-  small: {
+  button: {
     boxShadow: "0px 1px 1px rgba(0,0,0,0.18)",
   },
 } as const;
 
 const zIndex = {
   base: 0,
-  control: 500,
+  manualControl: 500,
   dropdown: 1000,
   tooltip: 1500,
   menu: 1750,
   modal: 2000,
   popover: 3000,
+  toast: 4000,
   zenith: 9999,
 } as const;
 
@@ -375,6 +453,7 @@ const opacity = {
 
 export const lightDeviceTheme = {
   colors: lightColors,
+  layout,
   padding,
   gap,
   size,
@@ -387,7 +466,8 @@ export const lightDeviceTheme = {
 };
 
 export const darkDeviceTheme = {
-  colors: darkColors, 
+  colors: darkColors,
+  layout,
   padding,
   gap,
   size,

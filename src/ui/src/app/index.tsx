@@ -1,20 +1,6 @@
-import { Link, Stack } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { Screen } from "@/components/Screen";
 
-import Viewer from './viewer';
-
-export default function HomeScreen() {
-    return (
-        <View style={styles.container}>      
-            <Viewer />
-        </View>
-    );
+/* Home is the Plot page. */
+export default function PlotScreen() {
+  return <Screen title="Plot" />;
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',  
-    },
-});

@@ -1,139 +1,74 @@
-import { useEffect } from 'react';
-import { Platform, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import * as NavigationBar from 'expo-navigation-bar';
-import { useConfigStore } from '@/services/config/useConfigStore';
-import { Ionicons } from '@expo/vector-icons';
+import "@/styles/unistylesConfig";
+import { useEffect } from "react";
+import { useFonts } from "expo-font";
+import { Stack, SplashScreen } from "expo-router";
+import { View } from "react-native";
+import { TopNav } from "@/components/TopNav";
+import { StyleSheet } from "react-native-unistyles";
+import { createShadow } from "@/styles/themeComponents";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  // Keys must match the fontFamily names used in the theme's typography.
+  const [fontsLoaded, fontError] = useFonts({
+    OrbitronRegular: require("@/assets/fonts/orbitron/static/Orbitron-Regular.ttf"),
+    OrbitronMedium: require("@/assets/fonts/orbitron/static/Orbitron-Medium.ttf"),
+    OrbitronBold: require("@/assets/fonts/orbitron/static/Orbitron-Bold.ttf"),
   });
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      const lockOrientation = async () => {
-        await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-      };
-      lockOrientation();
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
     }
-  }, []);
+  }, [fontsLoaded, fontError]);
 
-  const AndroidSoftwareNavHidden = async () => {
-    console.log("AndroidSoftwareNavHidden")
-    await NavigationBar.setPositionAsync('absolute')
-    await NavigationBar.setVisibilityAsync("hidden");
-    await NavigationBar.setBehaviorAsync('overlay-swipe')
-    await NavigationBar.setBackgroundColorAsync("ffffff00");
-    await NavigationBar.setButtonStyleAsync("dark");
-  }
-
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      AndroidSoftwareNavHidden()
-    }
-  }, [])
-
-  const loadStore = useConfigStore(state => state.loadStore);
-  useEffect(() => {
-    loadStore();
-  }, []);
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
+  if (!fontsLoaded && !fontError) {
     return null;
   }
 
-  const Header = ({ title }: { title: string }) => {
-    const navigation = useNavigation();
-    const routesLength = useNavigationState(state => state.routes.length);
-    const isRoot = routesLength <= 1;
-    return (
-      <View style={headerStyles.container}>
-        <TouchableOpacity
-          onPress={() => {
-            if (!isRoot) {
-              navigation.goBack();
-            } else {
-              (navigation as any).navigate('index');
-            }
-          }}
-        >
-          <Ionicons
-            name={isRoot ? 'home' : 'arrow-back'}
-            size={30}
-            color="#333"
-          />
-        </TouchableOpacity>
-        <Text style={headerStyles.title}>{title}</Text>
-      </View>
-    );
-  };
-
   return (
-    <GestureHandlerRootView style={styles.gestureHander}>
-      <SafeAreaView
-        style={styles.safeArea}
-        edges={[]}
-      >
-        <StatusBar style="auto" hidden />
-        <Stack screenOptions={{ contentStyle: styles.screen }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="config"
-            options={{
-              headerShown: true,
-              header: () => <Header title="Configuration" />,
+    <View style={styles.root}>
+      <View style={styles.column}>
+        <TopNav />
+        <View style={styles.container}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "transparent" },
             }}
           />
-           <Stack.Screen
-            name="data"
-            options={{
-              headerShown: true,
-              header: () => <Header title="Quad Data" />,
-            }}
-          />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+        </View>
+      </View>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  gestureHander: {
+const styles = StyleSheet.create((theme, rt) => ({
+  root: {
     flex: 1,
-    backgroundColor: '#00ff00',
+    alignItems: "center",
+    paddingTop: theme.padding.surface + rt.insets.top,
+    paddingBottom: theme.padding.surface + rt.insets.bottom,
+    paddingLeft: theme.padding.surface + rt.insets.left,
+    paddingRight: theme.padding.surface + rt.insets.right,
+    backgroundColor: theme.colors.background.inset,
   },
-  safeArea: {
+  /* Keeps the app in a readable column on wide screens. */
+  column: {
     flex: 1,
-    backgroundColor: 'transparent',
+    width: "100%",
+    maxWidth: theme.size.content.maxWidth,
+    gap: theme.gap.surface,
   },
-  screen: {
-    backgroundColor: '#333333',
-  }
-});
-
-const headerStyles = StyleSheet.create({
   container: {
-    height: 60,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    backgroundColor: '#999',
-    borderBottomColor: '#555555'
+    flex: 1,
+    overflow: "hidden",
+    padding: theme.padding.surface,
+    backgroundColor: theme.colors.background.surface,
+    borderWidth: theme.borderWidth.surface,
+    borderColor: theme.colors.border.surface,
+    borderRadius: theme.radius.surface,
+    ...createShadow(theme, "medium"),
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginLeft: 12,
-  },
-});
+}));

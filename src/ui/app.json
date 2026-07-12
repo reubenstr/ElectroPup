@@ -7,28 +7,19 @@
     "icon": "./assets/images/icon.png",
     "scheme": "ui",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "icon": "./assets/expo.icon"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.ui"
-    },   
-    "androidNavigationBar": {
-      "visible": "immersive"
+      "predictiveBackGestureEnabled": false
     },
-    "androidStatusBar": {
-          "barStyle": "dark-content",
-          "backgroundColor": "#000000",
-          "translucent": true
-        },
     "web": {
-      "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
@@ -37,15 +28,16 @@
       [
         "expo-splash-screen",
         {
+          "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#000000"
+          "imageWidth": 76
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     }
   }
 }

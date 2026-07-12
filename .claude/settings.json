@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//dev/**)",
+      "Bash(python3 -c ' *)",
+      "Bash(grep -rn -A12 \"class Status\" system/quadruped/interfaces.py && ls /sys/class/net/)",
+      "Read(//sys/class/net/**)",
+      "Bash(timeout 25 python3 -c ' *)",
+      "Bash(cd /home/pc/Desktop/projects/ElectroPup/src/ui && echo \"=== native dirs? ===\" && ls -d android ios 2>/dev/null || echo \"none \\(managed/CNG\\)\"; echo \"=== lockfiles ===\" && ls -la *.lock* package-lock.json yarn.lock 2>/dev/null; echo \"=== README head ===\" && head -12 README.md; echo \"=== LICENSE head ===\" && head -4 LICENSE; echo \"=== assets sizes ===\"; du -sh assets/* ; echo \"=== old ui had unistyles? ===\"; grep -n \"unistyles\\\\|nitro\" ../ui-old/package.json 2>/dev/null || echo \"no\")",
+      "Read(//home/pc/Desktop/projects/ui-old/**)",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(yarn explain *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/babel-preset-expo/package.json'\\).peerDependencies\\)\")",
+      "Bash(yarn install *)",
+      "Bash(yarn tsc *)",
+      "Bash(yarn lint *)",
+      "Bash(yarn expo *)",
+      "Bash(EXPO_DEBUG=1 yarn expo export --platform web --output-dir /tmp/claude-1000/-home-pc-Desktop-projects-ElectroPup/5aa58237-df27-406e-8e5d-1343d5e1a8ec/scratchpad/exp2)",
+      "Bash(git mv *)",
+      "WebFetch(domain:www.unistyl.es)"
+    ]
+  }
+}

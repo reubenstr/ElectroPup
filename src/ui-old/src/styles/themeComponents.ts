@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native-unistyles";
 import { Platform } from "react-native";
-import { AppTheme } from "@/styles/themes";
+import { AppTheme } from "@/src/styles/themes";
 
 /* Use in stylesheets, spreadable */
 
@@ -14,14 +14,13 @@ export const createText = (
   letterSpacing: theme.typography[typeSet].letterSpacing,
 });
 
-type ShadowType = keyof AppTheme["shadows"];
+type ShadowType = "glass" | "medium" | "button";
 
 export const createShadow = (theme: AppTheme | any, typeSet: ShadowType) => ({
   boxShadow: theme.shadows[typeSet].boxShadow,
 });
 
-/* Only these keys exist across every map createContainer reads. */
-type ContainerType = "surface" | "card" | "inset";
+type ContainerType = "glass" | "surface" | "card" | "inset";
 
 export const createContainer = (
   theme: AppTheme | any,
@@ -62,8 +61,8 @@ export const modalStyles = StyleSheet.create((theme) => ({
     minWidth: 360,
     maxWidth: "90%",
     maxHeight: "90%",
-    ...createContainer(theme, "surface"),
-    ...createShadow(theme, "large"),
+    ...createContainer(theme, "glass"),
+    ...createShadow(theme, "glass"),
     padding: theme.padding.modal,
 
   },
@@ -78,7 +77,7 @@ export const inputStyles = StyleSheet.create((theme) => ({
     color: theme.colors.text.primary,
     backgroundColor: theme.colors.input.background,
     borderColor: theme.colors.input.border,
-    borderRadius: theme.radius.control,
+    borderRadius: theme.radius.generalButton,
     borderWidth: theme.borderWidth.input,
     overflow: "hidden",
     ...createText(theme, "mono"),
@@ -96,7 +95,7 @@ export const tabStyles = StyleSheet.create((theme) => ({
   container: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.divider,
+    borderBottomColor: theme.colors.border.accent,
     marginBottom: 10,
   },
   tab: {
@@ -125,7 +124,7 @@ export const tabStylesFolder = StyleSheet.create((theme) => ({
   }, 
   controlsWithStyle: {
     flexDirection: "row",
-    borderColor: theme.colors.divider,
+    borderColor: theme.colors.border.accent,
     borderBottomWidth: 2,
     gap: 2,
   }, 
@@ -147,8 +146,8 @@ export const tabStylesFolder = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: theme.colors.background.card,
-    borderTopLeftRadius: theme.radius.control,
-    borderTopRightRadius: theme.radius.control,
+    borderTopLeftRadius: theme.radius.generalButton,
+    borderTopRightRadius: theme.radius.generalButton,
     borderColor: theme.colors.divider,
     borderWidth: 1,
     borderBottomWidth: 0,
@@ -180,7 +179,7 @@ export const checkboxStyles = StyleSheet.create((theme) => ({
   checkbox: {
     alignItems: "center",
     backgroundColor: theme.colors.input.background,
-    borderColor: theme.colors.divider,
+    borderColor: theme.colors.border.accent,
     borderRadius: 4,
     borderWidth: 1.5,
     height: 22,
