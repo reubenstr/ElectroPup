@@ -355,17 +355,17 @@ if __name__ == "__main__":
     # Process Arguments
     ###############################################################################
 
-    if args.start:
-        service_action(ServiceCommand.START, "main.service")
+    service_commands = {
+        "start": ServiceCommand.START,
+        "stop": ServiceCommand.STOP,
+        "disable": ServiceCommand.DISABLE,
+        "restart": ServiceCommand.RESTART,
+    }
 
-    if args.stop:
-        service_action(ServiceCommand.STOP, "main.service")
-
-    if args.disable:
-        service_action(ServiceCommand.DISABLE, "main.service")
-
-    if args.restart:
-        service_action(ServiceCommand.RESTART, "main.service")
+    for arg_name, service_command in service_commands.items():
+        if getattr(args, arg_name):
+            success = service_action(service_command, "main.service")
+            exit(0 if success else 1)
 
     if args.dev:
         mode = OpMode.DEV

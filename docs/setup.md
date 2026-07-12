@@ -311,11 +311,12 @@ The main application requires either the `--live` or the `--dev` argument
 
 ### Other arugments
 
-These following argments can be passed to stop, start, and restart the main service as a helper during development
+These following argments can be passed to stop, start, restart, and disable the main service as a helper during development
 
-- --stop
 - --start
-- --reset
+- --stop
+- --restart
+- --disable
 
 # Install Services (Live Mode)
 
@@ -346,9 +347,9 @@ Start a service
 sudo systemctl start main.service 
 ```
 
-Reset a service
+Restart a service
 ```bash
-sudo systemctl reset main.service 
+sudo systemctl restart main.service 
 ```
 
 View services logs live
@@ -397,6 +398,12 @@ nvm --version
 Install node.js and npm:
 ```bash
 nvm install --lts
+```
+Install Yarn:
+```bash
+corepack enable
+corepack prepare yarn@stable --activate
+yarn --version
 ```
 
 Install packages:

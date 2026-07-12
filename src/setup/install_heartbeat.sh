@@ -21,7 +21,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
-WorkingDirectory=$(pwd)
+WorkingDirectory=$HOME/ElectroPup/src
 ExecStart=$HOME/ElectroPup/src/heartbeat.sh
 Restart=on-failure
 RestartSec=5s
@@ -37,4 +37,4 @@ sudo systemctl start heartbeat.service
 
 echo "Installation complete"
 
-echo "To see live service logs, run: sudo journalctl -u server.service -f"
+echo "To see live service logs, run: sudo journalctl -u heartbeat.service -f"
