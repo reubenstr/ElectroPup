@@ -4267,6 +4267,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-clipboard@npm:~57.0.0":
+  version: 57.0.0
+  resolution: "expo-clipboard@npm:57.0.0"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/b34137e845c3a262af0294dd05aaf88185df25fcafa5b0bddc789b7ec3a368fe97bc1ed969d8d2bca0f1ee74474c8278e99f20e8c3937bb65299ea6cf4ab932d
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:~57.0.3":
   version: 57.0.3
   resolution: "expo-constants@npm:57.0.3"
@@ -8203,6 +8214,7 @@ __metadata:
     eslint: "npm:^9.37.0"
     eslint-config-expo: "npm:~57.0.0"
     expo: "npm:~57.0.4"
+    expo-clipboard: "npm:~57.0.0"
     expo-constants: "npm:~57.0.3"
     expo-font: "npm:~57.0.0"
     expo-linking: "npm:~57.0.2"

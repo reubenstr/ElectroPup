@@ -11,7 +11,7 @@ const colorWarning = "#fbd117";
 const colorDanger = "#f72e20";
 const colorError = "#f72e20";
 
-const colorSelected = "#27c521";
+const colorSelected = "#105be6";
 
 const accentLight = "#747474";
 const accentDark = "#6c6c6c";
@@ -28,25 +28,26 @@ const textInverseLight = "#ffffff";
 
 const buttonBackgroundLight = "rgba(217, 217, 217, 0.75)";
 const buttonBackgroundDark = "rgba(25, 25, 25, 0.75)";
+const indicatorNeutral = "#8a8a8a";
 
-/* Signal colors for status/state indicators. These are semantic (a warning is
-   yellow regardless of theme), so both themes share them. */
+
+/* `active`/`on` use `colorSelected` (the same vivid green as button.active and
+   the nav's selected tab) rather than the variants.success olive green, which
+   reads as muted once it fills a whole indicator instead of a thin border. */
 const statusColors = {
-  none: "#8a8a8a",
-  standby: "#266928",
+  none: indicatorNeutral,
+  standby: colorAction,
   active: colorSuccess,
   warning: colorWarning,
-  critical: "#bb0000",
-  error: colorDanger,
-} as const;
+  critical: colorDanger,
+  error: colorError,
+};
 
-/* On/off fill for boolean indicators (foot contacts, motor enabled). */
 const indicatorColors = {
   on: colorSuccess,
-  off: "#8a8a8a",
-  text: "#1f1f1f",
-} as const;
-
+  off: indicatorNeutral,
+  text: textInverseDark,
+};
 
 const robotColorsLight = {
   sim: { body: "#00a400", joint: "#00cd00", foot: "#0aff0a" },
@@ -60,7 +61,14 @@ const robotColorsLight = {
 };
 
 const robotColorsDark = {
-  ...robotColorsLight, // TEMP
+  sim: { body: "#00a400", joint: "#00cd00", foot: "#0aff0a" },
+  live: { body: "#b00000", joint: "#d10000", foot: "#ff3b30" },
+  support: "#ffa801",
+  ring: "#dddd00",
+  transition: "#ffa801",
+  trajectory: { start: "#ff0000", end: "#0000ff" },
+  hold: { start: "#ff0000", end: "#9e0000" },
+  line: "#000000",
 };
 
 const lightColors = {
@@ -353,7 +361,7 @@ const fontFamily = {
 const typography = {
   header1: {
     fontFamily: "OrbitronMedium",
-    fontSize: isWeb ? 20 : 18,
+    fontSize: isWeb ? 22 : 18,
     lineHeight: 22,
     letterSpacing: 0,
   },

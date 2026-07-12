@@ -74,6 +74,7 @@ export default function PlotScreen() {
         <View style={styles.plotContainer}>
           <Plot3D data={data} />
 
+          {/*
           <View style={styles.leftContacts}>
             <Indicator label="LF" active={!!data?.contacts?.leftFront} />
             <Indicator label="LB" active={!!data?.contacts?.leftBack} />
@@ -82,6 +83,7 @@ export default function PlotScreen() {
             <Indicator label="RF" active={!!data?.contacts?.rightFront} />
             <Indicator label="RB" active={!!data?.contacts?.rightBack} />
           </View>
+          */}
 
           <View style={styles.leftMotors}>
             {leftMotorKeys.map((key) => (
@@ -207,7 +209,7 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
   },
   motorTable: {
-    flex: 0.5,
+    flex: 0.8,
   },
   leftContacts: {
     position: "absolute",
@@ -251,7 +253,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   infoPanel: {
     ...createContainer(theme, "card"),
-    minWidth: 160,
+    flexGrow: 1,
+    flexBasis: 200,
   },
   infoHeader: {
     color: theme.colors.text.primary,
@@ -264,9 +267,12 @@ const styles = StyleSheet.create((theme) => ({
   },
   infoColumns: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: theme.gap.card,
   },
   infoColumn: {
+    flexGrow: 1,
+    minWidth: 110,
     gap: 2,
   },
   infoLabel: {

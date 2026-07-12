@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native-unistyles";
 import { createShadow, createText } from "@/styles/themeComponents";
 
 const NAV_ITEMS = [
-  { label: "Plot", href: "/" },
+  { label: "Viewer", href: "/" },
   { label: "Data", href: "/data" },
   { label: "Settings", href: "/settings" },
   { label: "About", href: "/about" },
@@ -45,6 +45,7 @@ export function TopNav() {
 const styles = StyleSheet.create((theme) => ({
   header: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.gap.surface,
@@ -58,6 +59,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   nav: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: theme.gap.control,
   },
   navButton: (isActive: boolean) => ({

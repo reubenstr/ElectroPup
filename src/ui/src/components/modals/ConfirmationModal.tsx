@@ -62,7 +62,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   titleText: {
     color: theme.colors.text.primary,
-    ...createText(theme, "header1"),
+    ...createText(theme, "header2"),
   },
   bodyRow: {
     flex: 1,

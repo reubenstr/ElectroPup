@@ -1,10 +1,19 @@
 import EndpointSelector from "@/components/EndpointSelector";
-import { View, Text } from "react-native";
+import ThemeSelector from "@/components/ThemeSelector";
+import { View } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
 
 export default function SettingsScreen() {
   return (
-    <View>
+    <View style={styles.column}>
       <EndpointSelector />
+      <ThemeSelector />
     </View>
   );
 }
+
+const styles = StyleSheet.create((theme) => ({
+  column: {
+    gap: theme.gap.surface,
+  },
+}));

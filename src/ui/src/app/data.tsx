@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import * as Clipboard from "expo-clipboard";
 import { createText, createContainer } from "@/styles/themeComponents";
 import { useDataStore, ConnectionStatus } from "@/services/data/useDataStore";
 import { useConfigStore } from "@/services/config/useConfigStore";
@@ -7,6 +9,9 @@ import {
   generateUrl,
   selectedEndpoint,
 } from "@/services/config/configUtilities";
+import Button from "@/components/primatives/Button";
+
+const COPIED_LABEL_MS = 1500;
 
 const STATUS_LABEL: Record<ConnectionStatus, string> = {
   connected: "Connected",
@@ -21,10 +26,19 @@ export default function DataScreen() {
   const status = useDataStore((state) => state.status);
   const endpoint = useConfigStore((state) => selectedEndpoint(state.config));
 
+  const [copied, setCopied] = useState(false);
+
   const statusColor: Record<ConnectionStatus, string> = {
     connected: theme.colors.text.success,
     connecting: theme.colors.text.warning,
     disconnected: theme.colors.text.error,
+  };
+
+  const handleCopy = async () => {
+    if (!data) return;
+    await Clipboard.setStringAsync(JSON.stringify(data, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), COPIED_LABEL_MS);
   };
 
   return (
@@ -39,6 +53,16 @@ export default function DataScreen() {
         <Text style={styles.endpoint}>
           {endpoint ? generateUrl(endpoint) : "No endpoint selected"}
         </Text>
+
+        <View style={styles.copyButton}>
+          <Button
+            label={copied ? "Copied" : "Copy"}
+            iconName={copied ? "check" : undefined}
+            buttonType="action"
+            disabled={!data}
+            onPress={handleCopy}
+          />
+        </View>
       </View>
 
       <ScrollView style={styles.viewer} contentContainerStyle={styles.content}>
@@ -76,6 +100,9 @@ const styles = StyleSheet.create((theme) => ({
   endpoint: {
     color: theme.colors.text.secondary,
     ...createText(theme, "secondary"),
+  },
+  copyButton: {
+    marginLeft: "auto",
   },
   viewer: {
     flex: 1,

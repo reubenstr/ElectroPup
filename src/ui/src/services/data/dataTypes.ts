@@ -91,7 +91,7 @@ export enum Status {
 
 interface SystemStatus {
     opMode: {
-        state: string;
+        state: string; // TODO: should be typed to match data
     };
     motion: {
         state: string;

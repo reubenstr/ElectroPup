@@ -149,13 +149,13 @@ export default function Plot3D({ data }: Plot3DProps) {
   return (
     <View style={styles.container} onLayout={onLayout}>
       <View style={styles.toolbar}>
-        <Button label="Grid" buttonType="action" isSelected={toggles.grid} onPress={() => toggle("grid")} />
-        <Button label="X" buttonType="action" isSelected={toggles.x} onPress={() => toggle("x")} />
-        <Button label="Y" buttonType="action" isSelected={toggles.y} onPress={() => toggle("y")} />
-        <Button label="Z" buttonType="action" isSelected={toggles.z} onPress={() => toggle("z")} />
-        <Button label={hold ? "Unhold" : "Hold"} buttonType="warning" isSelected={hold} onPress={() => setHold((h) => !h)} />
-        <Button label="Sim" buttonType="success" isSelected={toggles.sim} onPress={() => toggle("sim")} />
-        <Button label="Live" buttonType="danger" isSelected={toggles.live} onPress={() => toggle("live")} />
+        <Button label="Grid" buttonType="navigation" isSelected={toggles.grid} onPress={() => toggle("grid")} />
+        <Button label="X" buttonType="navigation" isSelected={toggles.x} onPress={() => toggle("x")} />
+        <Button label="Y" buttonType="navigation" isSelected={toggles.y} onPress={() => toggle("y")} />
+        <Button label="Z" buttonType="navigation" isSelected={toggles.z} onPress={() => toggle("z")} />
+        <Button label={hold ? "Unhold" : "Hold"} buttonType="navigation" isSelected={hold} onPress={() => setHold((h) => !h)} />
+        <Button label="Sim" buttonType="navigation" isSelected={toggles.sim} onPress={() => toggle("sim")} />
+        <Button label="Live" buttonType="navigation" isSelected={toggles.live} onPress={() => toggle("live")} />
       </View>
 
       {overlay ? (
