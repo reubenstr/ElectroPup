@@ -30,8 +30,10 @@ const buttonBackgroundLight = "rgba(217, 217, 217, 0.75)";
 const buttonBackgroundDark = "rgba(25, 25, 25, 0.75)";
 const indicatorNeutral = "#8a8a8a";
 
-/* Synthwave retro '90s palette — hot pink, electric cyan, neon purple,
-   sunset orange, all glowing against deep indigo/violet-black surfaces. */
+/* Synthwave retro '90s palette — neon green and electric yellow now lead,
+   with hot pink, cyan, and orange in supporting roles, and purple kept as
+   a secondary accent (text, dividers) against deep indigo/violet-black
+   surfaces. */
 const synthHotPink = "#ff2ec4";
 const synthCyan = "#00f0ff";
 const synthPurple = "#b967ff";
@@ -39,6 +41,8 @@ const synthMagenta = "#ff00aa";
 const synthOrange = "#ff7a18";
 const synthYellow = "#ffe700";
 const synthGreen = "#05ffa1";
+const synthLimeGreen = "#aefc00";
+const synthGoldYellow = "#ffc400";
 const synthBlueViolet = "#7b2ff7";
 
 const synthTextPrimary = "#f5e8ff";
@@ -70,12 +74,12 @@ const indicatorColors = {
 };
 
 const robotColorsLight = {
-  sim: { body: "#00d9c0", joint: "#00f0ff", foot: "#05ffa1" },
+  sim: { body: "#00d9c0", joint: "#05ffa1", foot: "#aefc00" },
   live: { body: "#d6008c", joint: "#ff2ec4", foot: "#ff5fd8" },
-  support: synthOrange,
+  support: synthGoldYellow,
   ring: synthYellow,
   transition: synthOrange,
-  trajectory: { start: synthMagenta, end: synthCyan },
+  trajectory: { start: synthLimeGreen, end: synthCyan },
   hold: { start: synthMagenta, end: "#7a0050" },
   line: "#665288",
 };
@@ -98,7 +102,7 @@ const lightColors = {
     secondary: synthTextSecondary,
     disabled: synthTextDisabled,
 
-    action: synthCyan,
+    action: synthLimeGreen,
     info: synthPurple,
     success: synthGreen,
     warning: synthYellow,
@@ -106,15 +110,15 @@ const lightColors = {
     error: synthMagenta,
   },
 
-  selected: synthHotPink,
+  selected: synthGoldYellow,
 
   divider: synthAccent,
 
   border: {
     surface: synthBlueViolet,
-    card: synthHotPink,
+    card: synthGreen,
     inset: synthCyan,
-    selected: synthHotPink,
+    selected: synthYellow,
     input: synthAccent,
   },
 
@@ -129,10 +133,10 @@ const lightColors = {
   button: {
     text: synthTextPrimary,
     inverse: synthTextInverse,
-    hover: synthCyan,
-    active: synthHotPink,
+    hover: synthYellow,
+    active: synthGreen,
     icon: synthTextPrimary,
-    border: synthHotPink,
+    border: synthGreen,
     background: synthButtonBackground,
     disabled: {
       icon: synthTextDisabled,
@@ -141,7 +145,7 @@ const lightColors = {
       border: synthTextDisabled,
     },
     variants: {
-      action: synthCyan,
+      action: synthLimeGreen,
       info: synthPurple,
       success: synthGreen,
       warning: synthYellow,
@@ -154,14 +158,14 @@ const lightColors = {
     feature: {
       pad: "rgba(35, 14, 64, 0.75)",
       crosshair: "rgba(185, 103, 255, 0.75)",
-      stick: "rgba(255, 46, 196, 0.75)",
-      knob: "rgba(0, 240, 255, 0.75)",
+      stick: "rgba(5, 255, 161, 0.75)",
+      knob: "rgba(255, 231, 0, 0.75)",
     },
     border: {
       pad: "rgba(185, 103, 255, 0.75)",
       crosshair: "rgba(0, 240, 255, 0.75)",
-      stick: "rgba(255, 46, 196, 0.75)",
-      knob: "rgba(255, 231, 0, 0.75)",
+      stick: "rgba(5, 255, 161, 0.75)",
+      knob: "rgba(255, 196, 0, 0.75)",
     },
   },
 
@@ -171,7 +175,7 @@ const lightColors = {
     text: synthTextPrimary,
     disabledtext: "#3a2a52",
     border: synthAccent,
-    borderFocus: synthHotPink,
+    borderFocus: synthGreen,
     background: "#2b0f4a",
     disabledBackground: "#1c0a30",
   },

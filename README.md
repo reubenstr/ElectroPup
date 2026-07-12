@@ -19,9 +19,15 @@ See the docs directory for a setup guide, bill of materials (BOM), 3D printed pa
 
 # UI
 
+<img src="images/electro-pup-ui-live.png" width="800">
 
-The UI framework is React Native using Expo.
+The UI shows the status of the entire system: quadruped joint positions, subsystem status, motor information, inputs, sensors, loop times, etc. The above imags shows the simulated quadruped overlapped with real quadruped (based on motor feedback).
 
+<img src="images/electro-pup-ui-sim.png" width="800">
+
+The UI works in dev mode to aid in trajectory development. The above image shows the virtual circle  the feet follow to walk in a circle and the bezier curves used for moving the feet up and down.
+
+The UI is built using React Native Framework using Expo and runs on web. The app will run on Android without the plot.
 
 # Kinematics
 
