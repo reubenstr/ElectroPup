@@ -29,6 +29,40 @@ const textInverseLight = "#ffffff";
 const buttonBackgroundLight = "rgba(217, 217, 217, 0.75)";
 const buttonBackgroundDark = "rgba(25, 25, 25, 0.75)";
 
+/* Signal colors for status/state indicators. These are semantic (a warning is
+   yellow regardless of theme), so both themes share them. */
+const statusColors = {
+  none: "#8a8a8a",
+  standby: "#266928",
+  active: colorSuccess,
+  warning: colorWarning,
+  critical: "#bb0000",
+  error: colorDanger,
+} as const;
+
+/* On/off fill for boolean indicators (foot contacts, motor enabled). */
+const indicatorColors = {
+  on: colorSuccess,
+  off: "#8a8a8a",
+  text: "#1f1f1f",
+} as const;
+
+
+const robotColorsLight = {
+  sim: { body: "#00a400", joint: "#00cd00", foot: "#0aff0a" },
+  live: { body: "#b00000", joint: "#d10000", foot: "#ff3b30" },
+  support: "#ffa801",
+  ring: "#dddd00",
+  transition: "#ffa801",
+  trajectory: { start: "#ff0000", end: "#0000ff" },
+  hold: { start: "#ff0000", end: "#9e0000" },
+  line: "#000000",
+};
+
+const robotColorsDark = {
+  ...robotColorsLight, // TEMP
+};
+
 const lightColors = {
   text: {
     primary: textPrimaryLight,
@@ -113,6 +147,10 @@ const lightColors = {
     background: "#a6a6a6",
     disabledBackground: "#242424",
   },
+
+  status: statusColors,
+  indicator: indicatorColors,
+  robot: robotColorsLight,
 } as const;
 
 const darkColors = {
@@ -199,6 +237,10 @@ const darkColors = {
     background: "#333333",
     disabledBackground: "#242424",
   },
+
+  status: statusColors,
+  indicator: indicatorColors,
+  robot: robotColorsDark,
 } as const;
 
 

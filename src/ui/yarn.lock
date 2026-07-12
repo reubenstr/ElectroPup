@@ -6671,6 +6671,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"plotly.js-gl3d-dist-min@npm:^3.7.0":
+  version: 3.7.0
+  resolution: "plotly.js-gl3d-dist-min@npm:3.7.0"
+  checksum: 10c0/6f24d3bc052bdc6dee26695760a0f35d3f3a7352834e35740fd487d3ced5b0262f1e4619c2ba4353b0663fc9cf77422cdb142e2d0c020736ae8929adcec9e4b6
+  languageName: node
+  linkType: hard
+
 "pngjs@npm:^3.3.0":
   version: 3.4.0
   resolution: "pngjs@npm:3.4.0"
@@ -7091,6 +7098,16 @@ __metadata:
   bin:
     react-native: cli.js
   checksum: 10c0/47a569c47a22b37526ac54e17d1f42c6a191ca7cd30230bc16ee5307ac53da1db89d27ba20c76e9756fb646866d89fedfc1852b1ddc15c47bde45c899079096a
+  languageName: node
+  linkType: hard
+
+"react-plotly.js@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "react-plotly.js@npm:4.0.0"
+  peerDependencies:
+    plotly.js: ">=3.0.0"
+    react: ^18.0.0 || ^19.0.0
+  checksum: 10c0/e1f36d9536dbaaeda77e3ad9004ce3e735f98906d61542a60786245043e36ff190bcb41ffe0c47be5ec539a7c5eaf7610f2dc6f227fb7edd4cc4da5673678eae
   languageName: node
   linkType: hard
 
@@ -8193,6 +8210,7 @@ __metadata:
     expo-splash-screen: "npm:~57.0.2"
     expo-status-bar: "npm:~57.0.0"
     expo-system-ui: "npm:~57.0.0"
+    plotly.js-gl3d-dist-min: "npm:^3.7.0"
     react: "npm:19.2.3"
     react-dom: "npm:19.2.3"
     react-native: "npm:0.86.0"
@@ -8205,6 +8223,7 @@ __metadata:
     react-native-unistyles: "npm:^3.3.0"
     react-native-web: "npm:~0.21.0"
     react-native-worklets: "npm:0.10.0"
+    react-plotly.js: "npm:^4.0.0"
     socket.io-client: "npm:^4.8.3"
     typescript: "npm:~6.0.3"
     zustand: "npm:^5.0.14"

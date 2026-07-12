@@ -13,6 +13,7 @@
     "expo-splash-screen": "~57.0.2",
     "expo-status-bar": "~57.0.0",
     "expo-system-ui": "~57.0.0",
+    "plotly.js-gl3d-dist-min": "^3.7.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
@@ -25,6 +26,7 @@
     "react-native-unistyles": "^3.3.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.0",
+    "react-plotly.js": "^4.0.0",
     "socket.io-client": "^4.8.3",
     "zustand": "^5.0.14"
   },

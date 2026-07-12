@@ -1,5 +1,5 @@
 
-/* Messages sent from the UI received by the quadruped */
+/* Messages sent from the UI received by the robot */
 
 export enum Command {
     NO_UPDATE = 'no_update',
@@ -21,7 +21,7 @@ export interface ControlMessage {
 }
 
 
-/* Messages sent by the quadruped received by the UI */
+/* Messages sent by the robot received by the UI */
 
 interface Coordinate {
     x: number;
@@ -82,7 +82,7 @@ export interface MotorState {
 
 export enum Status {
     None = 'none',
-    Standby = 'standy',
+    Standby = 'standby',
     Active = 'active',
     Warning = 'warning',
     Critical = 'critical',
