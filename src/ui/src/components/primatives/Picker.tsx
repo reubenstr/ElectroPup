@@ -1,4 +1,4 @@
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, createElement, isValidElement } from "react";
 import {
   View,
   StyleProp,
@@ -40,7 +40,31 @@ function Picker<T extends ItemValue = ItemValue>({
   const items = Children.map(children, (child) => {
     if (!isValidElement<PickerItemProps<T>>(child)) return child;
 
+    /* The package's web PickerItem renders an <option> but forwards only
+       `color`, dropping `style`. Without a background the option falls back to
+       the browser's white popup, so theme text is unreadable on it. Emit the
+       <option> directly to control both colors. */
+    if (Platform.OS === "web") {
+      const { label, value, color, enabled } = child.props;
+
+      return createElement(
+        "option",
+        {
+          value: value as string | number,
+          disabled: enabled === false || undefined,
+          style: {
+            color: color ?? theme.colors.text.primary,
+            backgroundColor: theme.colors.input.background,
+            fontFamily: theme.typography.mono.fontFamily,
+            fontSize: theme.typography.mono.fontSize,
+          },
+        },
+        label,
+      );
+    }
+
     return cloneElement(child, {
+      color: child.props.color ?? theme.colors.text.primary,
       style: RNStyleSheet.flatten([itemFont, child.props.style]),
     });
   });
@@ -48,7 +72,7 @@ function Picker<T extends ItemValue = ItemValue>({
   return (
     <View style={[styles.wrapper, wrapperStyle]}>
       <RNPicker
-        style={[styles.shrink, style]}
+        style={[styles.picker, style]}
         itemStyle={RNStyleSheet.flatten([itemFont, itemStyle])}
         {...pickerProps}
       >
@@ -67,7 +91,7 @@ const styles = StyleSheet.create((theme) => ({
     overflow: "hidden",
     justifyContent: "center",
     ...(Platform.OS === "web"
-      ? {/* The picker package does not provide web styles */}
+      ? {/* The select is styled directly; see `picker` below. */}
       : {
           borderColor: theme.colors.input.border,
           borderWidth: theme.borderWidth.input,
@@ -75,8 +99,22 @@ const styles = StyleSheet.create((theme) => ({
           backgroundColor: theme.colors.input.background,
         }),
   },
-  shrink: {
-    marginVertical: -12,
+  /* On web the package renders a bare <select> and drops `itemStyle`, so the
+     element gets no color or font of its own. Style it here instead. */
+  picker: {
+    ...(Platform.OS === "web"
+      ? {
+          height: "100%",
+          color: theme.colors.text.primary,
+          backgroundColor: theme.colors.input.background,
+          borderColor: theme.colors.input.border,
+          borderWidth: theme.borderWidth.input,
+          borderRadius: theme.radius.input,
+          paddingHorizontal: theme.padding.input.horizontal,
+          fontFamily: theme.typography.mono.fontFamily,
+          fontSize: theme.typography.mono.fontSize,
+        }
+      : { marginVertical: -12 }),
   },
 }));
 

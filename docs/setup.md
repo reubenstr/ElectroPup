@@ -402,18 +402,18 @@ nvm install --lts
 Install packages:
 ```bash
 cd ./ElectroPup/src/ui
-npm install
+yarn install
 ```
 
 Start app in development mode:
 ```bash
-npm expo start --web
+yarn web
 ```
 
 
 Build app for web (exports to ./src/ui/dist):
 ```bash
-npx expo export --platform web
+npx web-build
 ```
 
 ---

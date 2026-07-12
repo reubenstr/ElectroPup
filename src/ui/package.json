@@ -44,6 +44,7 @@
     "android-install": "expo run:android --variant release --no-build-cache",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "web-build": "expo export --platform web",
     "lint": "expo lint"
   },
   "private": true,

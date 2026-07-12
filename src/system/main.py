@@ -102,8 +102,7 @@ class Main:
     def check_low_battery(self):
         if self.battery_voltage > 0 and self.battery_voltage < self.low_battery_voltage_threadhold:
             if time() - self.low_battery_last_alert_time > self.low_battery_alert_rate_seconds:
-                self.low_battery_last_alert_time = time()
-                print("PLAY LOW", time())
+                self.low_battery_last_alert_time = time()             
                 self.aux.play_sound(Sequence.LOW_BATTERY)
 
     def process_aux(self):
@@ -247,8 +246,7 @@ class Main:
                     return
 
         if command is InputCommand.STAND:
-            self.motion.set_target_motion_state(MotionState.STAND)
-            self.motor_enable_flag = True
+            self.motion.set_target_motion_state(MotionState.STAND)      
 
         if command is InputCommand.SIT:
             self.motion.set_target_motion_state(MotionState.SIT)

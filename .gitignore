@@ -16,3 +16,7 @@ ENV/
 pcbs/auxiliary-board/auxiliary-board-backups/
 pcbs/power_carrier/power_carrier-backups/
 
+# Claude Code configuration and cache
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md

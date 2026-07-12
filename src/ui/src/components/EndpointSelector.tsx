@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
-import { createText } from "@/styles/themeComponents";
 import AddServerEndpointModal from "@/components/modals/AddServerEndpointModal";
 import ConfirmationModal from "@/components/modals/ConfirmationModal";
 import Button from "@/components/primatives/Button";
@@ -61,8 +60,6 @@ export default function EndpointSelector() {
         onConfirm={handleRemove}
       />
 
-      <Text style={styles.label}>Server</Text>
-
       <Picker
         selectedValue={selected?.address}
         onValueChange={handleEndpointChange}
@@ -106,14 +103,12 @@ export default function EndpointSelector() {
   );
 }
 
+/* The settings screen owns the label and card; this only supplies controls. */
 const styles = StyleSheet.create((theme) => ({
   row: {
+    flex: 1,
     alignItems: "center",
     flexDirection: "row",
     gap: theme.gap.control,
-  },
-  label: {
-    color: theme.colors.text.primary,
-    ...createText(theme, "header2"),
   },
 }));

@@ -245,3 +245,9 @@ There are many excellent open source quadruped robot projects at various sizes, 
 - https://www.youtube.com/watch?v=oYnsCE2H6ss
 - https://github.com/JackDemeter/quadruped-robot
 - https://github.com/reubenstr/zuko
+
+# AI Disclosure
+
+Project concept, aesthetic, engineering design, and original code base were conceived and executed by the author.
+
+Portions of this codebase were reviewed, revised, and written with the assistance of Claude Code (Anthropic).

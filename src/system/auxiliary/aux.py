@@ -193,22 +193,15 @@ if __name__ == "__main__":
             data = message_data.pack()        
             aux.send(data)
             sleep(1)
-            
+                
         elif test == 1:
-            message_data = AuxMessage()
-            data = message_data.pack()
-            rate = 0.5
-            aux.send_at_rate(data, rate) 
-            sleep(0.010)
-            
-        elif test == 2:
             sequence_id = 2
             message = PlaySoundMessage(sequence_id)
             data = message.pack()
             aux.send(data)
             sleep(3)
             
-        elif test == 3:
+        elif test == 2:
             aux.check_for_commands()
             sleep(0.010)
             
