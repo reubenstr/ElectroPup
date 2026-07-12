@@ -41,27 +41,27 @@ const lightColors = {
     success: colorSuccess,
     warning: colorWarning,
     danger: colorError,
-    error: colorError,   
+    error: colorError,
   },
 
   selected: colorSelected,
 
   divider: accentLight,
 
-  border: { 
+  border: {
     surface: black,
     card: black,
-    inset: black,   
+    inset: black,
     selected: colorSelected,
     input: accentDark,
   },
 
-  background: {   
+  background: {
     surface: "rgba(215, 215, 215, 0.95)",
     card: "rgba(200, 200, 200, 0.95)",
     inset: "rgba(185, 185, 185, 0.95)",
     overlay: "rgba(76, 76, 76, 0.6)",
-    modal: "rgba(76, 76, 76, 0.90)",  
+    modal: "rgba(76, 76, 76, 0.90)",
   },
 
   button: {
@@ -220,7 +220,7 @@ const padding = {
   },
 } as const;
 
-const gap = { 
+const gap = {
   surface: isWeb ? 10 : 6,
   card: isWeb ? 8 : 4,
   inset: isWeb ? 8 : 4,
@@ -238,7 +238,8 @@ const size = {
   control: {
     minHeight: 36,
     minWidth: 40,
-  }, 
+    icon: isWeb ? 20 : 16,
+  },
   joystick: {
     pad: 120,
     stick: 30,
@@ -332,12 +333,18 @@ const typography = {
     lineHeight: 18,
     letterSpacing: 0,
   },
+  control: {
+    fontFamily: "OrbitronRegular",
+    fontSize: isWeb ? 16 : 14,
+    lineHeight: 18,
+    letterSpacing: 0,
+  },
   mono: {
     fontFamily: fontFamily.mono,
     fontSize: isWeb ? 16 : 14,
     lineHeight: 18,
     letterSpacing: 0,
-  }, 
+  },
 } as const;
 
 /* Miscellaneous */
@@ -387,7 +394,7 @@ export const lightDeviceTheme = {
 };
 
 export const darkDeviceTheme = {
-  colors: darkColors, 
+  colors: darkColors,
   padding,
   gap,
   size,

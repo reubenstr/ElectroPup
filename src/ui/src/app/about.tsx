@@ -1,5 +1,5 @@
-import { Screen } from "@/components/Screen";
+import { View, Text } from "react-native";
 
 export default function AboutScreen() {
-  return <Screen title="About" />;
+  return <View></View>;
 }

@@ -1,7 +1,7 @@
 import "@/styles/unistylesConfig";
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
-import { Stack, SplashScreen } from "expo-router";
+import { Stack, SplashScreen, ThemeProvider, DefaultTheme } from "expo-router";
 import { View } from "react-native";
 import { TopNav } from "@/components/TopNav";
 import { StyleSheet } from "react-native-unistyles";
@@ -9,7 +9,13 @@ import { createShadow } from "@/styles/themeComponents";
 
 SplashScreen.preventAutoHideAsync();
 
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: "transparent" },
+};
+
 export default function RootLayout() {
+  
   // Keys must match the fontFamily names used in the theme's typography.
   const [fontsLoaded, fontError] = useFonts({
     OrbitronRegular: require("@/assets/fonts/orbitron/static/Orbitron-Regular.ttf"),
@@ -32,12 +38,9 @@ export default function RootLayout() {
       <View style={styles.column}>
         <TopNav />
         <View style={styles.container}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "transparent" },
-            }}
-          />
+          <ThemeProvider value={navigationTheme}>
+            <Stack screenOptions={{ headerShown: false }} />
+          </ThemeProvider>
         </View>
       </View>
     </View>
@@ -54,7 +57,6 @@ const styles = StyleSheet.create((theme, rt) => ({
     paddingRight: theme.padding.surface + rt.insets.right,
     backgroundColor: theme.colors.background.inset,
   },
-  /* Keeps the app in a readable column on wide screens. */
   column: {
     flex: 1,
     width: "100%",

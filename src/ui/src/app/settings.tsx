@@ -1,5 +1,10 @@
-import { Screen } from "@/components/Screen";
+import EndpointSelector from "@/components/EndpointSelector";
+import { View, Text } from "react-native";
 
 export default function SettingsScreen() {
-  return <Screen title="Settings" />;
+  return (
+    <View>
+      <EndpointSelector />
+    </View>
+  );
 }
