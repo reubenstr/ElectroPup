@@ -32,9 +32,11 @@ class Motors:
 
         self.motors_enabled: bool = False
         self.motor_enable_sequence_delay_seconds: float = 0.250
-        self.motor_disable_sequence_delay_seconds: float = 0.250     
+        self.motor_disable_sequence_delay_seconds: float = 0.250
 
         self.min_loop_rate_seconds: float = 0.010
+      
+        self.available: bool = False
 
         can_channels = list({motor.can_channel for motor in motor_list() if motor.allow_motion or motor.allow_comms})
         self.can_infos: Dict[str, CanInfo] = {}
@@ -78,11 +80,21 @@ class Motors:
     # CAN
     ###############################################################################
 
+    @staticmethod
+    def is_can_interface_present(can_channel: str) -> bool:
+        """A missing interface means the CAN hardware is not attached, expected when developing off target."""
+        return os.path.exists(f"/sys/class/net/{can_channel}")
+
     def init_can_buses(self, can_infos: Dict[str, CanInfo]):
 
         self.deinit_can_buses(can_infos)
 
         for can_info in can_infos.values():
+            if not self.is_can_interface_present(can_info.can_channel):
+                print(f"[{self.tag}] {can_info.can_channel} interface not found, CAN hardware not attached")
+                can_info.status = Status.NONE
+                continue
+
             print(f"[{self.tag}] upping {can_info.can_channel} interface")
 
             result = subprocess.run(
@@ -111,8 +123,18 @@ class Motors:
 
             can_info.status = Status.ACTIVE
 
+        self.available = bool(can_infos) and all(can_info.status == Status.ACTIVE for can_info in can_infos.values())
+
+        if not self.available:
+            print(f"[{self.tag}] CAN buses unavailable, motor operations disabled")
+
     def deinit_can_buses(self, can_infos: Dict[str, CanInfo]):
+        self.available = False
+
         for can_info in can_infos.values():
+            if not self.is_can_interface_present(can_info.can_channel):
+                continue
+
             # if can_info.status == Status.ACTIVE:
             print(f"[{self.tag}] deinitializing {can_info.can_channel}")
             try:
@@ -130,9 +152,13 @@ class Motors:
     ###############################################################################
 
     def set_zero_to_current_position(self, motor_name: str):
-        """Zero requires power cycle to take effect!"""        
+        """Zero requires power cycle to take effect!"""
+        if not self.available:
+            print(f"[{self.tag}] CAN buses unavailable, ignoring set zero: {motor_name}")
+            return False
+
         motor = self.motors[motor_name]
-        success = motor.cmd_set_zero_to_current_pos()     
+        success = motor.cmd_set_zero_to_current_pos()
         return success
 
     ###############################################################################
@@ -140,72 +166,95 @@ class Motors:
     ###############################################################################
 
     def enable_all_motors(self):
+        if not self.available:
+            print(f"[{self.tag}][ALL] CAN buses unavailable, ignoring enable all motors")
+            return False
+
         max_attempts = 3
         start = time()
         self.acquire_can_locks()
-        for motor in self.motors.values():
-            if self.allow_enable and motor.allow_motion:
-                print(f"[{self.tag}] enabling motor: {motor.name}")
-                attempt = 0
-                while True:
-                    if motor.cmd_motor_on():
-                        break
-                    else:
-                        attempt += 1
-                        print(f"[{self.tag}][ALL] error, failed to enable {motor.name}, attempt number {attempt}!")
-                        if attempt > max_attempts:
-                            self.motors_enabled = False                         
-                            self.release_can_locks()
-                            return False
-                        sleep(self.motor_enable_sequence_delay_seconds)
-
-                sleep(self.motor_enable_sequence_delay_seconds)
-        print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
-        self.motors_enabled = True     
-        self.release_can_locks()
-        return True
-
-    def disable_all_motors(self):
-        start = time()       
-        self.acquire_can_locks()
-        if self.motors_enabled:
+        try:
             for motor in self.motors.values():
                 if self.allow_enable and motor.allow_motion:
-                    print(f"[{self.tag}] disabling motor: {motor.name}")
-                    if not motor.cmd_motor_off():
-                        print(f"[{self.tag}][ALL] error, disable all motors failed!")
-                        return False
-                    sleep(self.motor_disable_sequence_delay_seconds)
-            print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
-            self.motors_enabled = False
-            self.release_can_locks()
-            return True
+                    print(f"[{self.tag}] enabling motor: {motor.name}")
+                    attempt = 0
+                    while True:
+                        if motor.cmd_motor_on():
+                            break
+                        else:
+                            attempt += 1
+                            print(f"[{self.tag}][ALL] error, failed to enable {motor.name}, attempt number {attempt}!")
+                            if attempt > max_attempts:
+                                self.motors_enabled = False
+                                return False
+                            sleep(self.motor_enable_sequence_delay_seconds)
 
-    def clear_errors_all_motors(self):
+                    sleep(self.motor_enable_sequence_delay_seconds)
+            print(f"[{self.tag}][ALL] enable all motors on completed, time: {time() - start:0.3f}")
+            self.motors_enabled = True
+            return True
+        finally:
+            self.release_can_locks()
+
+    def disable_all_motors(self):
+        if not self.available:
+            print(f"[{self.tag}][ALL] CAN buses unavailable, ignoring disable all motors")
+            return False
+
         start = time()
         self.acquire_can_locks()
-        for motor_tag, motor in self.motors.items():
-            self.motors[motor_tag].reply_timeout_count = 0            
-            if not motor.cmd_clear_motor_errors():
-                print(f"[{self.tag}][ALL] error, clear all motor errors failed!")
-                return False
-        print(f"[{self.tag}][ALL] clear all errors completed, time: {time() - start:0.3f}")
-        self.release_can_locks()
-        return True
+        try:
+            if self.motors_enabled:
+                for motor in self.motors.values():
+                    if self.allow_enable and motor.allow_motion:
+                        print(f"[{self.tag}] disabling motor: {motor.name}")
+                        if not motor.cmd_motor_off():
+                            print(f"[{self.tag}][ALL] error, disable all motors failed!")
+                            return False
+                        sleep(self.motor_disable_sequence_delay_seconds)
+                print(f"[{self.tag}][ALL] disable all motors off completed, time: {time() - start:0.3f}")
+                self.motors_enabled = False
+                return True
+        finally:
+            self.release_can_locks()
+
+    def clear_errors_all_motors(self):
+        if not self.available:
+            print(f"[{self.tag}][ALL] CAN buses unavailable, ignoring clear all motor errors")
+            return False
+
+        start = time()
+        self.acquire_can_locks()
+        try:
+            for motor_tag, motor in self.motors.items():
+                self.motors[motor_tag].reply_timeout_count = 0
+                if not motor.cmd_clear_motor_errors():
+                    print(f"[{self.tag}][ALL] error, clear all motor errors failed!")
+                    return False
+            print(f"[{self.tag}][ALL] clear all errors completed, time: {time() - start:0.3f}")
+            return True
+        finally:
+            self.release_can_locks()
 
     def set_pid_all_motors(self):
         """
         Set motor PID parameters to motor's default values.
         """
+        if not self.available:
+            print(f"[{self.tag}][ALL] CAN buses unavailable, ignoring set all motor PIDs")
+            return False
+
         start = time()
         self.acquire_can_locks()
-        for motor_tag, motor in self.motors.items():
-            if not motor.cmd_set_pid_to_ram(motor.angle_pid_kp, motor.angle_pid_ki, motor.speed_pid_kp, motor.speed_pid_ki, motor.iq_pid_kp, motor.iq_pid_ki):
-                print(f"[{self.tag}][ALL] set all motor PIDs failed!")
-                return False
-        print(f"[{self.tag}][ALL] set all motor PIDs completed, time: {time() - start:0.3f}")
-        self.release_can_locks()
-        return True
+        try:
+            for motor_tag, motor in self.motors.items():
+                if not motor.cmd_set_pid_to_ram(motor.angle_pid_kp, motor.angle_pid_ki, motor.speed_pid_kp, motor.speed_pid_ki, motor.iq_pid_kp, motor.iq_pid_ki):
+                    print(f"[{self.tag}][ALL] set all motor PIDs failed!")
+                    return False
+            print(f"[{self.tag}][ALL] set all motor PIDs completed, time: {time() - start:0.3f}")
+            return True
+        finally:
+            self.release_can_locks()
 
     """def is_all_motor_angles_within_range(self, tolerance: float):
         with self.lock:
@@ -239,31 +288,15 @@ class Motors:
                 return self.motors[motor_name].position_degrees
             return None
 
-    def is_can_error(self) -> bool:
-        for can_info in self.can_infos.values():
-            if can_info.status == Status.ERROR:
-                return True
-
-        if can_info.thread_handle:
-            if not can_info.thread_handle.is_alive():
-                return True
-        return False
-
-    def is_error(self) -> bool:
-        if self.is_can_error():
-            return True
-
-        with self.data_lock:
-            for key, motor in self.motors.items():
-                if motor.is_error():
-                    return True
-        return False
-
     ###############################################################################
     # Worker (thread)
     ###############################################################################
 
     def start(self):
+        if not self.available:
+            print(f"[{self.tag}] CAN buses unavailable, motor worker threads not started")
+            return
+
         # Get initial positions, start target, and check for offset.
         for key, motor in self.motors.items():
             if motor.allow_comms:
@@ -275,9 +308,6 @@ class Motors:
         self.set_pid_all_motors()
 
         print(f"[{self.tag}] starting motor worker threads")
-        if not all(can_info.status == Status.ACTIVE for can_info in self.can_infos.values()):
-            print(f"[{self.tag}] error, unable to start motors, not all CAN interfaces are active!")
-            return
         for can_info in self.can_infos.values():
             if not can_info.thread_handle or not can_info.thread_handle.is_alive():
                 can_info.thread_handle = Thread(target=self._worker, args=(can_info,))
@@ -363,6 +393,8 @@ class Motors:
             return 0
 
     def get_status(self) -> Status:
+        if not self.available:
+            return Status.NONE
         if self.is_error():
             return Status.ERROR
         if self.is_motors_enabled():
@@ -370,7 +402,8 @@ class Motors:
         else:
             return Status.STANDBY
 
-    def is_error(self) -> bool:
+    def is_can_error(self) -> bool:
+        """Absent CAN hardware is not an error, the buses are only in error when present but unusable."""
         for can_info in self.can_infos.values():
             if can_info.status == Status.ERROR:
                 return True
@@ -378,6 +411,14 @@ class Motors:
             if can_info.thread_handle:
                 if not can_info.thread_handle.is_alive():
                     return True
+        return False
+
+    def is_error(self) -> bool:
+        if self.is_can_error():
+            return True
+
+        if not self.available:
+            return False
 
         for key, motor in self.motors.items():
             if motor.is_error():

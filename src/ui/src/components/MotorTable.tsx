@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { motorNames } from '@/constants/motorNames';
+import { motorNames } from '@/src/constants/motorNames';
 import { useDataTransfer } from '@/services/useDataTransfer';
 import { VerticalText } from './verticalText';
 

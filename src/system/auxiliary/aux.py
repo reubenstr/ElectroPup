@@ -94,69 +94,85 @@ class PlaySoundMessage:
         
  
 class Aux():
-    def __init__(self):         
+    def __init__(self):
         self.port = '/dev/serial0'
         self.baudrate = 115200
-        self.timeout = 0.25        
-        self.start_time : float = time.time()        
-        self._open()
-        self.error: bool = False
-
+        self.timeout = 0.25
+        self.start_time : float = time.time()
         self.send_message_rate_seconds: float = 0.1
-        
-    def _open(self): 
+        self.ser : serial.Serial = None
+        self.available : bool = False
+        self.init()
+
+    def init(self):
+        """Open the serial port. A missing or unopenable port is not an error, the
+           Auxiliary Board is optional and absent when developing off target."""
+        self.available = False
+
+        if not os.path.exists(self.port):
+            print(f"[Aux] serial port not found: {self.port}, Auxiliary Board disabled.")
+            return
+
         try:
             self.ser = serial.Serial(port=self.port, baudrate=self.baudrate, timeout=self.timeout)
-            self.error = False
-            print(f"[Aux] serial port opened. Port: {self.port}, baud: {self.baudrate}, timeout: {self.timeout}") 
+            self.available = True
+            print(f"[Aux] serial port opened. Port: {self.port}, baud: {self.baudrate}, timeout: {self.timeout}")
         except Exception as e:
-            self.error = True
-            print(f"[Aux] error, unable open serial port: {self.port}, exception: {e}")            
-                                        
+            print(f"[Aux] unable to open serial port: {self.port}, Auxiliary Board disabled, exception: {e}")
+
     def send_at_rate(self, data : bytes):
         """Sends data only when a specific amount of time has passed."""
         if (time.time() - self.start_time > self.send_message_rate_seconds):
             self.start_time = time.time()
             self.send(data)
-           
-    def send(self, data : bytes):  
-        """Send data to the Auxiliary Board"""   
-        try:      
-            if not self.ser.is_open: 
-                self._open()
-                         
-            if self.ser.is_open:                                  
+
+    def send(self, data : bytes):
+        """Send data to the Auxiliary Board"""
+        if not self.available:
+            return
+
+        try:
+            if self.ser.is_open:
                 num_bytes_written = self.ser.write(data)
-                                                    
-                # print([byte for byte in data])                
+
+                # print([byte for byte in data])
                 # print(f"[Aux] message sent, num bytes written: {num_bytes_written}")
-            
+
         except Exception as e:
-            print(f"[Aux] error, unable to send message on serial port: {self.port}, exception: {e}")            
-      
-      
+            print(f"[Aux] error, unable to send message on serial port: {self.port}, exception: {e}")
+
+
     def play_sound(self, sequence: Sequence):
-        psm = PlaySoundMessage(sequence.value)      
+        psm = PlaySoundMessage(sequence.value)
         self.send(psm.pack())
-    
-    
-    def check_for_commands(self):        
+
+
+    def check_for_commands(self):
         """Check for commands from Auxilary Board"""
-         
-        if self.ser.in_waiting > 0: 
-            data = self.ser.read(self.ser.in_waiting) 
-                
-            try:
-                message_type = MessageType(data[0])
-                print(f"[Aux] message received, type: {message_type.name}")
-            except ValueError:
-                print(f"[Aux] error, invalid message type received, type: {data[0]}")
+
+        if not self.available:
+            return
+
+        try:
+            if self.ser.in_waiting == 0:
                 return
-                            
-            if message_type == MessageType.SHUTDOWN_RPI:
-                print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
-                sleep(1)
-                os.system("sudo shutdown now") 
+
+            data = self.ser.read(self.ser.in_waiting)
+        except Exception as e:
+            print(f"[Aux] error, unable to read from serial port: {self.port}, exception: {e}")
+            return
+
+        try:
+            message_type = MessageType(data[0])
+            print(f"[Aux] message received, type: {message_type.name}")
+        except ValueError:
+            print(f"[Aux] error, invalid message type received, type: {data[0]}")
+            return
+
+        if message_type == MessageType.SHUTDOWN_RPI:
+            print(f"[Aux] Shutdown Raspberry Pi command received, shutting down...")
+            sleep(1)
+            os.system("sudo shutdown now")
             
             
             

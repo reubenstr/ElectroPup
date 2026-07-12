@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, Pressable } from "react-native";
 import { Server, Endpoint } from "@/services/config/configTypes";
-import { ButtonStyles } from "@/styles/buttonStyles";
-import { ModalStyles } from "@/styles/modalStyles";
+import { ButtonStyles } from "@/src/styles/buttonStyles";
+import { ModalStyles } from "@/src/styles/modalStyles";
 
 interface ServerEndpointDialogProps {
   server: Server;

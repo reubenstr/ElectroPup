@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Platform, View, Text, StyleSheet, LayoutChangeEvent, TouchableOpacity } from 'react-native';
-import { PlotDataExtras, QuadData } from '@/interfaces/messages';
+import { PlotDataExtras, QuadData } from '@/src/interfaces/messages';
 import { Switch } from 'react-native-paper';
-import { PlotDataQuad } from '@/interfaces/messages';
+import { PlotDataQuad } from '@/src/interfaces/messages';
 
 interface Plot3DProps {
   quadData?: QuadData;

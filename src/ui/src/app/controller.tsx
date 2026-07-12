@@ -2,17 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { AxisPad, AxisPadTouchEvent } from "@fustaro/react-native-axis-pad";
 import { useDataTransfer } from '@/services/useDataTransfer';
-import { ControlMessage, Command } from '@/interfaces/messages';
-import Plot3D from '@/components/Plot3D';
-import StatusIndicator from '@/components/indicators/StatusIndicator';
-import ContactIndicator from '@/components/indicators/ContactIndicators';
-import MotorIndicator from '@/components/indicators/MotorIndicator';
-import MotorTooltip from '@/components/MotorTooltip';
+import { ControlMessage, Command } from '@/src/interfaces/messages';
+import Plot3D from '@/src/components/Plot3D';
+import StatusIndicator from '@/src/components/indicators/StatusIndicator';
+import ContactIndicator from '@/src/components/indicators/ContactIndicators';
+import MotorIndicator from '@/src/components/indicators/MotorIndicator';
+import MotorTooltip from '@/src/components/MotorTooltip';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
-import { Status } from '@/interfaces/messages';
-import { motorNames } from '@/constants/motorNames';
-import MotorTable from '@/components/MotorTable';
+import { Status } from '@/src/interfaces/messages';
+import { motorNames } from '@/src/constants/motorNames';
+import MotorTable from '@/src/components/MotorTable';
 
 /*
 

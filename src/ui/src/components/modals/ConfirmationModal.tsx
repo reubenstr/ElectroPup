@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ButtonStyles } from "@/styles/buttonStyles";
-import { ModalStyles } from "@/styles/modalStyles";
+import { ButtonStyles } from "@/src/styles/buttonStyles";
+import { ModalStyles } from "@/src/styles/modalStyles";
 
 interface ConfirmationModalProps {
   visible: boolean;

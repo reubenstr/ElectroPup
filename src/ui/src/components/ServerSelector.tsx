@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { Picker } from '@react-native-picker/picker';
-import { ControlStyles, ButtonStyles, IconStyles } from "@/styles/buttonStyles";
+import { ControlStyles, ButtonStyles, IconStyles } from "@/src/styles/buttonStyles";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddServerEndpointModal from './modals/AddServerEndpointModal'
 import ConfirmationModal from './modals/ConfirmationModal'

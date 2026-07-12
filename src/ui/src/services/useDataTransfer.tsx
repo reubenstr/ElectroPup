@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { QuadData } from '@/interfaces/messages';
+import { QuadData } from '@/src/interfaces/messages';
 import { useEndpointByType } from './config/useConfigStore';
 import { ServerType } from '@/services/config/configTypes';
 

@@ -4,10 +4,10 @@ import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { useConfigStore } from '@/services/config/useConfigStore'
-import ServerSelector from '@/components/ServerSelector';
+import ServerSelector from '@/src/components/ServerSelector';
 import ConfirmationModal from '../components/modals/ConfirmationModal'
-import { ControlStyles, ButtonStyles, IconStyles } from "@/styles/buttonStyles";
-import colors from "@/styles/colors";
+import { ControlStyles, ButtonStyles, IconStyles } from "@/src/styles/buttonStyles";
+import colors from "@/src/styles/colors";
 
 
 export default function ConfigScreen() {

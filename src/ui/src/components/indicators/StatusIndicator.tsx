@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Status } from '@/interfaces/messages';
+import { Status } from '@/src/interfaces/messages';
 
 interface IndicatorProps {
     name: string;
