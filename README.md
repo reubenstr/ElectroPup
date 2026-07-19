@@ -2,14 +2,28 @@
 
 <img src="images/electro-pup-standing.jpg" width="800">
 
-ElectroPup is DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
+ElectroPup is a DIY 3D-printed quadruped robot using 'low cost' BLDC motors.
 
-Specifications:
+
+<video width="640" height="360" controls>
+  <source src="videos/electro-pup-posing.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+ElectroPup showing the various kinematic poses.
+
+<video width="640" height="360" controls>
+  <source src="videos/electro-pup-in-motion.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+ElectroPup in motion.
+
+## Basic Specifications
+
 - RPi 5
-- Auxilary board w/LCD display
-- 9-axis accelerometer/gyro sensor 
 - 12x BLDC motors
-- 6s Li-Ion battery, ~74wH
+- Auxiliary board w/LCD display
+- 9-axis accelerometer/gyro sensor
+- 6s Li-Ion battery, ~72wH
 - 4.5kg
 
 ElectroPup's control system is coded in Python. For a ROS2 based quadruped, see my previous project [Zuko](https://github.com/reubenstr/zuko).
@@ -40,7 +54,7 @@ The UI is built from the React Native Framework using Expo and runs on web. The 
 
 <img src="images/electro-pup-wireframe-demo.gif" width="800">
 
-Inverse kinematics, leg position, and gamepad inputs are verifed using the UI.
+Inverse kinematics, leg position, and gamepad inputs are verified using the UI.
 
 
 ### Trajectories
@@ -78,7 +92,7 @@ PCBs are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB
 
 <img src="images/electro-pup-power-carrier-v1-render.png" width="800">
 
-The Power Carrier PCB provides a main on/off power switch and distributes power the the motor headers. The Power Carrier creates four CAN bus networks one for each leg. Solder jumpers allow merging the front two legs into a single network and the back two legs into another single network.
+The Power Carrier PCB provides a main on/off power switch and distributes power to the motor headers. The Power Carrier creates four CAN bus networks one for each leg. Solder jumpers allow merging the front two legs into a single network and the back two legs into another single network.
 
 ### Auxiliary Board
 
@@ -93,20 +107,20 @@ Features:
 - NeoPixel strips
 - RC Servo channel
 - I2C expansion
-- Button to control LCD and shutdown Rasperry Pi before power off
+- Button to control LCD and shutdown Raspberry Pi before power off
 
 Provides direct connection to RPi header for the following breakouts:
 - IMU (BNO055 via I2C)
 - 4x contact inputs or GPIO
 - I2S for sound driver (future barks 🐶)
-- SBUS to use RC transmitter if BLE gamepad fails in RF conjected areas
+- SBUS to use RC transmitter if BLE gamepad fails in RF congested areas
 
 # Motors
 
 The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be purchased from [Aliexpress](https://www.aliexpress.us/item/3256805950420462.html?spm=a2g0o.order_list.order_list_main.5.32491802no3XMa&gatewayAdapt=glo2usa).
 
 ### Specifications
-- voltage: 7.4-32v
+- voltage: 7.4-32V
 - communication: CAN 1Mbps
 - rated torque: 2.5 N.m
 - max torque: 4.5 N.m
@@ -126,7 +140,7 @@ The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be pur
 ### MG4010E-i10v3 Cons
 - configuration software is Windows only
 - closed source firmware
-- foreign sourced and warranty process
+- foreign sourced, complicating the warranty process
 - CAN unable to configure all parameters
 - UART required to configure error thresholds, motor torque limits (for compliance), etc.
 - some motors are more difficult to turn by hand and require slightly more operational current
@@ -154,7 +168,7 @@ The zero-motors.py script is a quick way to verify correct motor configuration a
 
 The CAN bus controller is a [2-Channel Isolated CAN Expansion HAT](https://www.waveshare.com/2-ch-can-hat.htm) from waveshare.
 
-Each CAN controller drivers six motors with an average motor update rate of ~70hz. This includes fetching encoder position, setting target angle/speed, and getting error states.
+Each CAN controller drives six motors with an average motor update rate of ~70 Hz. This includes fetching encoder position, setting target angle/speed, and getting error states.
 
 # Gamepad
 
@@ -170,7 +184,7 @@ There are three hardware/software environments described below.
 
 ### PC/Laptop - Plotting, Simulation, and Development
 
-Desktop or laptop computer running Ubuntu Desktop (or your prefered flavor of Linux).
+Desktop or laptop computer running Ubuntu Desktop (or your preferred flavor of Linux).
 
 Software: VSCode (with remote SSH and PlatformIO extensions), Drawio, LibreOffice, KiCad, OrcaSlicer, Chrome/Firefox
 
@@ -183,7 +197,7 @@ The OS is Raspberry Pi OS Lite (Bookworm 64-bit), which is headless, so all deve
 
 ### STM32 - Auxiliary Board
 
-A STM32F401 Black Pill dev kit operates the auxiliary board to display the motor and system status on a LCD display and interface with other peripherals such as the buzzer. 
+An STM32F401 Black Pill dev kit operates the auxiliary board to display the motor and system status on a LCD display and interface with other peripherals such as the buzzer. 
 
 Uses VSCode with PlatformIO on the PC/Laptop for development.
 
@@ -192,7 +206,7 @@ Uses VSCode with PlatformIO on the PC/Laptop for development.
 The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for strength and ease of printing. See these excellent blog posts for more information: [cnckitchen](https://www.cnckitchen.com/blog/the-difference-of-pla-and-pla-tested-feat-polymaker) and [edemargerie](https://www.instructables.com/Comparing-Impact-Resistance-of-21-Filaments-for-3D/).
 
 | Color          | Estimated Print Time | Estimated Filament |
-|----------------|----------------------|--------------------|
+| -------------- | -------------------- | ------------------ |
 | main (red)     | 25.23 hours          | 742 grams          |
 | accent (black) | 3.58 hours           | 92 grams           |
 
@@ -200,7 +214,7 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for 
 
 <img src="images/electropup-cad-front-angle.png" width="800">
 
-Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commericial use. The links below should have export permissions to allow copying the workspace.
+Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commercial use. The links below should have export permissions to allow copying the workspace.
 
 - [Assembly](https://cad.onshape.com/documents/b02341d4ebb7f3e9dd488186)
 - [Legs](https://cad.onshape.com/documents/6da583196278caf8e90b3122)
@@ -217,7 +231,7 @@ The battery is a custom 6S1P Li-Ion using 18650s with a load balancing BMS. The 
 
 <img src="images/electro-pup-battery-pack-progress-1.jpg" width="800">
 
-The above image is showing work in progress. The [insulation rings](https://imrbatteries.com/products/18650-terminal-insulators-fish-paper-20pcs-green-round-rings) were forgotton during fabrication and really should be mandatory for any battery build. 
+The above image is showing work in progress. The [insulation rings](https://imrbatteries.com/products/18650-terminal-insulators-fish-paper-20pcs-green-round-rings) were forgotten during fabrication and really should be mandatory for any battery build. 
 
 <img src="images/electro-pup-battery-pack-progress-2.jpg" width="800">
 
@@ -231,7 +245,7 @@ This is a general improvement list for future updates or revisions.
 
 - add upside down control (the frame supports walking even after flipped)
 - apply IMU for smoother gaits
-- add center if mass calculations for smoother gaits
+- add center of mass calculations for smoother gaits
 - swap battery and RPi positions for better center of mass
 - swap foot lag bolt from SAE to metric
 - add curvature to lower leg
@@ -245,21 +259,21 @@ This is a general improvement list for future updates or revisions.
 
 Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
 
-Future Auxilary board revisions will remove the STM32 and either drive the LCD directly from the RPi or remove it completly. The extra complexity outweights the LCD's usefullness, especially when the GUI provides significantly more data. 
+Future Auxiliary board revisions will remove the STM32 and either drive the LCD directly from the RPi or remove it completely. The extra complexity outweighs the LCD's usefulness, especially when the GUI provides significantly more data.
 
 Future power carrier PCB revisions will include a voltage/current sensor such as a INA228 and a fuse.
 
 The carbon rods twist during the run gait which can be reduced by extending the rods through the hip plates and adding face / butt plates. 
 
-Future revisions will prioritze adding contact sensors that will allow for better terrain handling and future AI training.
+Future revisions will prioritize adding contact sensors that will allow for better terrain handling and future AI training.
 
 # Questions
 
-For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues) on the repo's gitlab page..
+For any questions please post a new [issue](https://github.com/reubenstr/ElectroPup/issues) on the repo's GitHub page.
 
 # Credits
 
-Inverse kinematics and leg points for plotting was sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/).
+Inverse kinematics and leg points for plotting were sourced from mike4192: [https://github.com/mike4192/](https://github.com/mike4192/).
 
 Using carbon fiber tube as frame supports inspired from [Open Dog 3](https://www.youtube.com/watch?v=ts2l_Em7fpI&list=PLpwJoq86vov8uTgd8_WNgBHFpDYemO-OJ&index=3) by James Bruton.
 
