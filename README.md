@@ -4,17 +4,12 @@
 
 ElectroPup is a DIY 3D-printed quadruped robot using 'low cost' BLDC motors.
 
+<video src="videos/electro-pup-posing.mp4" width="600" controls></video>
 
-<video width="640" height="360" controls>
-  <source src="videos/electro-pup-posing.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 ElectroPup showing the various kinematic poses.
 
-<video width="640" height="360" controls>
-  <source src="videos/electro-pup-in-motion.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<video src="videos/electro-pup-in-motion.mp4" width="600" controls></video>
+
 ElectroPup in motion.
 
 ## Basic Specifications
