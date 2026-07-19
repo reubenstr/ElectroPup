@@ -19,13 +19,9 @@ ElectroPup is a DIY 3D-printed quadruped robot using 'low cost' BLDC motors.
 
 ElectroPup's control system is coded in Python. For a ROS2 based quadruped, see my previous project [Zuko](https://github.com/reubenstr/zuko).
 
----
-
 # Docs
 
 See the docs directory for a setup guide, bill of materials (BOM), 3D printed parts info, and miscellaneous design notes.
-
----
 
 # UI
 
@@ -38,8 +34,6 @@ The UI shows the status of the entire system: quadruped joint positions, subsyst
 The above image shows a virtual circle the feet follow to walk in a circle and the bezier curves used for moving the feet up and down.
 
 The UI is built from the React Native Framework using Expo and runs on web. The app will run on Android without the plot. The entire system runs in dev mode so you can run the simulation and UI from a development PC without physical hardware.
-
----
 
 # Kinematics
 
@@ -68,8 +62,6 @@ The output of `./src/plot/projection_plot.py`
 <img src="images/electro-pup-mujuco-simulation-pose.png" width="800">
 
 Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, input controlls are only provided by the gamepad. The `ElectroPup.xml` currently does not have approximate masses or inertial so the simulated quadruped is rather bouncy.
-
----
 
 # Electronics
 
@@ -167,8 +159,6 @@ Each CAN controller drives six motors with an average motor update rate of ~70 H
 
 ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may be used with minor software modifications.
 
----
-
 # Environment and IDEs 
 
 There are three hardware/software environments described below.
@@ -228,8 +218,6 @@ The above image is showing work in progress. The [insulation rings](https://imrb
 
 The BMS is a HXYP-6S-CW15.
 
----
-
 # Future Improvements  
 
 This is a general improvement list for future updates or revisions. 
@@ -283,8 +271,6 @@ There are many excellent open source quadruped robot projects at various sizes, 
 - https://www.youtube.com/watch?v=oYnsCE2H6ss
 - https://github.com/JackDemeter/quadruped-robot
 - https://github.com/reubenstr/zuko
-
----
 
 # AI Disclosure
 
