@@ -1,4 +1,6 @@
-<img src="images/electropup-cad-front-angle.png" width="800">
+# ElectroPup
+
+<img src="images/electro-pup-standing.jpg" width="800">
 
 ElectroPup is DIY 3D printed quadrudped robot using 'low cost' BLDC motors.
 
@@ -10,24 +12,29 @@ Specifications:
 - 6s Li-Ion battery, ~74wH
 - 4.5kg
 
-ElectroPup uses Python, however, for quadruped robot using ROS2 see my previous quadruped project [Zuko](https://github.com/reubenstr/zuko).
+ElectroPup's control system is coded in Python. For a ROS2 based quadruped, see my previous project [Zuko](https://github.com/reubenstr/zuko).
+
+---
 
 # Docs
 
 See the docs directory for a setup guide, bill of materials (BOM), 3D printed parts info, and miscellaneous design notes.
 
+---
 
 # UI
 
 <img src="images/electro-pup-ui-live.png" width="800">
 
-The UI shows the status of the entire system: quadruped joint positions, subsystem status, motor information, inputs, sensors, loop times, etc. The above imags shows the simulated quadruped overlapped with real quadruped (based on motor feedback).
+The UI shows the status of the entire system: quadruped joint positions, subsystem status, motor information, inputs, sensors, loop times, etc. The above image shows the simulated quadruped overlapped with real quadruped (based on motor feedback).
 
 <img src="images/electro-pup-ui-sim.png" width="800">
 
-The UI works in dev mode to aid in trajectory development. The above image shows the virtual circle  the feet follow to walk in a circle and the bezier curves used for moving the feet up and down.
+The above image shows a virtual circle the feet follow to walk in a circle and the bezier curves used for moving the feet up and down.
 
-The UI is built using React Native Framework using Expo and runs on web. The app will run on Android without the plot.
+The UI is built from the React Native Framework using Expo and runs on web. The app will run on Android without the plot. The entire system runs in dev mode so you can run the simulation and UI from a development PC without physical hardware.
+
+---
 
 # Kinematics
 
@@ -57,7 +64,13 @@ The output of `./src/plot/projection_plot.py`
 
 Simulation is performed in [MuJoCo](https://mujoco.org/) and can be started by running `./src/sim.sh`. Currently, input controlls are only provided by the gamepad. The `ElectroPup.xml` currently does not have approximate masses or inertial so the simulated quadruped is rather bouncy.
 
-# PCBs
+---
+
+# Electronics
+
+<img src="images/electro-pup-lcd-and-electronics.jpg" width="800">
+
+## PCBs
 
 PCBs are designed in [KiCad](https://www.kicad.org/) v8 and fabricated by JLCPCB.
 
@@ -149,6 +162,8 @@ Each CAN controller drivers six motors with an average motor update rate of ~70h
 
 ElectroPup was coded with a PS4 controller in mind, however xBox, PS5, Logitech gamepads may be used with minor software modifications.
 
+---
+
 # Environment and IDEs 
 
 There are three hardware/software environments described below.
@@ -183,6 +198,8 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for 
 
 ### CAD
 
+<img src="images/electropup-cad-front-angle.png" width="800">
+
 Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commericial use. The links below should have export permissions to allow copying the workspace.
 
 - [Assembly](https://cad.onshape.com/documents/b02341d4ebb7f3e9dd488186)
@@ -196,11 +213,21 @@ Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides fr
 
 # Battery Pack 
 
-In progress.
+The battery is a custom 6S1P Li-Ion using 18650s with a load balancing BMS. The 18650's are Sanyo rated at 3250mAH providing an estimated 72Wh.
 
-# TODO  
+<img src="images/electro-pup-battery-pack-progress-1.jpg" width="800">
 
-This is a general TODO list which may span this revision or a future revision. 
+The above image is showing work in progress. The [insulation rings](https://imrbatteries.com/products/18650-terminal-insulators-fish-paper-20pcs-green-round-rings) were forgotton during fabrication and really should be mandatory for any battery build. 
+
+<img src="images/electro-pup-battery-pack-progress-2.jpg" width="800">
+
+The BMS is a HXYP-6S-CW15.
+
+---
+
+# Future Improvements  
+
+This is a general improvement list for future updates or revisions. 
 
 - add upside down control (the frame supports walking even after flipped)
 - apply IMU for smoother gaits
@@ -251,6 +278,8 @@ There are many excellent open source quadruped robot projects at various sizes, 
 - https://www.youtube.com/watch?v=oYnsCE2H6ss
 - https://github.com/JackDemeter/quadruped-robot
 - https://github.com/reubenstr/zuko
+
+---
 
 # AI Disclosure
 
