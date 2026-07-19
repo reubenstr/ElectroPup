@@ -213,7 +213,7 @@ Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides fr
 
 # Battery Pack 
 
-The battery is a custom 6S1P Li-Ion using 18650s with a load balancing BMS. The 18650's are Sanyo rated at 3250mAH providing an estimated 72Wh.
+The battery is a custom 6S1P Li-Ion using 18650s with a load balancing BMS. The 18650's are Sanyo branded and rated at 3250mAH each providing an estimated 72Wh.
 
 <img src="images/electro-pup-battery-pack-progress-1.jpg" width="800">
 

@@ -7,7 +7,6 @@ const NAV_ITEMS = [
   { label: "Viewer", href: "/" },
   { label: "Data", href: "/data" },
   { label: "Settings", href: "/settings" },
-  { label: "About", href: "/about" },
 ] as const;
 
 export function TopNav() {
