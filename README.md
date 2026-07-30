@@ -98,6 +98,12 @@ Provides direct connection to RPi header for the following breakouts:
 - I2S for sound driver (future barks 🐶)
 - SBUS to use RC transmitter if BLE gamepad fails in RF congested areas
 
+# Software Architecture
+
+<img src="images/electro-pup-block-diagram.png" width="800">
+
+Electropup's software architecture was purposely designed to be simple and to bypass the pain points of using ROS2. See my [Zuko]( https://github.com/reubenstr/zuko) robot quadruped for a ROS2 implementation, abiet outdated. A major downside of this single service architecture is needing to sit and stand the quadruped on every software change vs being able to restart individual services quickly without affecting others (i.e. the motors). However, with the simulated quadruped and UI, most development is not performed on a live quadruped.
+
 # Motors
 
 The motors are MG4010E-i10v3 actuators made by LingKong (LKMTECH) and can be purchased from [Aliexpress](https://www.aliexpress.us/item/3256805950420462.html?spm=a2g0o.order_list.order_list_main.5.32491802no3XMa&gatewayAdapt=glo2usa).
@@ -137,7 +143,7 @@ Future projects will prioritize ODrive compatible drivers.
 
 ### Motor Tags
 
-<img src="images/electropup-cad-topdown-motor-tags.png" width="800">
+<img src="images/electro-pup-cad-topdown-motor-tags.png" width="800">
 
 ### Motor Calibration
 
@@ -193,7 +199,7 @@ The 3D printed parts are printed using Polymaker PolyMax Tough PLA selected for 
 
 ### CAD
 
-<img src="images/electropup-cad-front-angle.png" width="800">
+<img src="images/electro-pup-cad-front-angle.png" width="800">
 
 Parts are modeled using [OnShape](https://www.onshape.com/en/) which provides free web-based full access for non-commercial use. The links below should have export permissions to allow copying the workspace.
 
@@ -236,15 +242,13 @@ This is a general improvement list for future updates or revisions.
 
 # Thoughts
 
-Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
+- Due to a lower power consumption than estimated, a larger frame and longer legs can be created. A larger frame would support moving the knee motor to the hip area allowing the lower leg to be belt driven. The reduction of mass of the knee will increase center of mass stability and create smoother gaits.
+- Future Auxiliary board revisions will remove the STM32 and either drive the LCD directly from the RPi or remove it completely. The extra complexity outweighs the LCD's usefulness, especially when the GUI provides significantly more data.
+- Future power carrier PCB revisions will include a voltage/current sensor such as a INA228 and a fuse.
+- The carbon rods twist during the run gait which can be reduced by extending the rods through the hip plates and adding face / butt plates. 
+- Future revisions will prioritize adding contact sensors that will allow for better terrain handling and future AI training.
+- A full architecture refactor splitting major components into services would have the advantages of individual unit testing and keeping the quadruped standing during development.
 
-Future Auxiliary board revisions will remove the STM32 and either drive the LCD directly from the RPi or remove it completely. The extra complexity outweighs the LCD's usefulness, especially when the GUI provides significantly more data.
-
-Future power carrier PCB revisions will include a voltage/current sensor such as a INA228 and a fuse.
-
-The carbon rods twist during the run gait which can be reduced by extending the rods through the hip plates and adding face / butt plates. 
-
-Future revisions will prioritize adding contact sensors that will allow for better terrain handling and future AI training.
 
 # Questions
 
